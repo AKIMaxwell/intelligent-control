@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="BMD4UuJB1kYcmHbWeCQa8f">
+<head data-page-node-id="BWgPysVjhkRmHaVp9Rvk41">
+<meta charset="UTF-8" data-page-node-id="OtjhS3Qwo1KfSDW550UpwG">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="pD88zr0jhrlHxrAqYPSfKn">
+<title>智能控制概论 · 课程讲义 | 东南大学自动化学院</title>
+<style>
+  :root{
+    --green:#4C7D2C; --green-dark:#3A6322; --green-deep:#2C4E1A;
+    --yellow:#FDD000;
+    --ink:#1E2A1A; --ink-2:#42523B; --ink-3:#7A8770;
+    --paper:#F7F9F3; --line:#DDE5D2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Source Han Sans SC",sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ===== 顶部横幅 ===== */
+  header{
+    background:linear-gradient(135deg,var(--green-deep) 0%,var(--green) 62%,#5E9138 100%);
+    color:#fff; padding:56px 24px 64px; text-align:center; position:relative; overflow:hidden;
+  }
+  header::before{
+    content:""; position:absolute; right:-90px; top:-90px; width:320px; height:320px;
+    border-radius:50%; background:rgba(253,208,0,.12);
+  }
+  header::after{
+    content:""; position:absolute; left:-60px; bottom:-120px; width:260px; height:260px;
+    border-radius:50%; background:rgba(255,255,255,.06);
+  }
+  .uni{
+    display:inline-block; font-size:14px; letter-spacing:6px; color:var(--yellow);
+    border:1px solid rgba(253,208,0,.55); border-radius:999px; padding:5px 18px 5px 22px;
+    margin-bottom:20px; position:relative; z-index:1;
+  }
+  header h1{
+    font-size:42px; font-weight:800; letter-spacing:10px; position:relative; z-index:1;
+  }
+  header .en{
+    margin-top:10px; font-size:15px; color:rgba(255,255,255,.78);
+    font-family:Georgia,"Times New Roman",serif; font-style:italic; letter-spacing:2px;
+    position:relative; z-index:1;
+  }
+  header .meta{
+    margin-top:22px; font-size:14.5px; color:rgba(255,255,255,.88); position:relative; z-index:1;
+  }
+  header .meta b{color:var(--yellow); font-weight:600;}
+  /* ===== 主体 ===== */
+  main{max-width:960px; margin:0 auto; padding:44px 24px 70px;}
+  .intro{
+    text-align:center; color:var(--ink-2); font-size:15.5px; margin-bottom:38px;
+  }
+  .cards{display:grid; gap:18px;}
+  a.card{
+    display:flex; align-items:center; gap:22px; text-decoration:none; color:inherit;
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:24px 28px; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  a.card:hover{
+    transform:translateY(-3px); border-color:var(--green);
+    box-shadow:0 10px 28px rgba(76,125,44,.16);
+  }
+  .num{
+    flex:none; width:62px; height:62px; border-radius:50%;
+    background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:Georgia,"Times New Roman",serif; font-size:24px; font-weight:700;
+  }
+  a.card:hover .num{background:var(--green-dark);}
+  .info{flex:1; min-width:0;}
+  .info .k{font-size:13px; color:var(--green); font-weight:700; letter-spacing:2px;}
+  .info h2{font-size:21px; font-weight:700; margin-top:3px; color:var(--ink);}
+  .info p{font-size:13.5px; color:var(--ink-3); margin-top:5px;}
+  .go{
+    flex:none; font-size:13px; color:var(--green-dark); font-weight:600;
+    border:1.5px solid var(--green); border-radius:999px; padding:7px 16px;
+    transition:background .18s ease,color .18s ease; white-space:nowrap;
+  }
+  a.card:hover .go{background:var(--green); color:#fff;}
+  /* ===== 页脚 ===== */
+  footer{
+    text-align:center; color:var(--ink-3); font-size:13px; padding:26px 16px 36px;
+    border-top:1px solid var(--line);
+  }
+  footer b{color:var(--green-dark);}
+  @media (max-width:600px){
+    header h1{font-size:30px; letter-spacing:6px;}
+    a.card{padding:18px 20px; gap:16px;}
+    .num{width:50px;height:50px;font-size:20px;}
+    .info h2{font-size:18px;}
+    .go{display:none;}
+  }
+</style>
+</head>
+<body data-page-node-id="YCtilOZKuYylnFhI33EiAV">
+
+<header data-page-node-id="hoYTm9S7pMEVFSCLOJNvus">
+  <span class="uni" data-page-node-id="BDaEqPPyHcVXF7jJ7VymRS">东南大学 · 自动化学院</span>
+  <h1 data-page-node-id="P1luQqN4C9OU0TS9DEU7zA">智能控制概论</h1>
+  <div class="en" data-page-node-id="9Phln0eeY7rjtYJhGpfnjg">Introduction to Intelligent Control —— 课程讲义</div>
+  <div class="meta" data-page-node-id="xG32PomC5tk6NArMCtNVVX">主讲：<b data-page-node-id="nUCUHSiQpNBGHFQVYBPjAm">刘雪庆</b>　｜　2026 年 9 月　｜　在线讲义（连续排版 · 可打印）</div>
+</header>
+
+<main data-page-node-id="20HoLQkFlDoAmfGd81lM8a">
+  <p class="intro" data-page-node-id="BhMl0DY8FUOxyXuJ7DlhD2">本页为课程讲义的统一入口，点击任意一讲即可在线阅读完整内容（含公式、框图与实验截图）。</p>
+  <div class="cards" data-page-node-id="CbZuA1wp6KjvrmQHyT66KR">
+
+    <a class="card" href="lecture-01.html" data-page-node-id="Db9smZPCxkb07ZSHOWCj5i">
+      <div class="num" data-page-node-id="7jUJbA1ZSEBOtHba8Vmgbd">壹</div>
+      <div class="info" data-page-node-id="KIFhY4BWXOGL8C8Zd6mHTa">
+        <div class="k" data-page-node-id="dtpeDbkp50Hadf6PrteSKG">LECTURE 01</div>
+        <h2 data-page-node-id="66a1VwcCxFo9lUPDp7zwgR">绪论和模糊控制的理论基础</h2>
+        <p data-page-node-id="snLwLjRYEvZ7zsC88vDMlj">智能控制概述 · 模糊集合与隶属度函数 · 模糊关系与模糊推理 · 解模糊化方法</p>
+      </div>
+      <span class="go" data-page-node-id="MBSnd7ztp3gxvkNpOmlKI6">进入讲义 →</span>
+    </a>
+
+    <a class="card" href="lecture-02.html" data-page-node-id="cuDIIZwLOe8BQkSKktFEhD">
+      <div class="num" data-page-node-id="aFeo5rq7YQtX3z01Cr4zug">贰</div>
+      <div class="info" data-page-node-id="ZzfdLV0Ag6O4PS8CfNWO0w">
+        <div class="k" data-page-node-id="7C4r1wCTlRr9GIVm6IsCzr">LECTURE 02</div>
+        <h2 data-page-node-id="M5NuJuG1ziNtRpvn9GLweh">模糊控制系统</h2>
+        <p data-page-node-id="ilyzVwdpPLPQEPSjbDZiKu">模糊控制器组成 · 量化因子与比例因子 · 模糊控制规则设计 · 查询表与解析式</p>
+      </div>
+      <span class="go" data-page-node-id="XE6F9f5galI7lR745dkD6Q">进入讲义 →</span>
+    </a>
+
+    <a class="card" href="lecture-03.html" data-page-node-id="T20i6dUGRHFCw5H2XT4f2t">
+      <div class="num" data-page-node-id="ULZkWBwQo1ZZwcQ5ZRu3P1">叁</div>
+      <div class="info" data-page-node-id="BdDoyNvQyewUReAslIAFll">
+        <div class="k" data-page-node-id="aoJYMwK6pmSx9KQ07kqorD">LECTURE 03</div>
+        <h2 data-page-node-id="8BFpuVwJXM6rlCbRVc2nbZ">模糊控制系统实验</h2>
+        <p data-page-node-id="syHZQOIV6CdpBoXdEB8F7K">MATLAB Fuzzy Logic Designer 建模 · 隶属度与规则编辑 · Simulink 模糊控制仿真</p>
+      </div>
+      <span class="go" data-page-node-id="yZvRBNgiLBx13u8Q9aOahV">进入讲义 →</span>
+    </a>
+
+    <a class="card" href="lecture-04.html" data-page-node-id="FHxJ9741AqaRnDbruXVuEi">
+      <div class="num" data-page-node-id="Vm0SRivWB19IkoOAnzzIzK">肆</div>
+      <div class="info" data-page-node-id="CwX0gXu5zv5Q5KgLKjiFRK">
+        <div class="k" data-page-node-id="aW5HOrgCdFa5ynLT4aCAQ5">LECTURE 04</div>
+        <h2 data-page-node-id="D0yZOwCTILFFIxO7bADHBv">人工神经元模型</h2>
+        <p data-page-node-id="a4jlR8BDGoiZTwLcEDSb9Q">M-P 模型与激活函数 · 感知机 · BP 算法 · RBF 网络 · Hopfield 网络</p>
+      </div>
+      <span class="go" data-page-node-id="GbCRuwa3f7eZQJYsJwChfn">进入讲义 →</span>
+    </a>
+
+    <a class="card" href="lecture-05.html" data-page-node-id="KckYd8waEId63xoO2wFfW8">
+      <div class="num" data-page-node-id="jyrJzzABsro2mmKzQc1pLo">伍</div>
+      <div class="info" data-page-node-id="uVbTDw5U7sGk7c58YgL2Bw">
+        <div class="k" data-page-node-id="RDLrhEmpvp6IxBivVaGS3R">LECTURE 05</div>
+        <h2 data-page-node-id="EPvjFlO6MZ4AzVcW74uJ0m">神经网络控制论</h2>
+        <p data-page-node-id="nNKEt9sU7TINN5z2zRsqP4">典型神经控制结构 · 神经网络辨识（模型Ⅰ–Ⅳ）· 学习机制 · 神经网络控制器设计</p>
+      </div>
+      <span class="go" data-page-node-id="3CUFI80786iDLCE2Of8CKP">进入讲义 →</span>
+    </a>
+
+  </div>
+</main>
+
+<footer data-page-node-id="FX5atxvaYLkdiqlfsAJlVO">
+  <b data-page-node-id="4mQoKooPa3GW1b7E7wMfAX">智能控制概论</b> · 东南大学自动化学院 · 刘雪庆<br data-page-node-id="P11HpkgFZ96L2NkNsNogpW">
+  讲义由课程 PPT 转换生成（HTML + MathJax），建议使用电脑浏览器阅读
+</footer>
+
+</body>
+</html>

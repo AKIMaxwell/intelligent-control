@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="b6pp6x2NaHDuE3cZGJD2rB">
+<head data-page-node-id="6Jv74waZgXLRAzWmpkEypP">
+<meta charset="UTF-8" data-page-node-id="3Jxr7eRCthQgHON8SNFMqD">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="O0eBvAkaRWvWDjCzsVIPq4">
+<title>智能控制概论 · 第一讲 绪论和模糊控制的理论基础（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- 顶部导航 ---------- */
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  /* ---------- 版面 ---------- */
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  /* 定义 / 例题 / 注记 */
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{ /* 黄色强调 */
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  /* 公式块：防溢出 */
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  /* 图片 */
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  /* ---------- 封面 ---------- */
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  /* ---------- 表格 ---------- */
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:15px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:9px 10px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px 10px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td:nth-child(2){text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data tr.total td{
+    background:var(--yellow);font-weight:700;color:var(--green-deep);
+    border-color:#E5C400;
+  }
+  /* ---------- 成绩构成条 ---------- */
+  .grade-bar{
+    display:flex;height:44px;border-radius:10px;overflow:hidden;
+    margin:14px 0 8px;font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;font-weight:600;color:#fff;
+  }
+  .grade-bar div{display:flex;align-items:center;justify-content:center;}
+  .grade-bar .g1{width:10%;background:var(--green-mid);min-width:52px;}
+  .grade-bar .g2{width:40%;background:var(--green);}
+  .grade-bar .g3{width:50%;background:var(--yellow);color:var(--green-deep);}
+  .grade-legend{
+    display:flex;gap:22px;flex-wrap:wrap;font-size:14px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;margin-top:6px;
+  }
+  .grade-legend i{
+    display:inline-block;width:11px;height:11px;border-radius:3px;
+    margin-right:6px;vertical-align:-1px;
+  }
+  /* ---------- 列表 ---------- */
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  /* ---------- 平台信息 ---------- */
+  .platforms{display:flex;gap:22px;flex-wrap:wrap;align-items:stretch;}
+  .platform{
+    flex:1 1 240px;background:var(--paper);
+    border:1px solid var(--green-line);border-radius:14px;padding:20px 22px;
+  }
+  .platform h4{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;color:var(--green-dark);margin-bottom:8px;
+  }
+  .platform .code{
+    font-family:"Consolas","Courier New",monospace;
+    font-size:20px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);border-radius:8px;
+    display:inline-block;padding:2px 14px;margin:6px 0;
+    letter-spacing:1px;
+  }
+  .platform .hint{font-size:14px;color:var(--ink-2);}
+  .platform.qr{flex:0 0 200px;text-align:center;}
+  .platform.qr img{width:168px;border-radius:10px;border:1px solid var(--green-line);}
+  .platform.qr figcaption{font-size:13px;color:var(--ink-2);margin-top:8px;}
+  /* ---------- 章节页 ---------- */
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  /* ---------- 本章提纲 ---------- */
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  /* ---------- 随堂测验 ---------- */
+  .quiz{
+    background:var(--paper);border:1.5px solid var(--green-line);
+    border-radius:14px;padding:22px 26px;margin:16px 0;
+  }
+  .quiz .qtag{
+    display:inline-block;font-family:"PingFang SC",sans-serif;
+    background:var(--green);color:#fff;font-size:13px;font-weight:600;
+    border-radius:6px;padding:2px 12px;margin-bottom:10px;
+  }
+  .quiz .qscore{float:right;font-size:13px;color:var(--ink-3);font-family:"PingFang SC",sans-serif;}
+  .quiz ol.opts{list-style:none;margin:12px 0;}
+  .quiz ol.opts li{
+    padding:9px 14px;margin:7px 0;border:1px solid var(--green-line);
+    border-radius:10px;font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;background:#FDFEFB;
+  }
+  .quiz ol.opts li.right{
+    background:var(--yellow-light);border-color:var(--yellow);
+    font-weight:700;color:var(--yellow-ink);
+  }
+  .quiz ol.opts li .okey{
+    display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;
+    border-radius:50%;background:var(--green-light);color:var(--green-dark);
+    font-size:13px;font-weight:700;margin-right:10px;
+  }
+  .quiz ol.opts li.right .okey{background:var(--yellow);color:var(--green-deep);}
+  .quiz details{margin-top:12px;}
+  .quiz summary{
+    cursor:pointer;font-family:"PingFang SC",sans-serif;font-size:14px;
+    color:var(--green);font-weight:600;
+  }
+  .quiz .analysis{
+    margin-top:10px;padding:14px 18px;background:var(--green-light);
+    border-radius:10px;font-size:15px;
+  }
+  /* ---------- 方法卡片 ---------- */
+  .method{
+    border:1px solid var(--green-line);border-radius:14px;
+    padding:20px 24px;margin:16px 0;background:var(--paper);
+  }
+  .method .mh{
+    display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  .method .mh .no{
+    background:var(--green);color:#fff;font-weight:700;font-size:14px;
+    border-radius:8px;padding:2px 10px;
+  }
+  .method .mh h4{font-size:18px;font-weight:700;color:var(--green-deep);}
+  .method .core{
+    margin-top:8px;font-size:14.5px;color:var(--yellow-ink);
+    background:var(--yellow-light);border-radius:8px;padding:6px 14px;
+    display:inline-block;font-family:"PingFang SC",sans-serif;
+  }
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.platform,.chapter,header.cover{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+</style>
+</head>
+<body data-page-node-id="5XDRj66uOc9F11GSiise2W">
+
+<nav class="topbar" data-page-node-id="TT4HJn7wDvA9SyStgixS0U">
+  <div class="topbar-inner" data-page-node-id="V6qeIpL5bFwH6VIkHYEY07">
+    <span class="brand" data-page-node-id="s2G9ZBRtaXW50UFD1jEoYn">智能控制概论 · 第一讲</span>
+    <div class="links" data-page-node-id="C9E5jKZRhXJSWY2iXhUDpU">
+      <a href="#cover" data-page-node-id="v3KGUFLhLCWHtWf6yuazqI">封面</a>
+      <a href="#info" data-page-node-id="xV2Q4zyE0XRFHZLFvJd519">课程信息</a>
+      <a href="#ch1" data-page-node-id="fioGskvh5RuGYBbJTHuQAX">第一章 绪论</a>
+      <a href="#ch2" data-page-node-id="7EnqnWaTVG2XtUGp9TX0qk">第二章 模糊控制的理论基础</a>
+      <a href="#sec2-5" data-page-node-id="NtACsES3Cp63swHvECa5tD">模糊逻辑推理</a>
+      <a href="#summary" data-page-node-id="sA8R92jloW4UbfKlkC40eZ">总结与作业</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page" data-page-node-id="7AoS2E9UE65oSVKdYgszoB">
+
+  <!-- ========== P1：封面 ========== -->
+  <section class="slide" id="cover" data-page-node-id="IcE0xP0hC7gYLc5Y9nkJiH">
+    <span class="slide-tag" data-page-node-id="yyQc0WBhWrxSUtmmSf8ExU">PPT 第 1 页</span>
+    <header class="cover" data-page-node-id="t2MGkGcQgsTJRYpgqoF7rx">
+      <div class="kicker" data-page-node-id="LjGW3Y4JKmchZzbC9gxN2C">东南大学自动化学院</div>
+      <h1 data-page-node-id="LoqOqR8C6MLFIXytQSiz8Q">智能控制概论</h1>
+      <div class="en" data-page-node-id="YjhQvOXPZ1AQSou969CS6q">Introduction to Intelligent Control</div>
+      <div class="lecture" data-page-node-id="JoeFcFUUFJGtjmIswtX1zj">第一讲&nbsp;&nbsp;绪论和模糊控制的理论基础</div>
+      <div class="meta" data-page-node-id="q0vYChjeVBlmy3fGzEMIMm">
+        主讲人：刘雪庆<br data-page-node-id="xArfdqLSCqhUIdKF6ra3fn">
+        2026 年 9 月
+      </div>
+    </header>
+  </section>
+
+  <!-- ========== P2：课程基本信息 ========== -->
+  <section class="slide" id="info" data-page-node-id="Cewikapx6J2GQOIXX8ujcd">
+    <span class="slide-tag" data-page-node-id="ooqrYQFQr4YUxrt9UGEN7q">PPT 第 2 页</span>
+    <h2 class="sec-title" data-page-node-id="rsE84RMyL6AwemWIJusPqh">课程基本信息</h2>
+
+    <h3 class="sub-title" data-page-node-id="5Od8R0TyX1qRCRACqy100y">课程安排</h3>
+    <div class="card" data-page-node-id="QkzuUOcvE9sRUi5CpgERV0">
+      <p data-page-node-id="UvU9yeolVVHLWcpaZeQKZC">1.&nbsp;&nbsp;课内理论：<strong data-page-node-id="Dop0FAH8BgrdD2kuxjNmoO">20 学时</strong></p>
+      <p data-page-node-id="UbTOCGv7Gx0FuZj2UAKz5E">2.&nbsp;&nbsp;课内实验：<strong data-page-node-id="dJOkElGBexThKrqnMdJbpS">12 学时</strong></p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="221MonDwuYV2aHrB6KPprS">教学日历</h3>
+    <table class="data" data-page-node-id="BjfZSIl0tdllGDyOi3WZmL">
+      <caption data-page-node-id="m9gcs7ygULbvCaXqliCt7s">共 11 次课：理论 20 学时 + 实验 12 学时</caption>
+      <thead data-page-node-id="DxBCnK61mEJ1rud2z9bylz">
+        <tr data-page-node-id="y3XQpq9cUHdt1hnF9R7EAN"><th data-page-node-id="EcQ0w9Dw4SxhWM3SqFwtHf">周</th><th data-page-node-id="TX0c9XPWBJgpUAO1oYclIU">教学内容</th><th data-page-node-id="CFOg5yD4ctdcGKjJvBkYCf">教学学时</th><th data-page-node-id="oyGgLyJqc2qgjQFlj9ZsdX">实验学时</th></tr>
+      </thead>
+      <tbody data-page-node-id="VVC7TN9JhEGgNWBRUUvoNw">
+        <tr data-page-node-id="PsKvQf5gsMnISObu5BXyyI"><td data-page-node-id="ehssjsC9jAsmkRDKozBDw4">0</td><td data-page-node-id="A54UW5br5UYQQNJoiEiB5y">绪论、模糊控制理论基础</td><td data-page-node-id="pYrbQj6v4dQITWOvKXcXnK">1+2</td><td data-page-node-id="nF2CCg25q3pLaPKvf6OFJ8"></td></tr>
+        <tr data-page-node-id="sJQ0JxVc55dpER0D451j6b"><td data-page-node-id="6w6Vh0M7DxQvdDDDQqzTqy">1</td><td data-page-node-id="eYYXzzXU10L5kNtsN3ZZfM">模糊控制系统</td><td data-page-node-id="MOZOfUWqm7c6m2i8lSE0pp">3</td><td data-page-node-id="Nfb0D69zizdXXPAl6jMqDj"></td></tr>
+        <tr data-page-node-id="azeoYxjsIGamK02VdPuKoj"><td data-page-node-id="03m5mCzKDH7wsREToB3clc">2</td><td data-page-node-id="eMQr9nVaDoGW50zNeN6xVI">模糊控制系统实验</td><td data-page-node-id="w1QNCBodKC9e25G9V1z0ix"></td><td data-page-node-id="73FSAU6rScQ1SGmulFCOa7">3</td></tr>
+        <tr data-page-node-id="dXfQ4qrleDacmkZiKsSPfc"><td data-page-node-id="1b1oTkZBViG1yimDhfPPon">4</td><td data-page-node-id="vPCZNoTOB24ha3BXEPDABd">人工神经网络模型</td><td data-page-node-id="jFaHMSrJEfdCygUYwYcmjv">3</td><td data-page-node-id="pTP0W30U2vV3HKiruImdgJ"></td></tr>
+        <tr data-page-node-id="mpxGQEssxbkpgFp0uE1Af5"><td data-page-node-id="gjtskGspGxLRv8E12BXIiz">5</td><td data-page-node-id="aFyaWUQBoVz1wEwwQQ5TtY">神经网络控制论</td><td data-page-node-id="zP3tkIC1iYKBLQ99aUC2cn">3</td><td data-page-node-id="KH6WDKbmFIHiVBn9GSa3VS"></td></tr>
+        <tr data-page-node-id="slWNuwyEm1OUuuguDblMzi"><td data-page-node-id="jiDBSlnJHNFTtTtlW7aUeu">6</td><td data-page-node-id="gRD5JVRzfsMtEu653HE9JZ">神经网络控制系统实验</td><td data-page-node-id="x9KiEnFvCNuuF8E0uvYf0O"></td><td data-page-node-id="i48aYlnp1b8HYxzoxy5JCA">3</td></tr>
+        <tr data-page-node-id="szXqeBoPHBMbbzn9SXgk4P"><td data-page-node-id="cXaf9cBLVfbzPRuDk4MBt5">7</td><td data-page-node-id="o3OUTSbKFCnm8W9ZPSsOcx">智能控制集成技术</td><td data-page-node-id="HDRQSrTEDpMXExGyf8R96h">3</td><td data-page-node-id="IjzQfp6k3DZVz8HXH7cLAZ"></td></tr>
+        <tr data-page-node-id="yWZ8ZwCprVL10j1H1uvWMb"><td data-page-node-id="1vLFHgqBeJAYF1W6BQUjIV">8</td><td data-page-node-id="UYPXKgHstrFZDXEkpL621F">智能控制集成技术实验</td><td data-page-node-id="igcWtDIapHFmXj7ofZtqKQ"></td><td data-page-node-id="WDCOw0WFCPhSvOGuXfZou0">3</td></tr>
+        <tr data-page-node-id="AQqJ9tUaNUFpUQgCdtP4kH"><td data-page-node-id="OKuEpGArmC6FbQO59OQwqY">9</td><td data-page-node-id="jh7QmpuEjyBB2V7ULBBwd2">强化学习方法</td><td data-page-node-id="c6HLzaqXFpJrWkMLXySFkR">3</td><td data-page-node-id="9ytDMyH5z1aXqYAdCoCzTC"></td></tr>
+        <tr data-page-node-id="0YIoMLLJXFW2LszlWMOx8k"><td data-page-node-id="qSg35SsiPyNy9OMHBDJbX2">10</td><td data-page-node-id="7T0CjXiYx7dbLas8iaZwax">强化学习控制实验</td><td data-page-node-id="soCzqchQtvBS80mFcVdMzO"></td><td data-page-node-id="2L15e8tQTsCpBniUZdIEO6">3</td></tr>
+        <tr data-page-node-id="j2WvjGuBAfDdjxHYRDkhIc"><td data-page-node-id="b54VJYzWjv3xvHq6s6FLWK">11</td><td data-page-node-id="Ytwfoo54RTFaQlzg98xi5t">先进智能控制概论</td><td data-page-node-id="Uo1g2wj57ZtvQ1NnFb6s6G">2</td><td data-page-node-id="0dJptISbTpwFvd4byxCsqM"></td></tr>
+        <tr class="total" data-page-node-id="hkiYACA2PEH0bPPwkCcwBo"><td data-page-node-id="2tOk8NM3oEu24P4Pnb12I8"></td><td data-page-node-id="EpPpKXbTWauANGJJ9EPMPG">11 次课</td><td data-page-node-id="NlvFOdv5jvUrArl9zNV1RG">20</td><td data-page-node-id="W5K4lsCaLJZkwu6yZhv8Xv">12</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title" data-page-node-id="HR3uvQDMRUTHILQKKVvpOJ">考核成绩构成</h3>
+    <div class="card" data-page-node-id="vCRbxhxgL0jRhN81ztvqa0">
+      <div class="grade-bar" data-page-node-id="zHUEmS2xyt8aAiSCWVEtOd">
+        <div class="g1" data-page-node-id="YPJkDCDWQC3O1uw0Jqq90y">10%</div>
+        <div class="g2" data-page-node-id="f8Dk7fggoBGEPCOmDFnTOm">实验 40%</div>
+        <div class="g3" data-page-node-id="gDSWl6bqIObvj6oxDDtowM">课程设计 50%</div>
+      </div>
+      <div class="grade-legend" data-page-node-id="CC5C3wzaAlhERkMMmuQ4zc">
+        <span data-page-node-id="Wqci2RrTsjIBLigprRgpGB"><i style="background:#8FB469" data-page-node-id="9er6FBkGgFIGlEltnFI6sm"></i>平时成绩：10%</span>
+        <span data-page-node-id="cbrHruM3APDHRpZFOPgiv1"><i style="background:#4C7D2C" data-page-node-id="iEicXGeASiKzYrYaM3T2Xn"></i>实验成绩：40%（10% × 4）</span>
+        <span data-page-node-id="hgC8EzEjjaYIPGFHcgtvu0"><i style="background:#FDD000" data-page-node-id="jR2PsOH6RwArPbrFXAZIoZ"></i>课程设计成绩：50%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== P3：教学平台 + 参考书 ========== -->
+  <section class="slide" id="platform" data-page-node-id="LDLL93jqDMsCGQfRh4ABYV">
+    <span class="slide-tag" data-page-node-id="CtW01vlEPo9zjaD4gBYkuU">PPT 第 3 页</span>
+    <h2 class="sec-title" data-page-node-id="Y5lw6k0LLukHFDmBnEjZ0O">辅助教学平台</h2>
+    <div class="platforms" data-page-node-id="NR61VsPVP4RWMRx31zvgjr">
+      <div class="platform" data-page-node-id="I7lYFpSoCjvjf66x8inS41">
+        <h4 data-page-node-id="YUVzQLtY0bIWU3TjrQNGag">雨课堂</h4>
+        <p class="hint" data-page-node-id="SkqvvO0xX4F3ibCsvLyCBE">邀请码</p>
+        <div class="code" data-page-node-id="qKD4vTqMZ3kcHWpx3eij3P">BML0SB</div>
+        <p class="hint" data-page-node-id="YvjKI74E1dzBsKdZiF5L4t">加入方式：雨课堂微信菜单 → 加入班级</p>
+      </div>
+      <div class="platform qr" data-page-node-id="CJr8kG95t59G0R1DnI7BlE">
+        <figure data-page-node-id="Wf73T36phCM4udYLWJeiee">
+          <img src="images/qq_group.jpg" alt="QQ 群二维码：2026秋-智能控制概论" data-page-node-id="zETnJB5RgynxARJJyTEjAV">
+          <figcaption data-page-node-id="kDS8CsXnvBldczj7umCQ4v">QQ 群「2026秋-智能控制概论」<br data-page-node-id="wGe9U9AozGaSvYbcWvc7vo">群号：1065383639</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <h3 class="sub-title" id="books" data-page-node-id="YmHEijWlwW8Ky3M5hAChsM">参考书</h3>
+    <div class="card" data-page-node-id="CJ3kMCbKpy2l1dCy26zcQX">
+      <ul class="clean" data-page-node-id="a9SWENb0hVBQCG4SNxaYP7">
+        <li data-page-node-id="TB9WtFCYwvqSZwXnJPXBIo"><span class="tag" data-page-node-id="p1uY60OsGUi30LMv5PWxDm">课程教材</span>韦巍 编著：《智能控制技术（第 3 版）》。北京：机械工业出版社，2024。</li>
+        <li data-page-node-id="U8wYDbeljMAJb1cn7R8sEM">梁景凯、曲延滨 编著：《智能控制技术》。哈尔滨：哈尔滨工业大学出版社，2016。</li>
+        <li data-page-node-id="wJKMLMQW9nne9h5ZYeUuCj">刘杰 等 编著：《智能控制与 MATLAB 实用技术》。北京：科学出版社，2017。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== P4：第一章章节页 ========== -->
+  <section class="slide" id="ch1" data-page-node-id="ALZi31dPBYYkrAVxoZG2JE">
+    <span class="slide-tag" data-page-node-id="UAdLgGygqxoAJdiiFEocAq">PPT 第 4 页</span>
+    <div class="chapter" data-num="1" data-page-node-id="qimwSAE85MdoSEtQA0D69k">
+      <div class="ch-kicker" data-page-node-id="BrDUzrtmCHdm73IxcOqVp4">CHAPTER 1</div>
+      <h1 data-page-node-id="69BLAISllm05SWQKRxSKml">第一章&nbsp;&nbsp;绪论</h1>
+    </div>
+  </section>
+
+  <!-- ========== P5：本章提纲 ========== -->
+  <section class="slide" data-page-node-id="BzGdztzSAQZa8vnfgt7QUy">
+    <span class="slide-tag" data-page-node-id="ZLKn42zNrGrKOCV66AdvKL">PPT 第 5 页</span>
+    <h2 class="sec-title" data-page-node-id="X8pEdYpSCXuacB9eUrJPAF">本章提纲</h2>
+    <ol class="toc" data-page-node-id="b6oCvGrAzFeF1CXtSBZxKB">
+      <li data-page-node-id="MjCcingFY5IWR0yhQpyylj">智能控制的发展过程</li>
+      <li data-page-node-id="um7P7nw6OCdomVo2Wi8DeY">智能控制的主要方法</li>
+      <li data-page-node-id="QgCVgr2CSKeGJrEHma2JGq">智能控制系统的构成原理</li>
+    </ol>
+  </section>
+
+  <!-- ========== P6：问题引入 ========== -->
+  <section class="slide" data-page-node-id="lfNFYl3OGIz2JiZJ4DqeQW">
+    <span class="slide-tag" data-page-node-id="bGtZe0bIeq8uD7ZaO95B4l">PPT 第 6 页</span>
+    <h2 class="sec-title" data-page-node-id="J9PFCu1CkXlYtTEsAplkv2">问题引入</h2>
+    <div class="card" data-page-node-id="AMREIDo8LiQj3lk4MJift6">
+      <ol class="num" data-page-node-id="OvoxQDtOAzBbOevGEoBBBZ">
+        <li data-page-node-id="MoZxyNgfVVYKC37jdlCPkp"><span class="kw" data-page-node-id="NtlDyM7WRMEzEGlxTQ84h3">为什么要搞智能控制？</span></li>
+        <li data-page-node-id="Be5lkT9tdn8xvs0DPCnQSw"><span class="kw" data-page-node-id="da38iXBAHneykbfiKUFbJ4">什么是智能控制？</span></li>
+        <li data-page-node-id="OCsdrarkjdTTPGgUXjAZPB"><span class="kw" data-page-node-id="HCaHSUz5CBEQiHgzwCF9lk">智能控制有哪些基础方法？</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== P7–10：1.1 发展过程 ========== -->
+  <section class="slide" id="sec1-1" data-page-node-id="WFoDCBJ9YUxhBFFUNrw2N0">
+    <span class="slide-tag" data-page-node-id="jeLxZ7oUwV5AQrao3LYUGF">PPT 第 7–10 页</span>
+    <h2 class="sec-title" data-page-node-id="ETCwwXtRwo0a7ih1poSB4g">一、智能控制的发展过程</h2>
+
+    <h3 class="sub-title" data-page-node-id="68vZ8LGhwI6vbhAJNBDOy7">智能控制问题的提出</h3>
+    <div class="card" data-page-node-id="lyx6VLAyvtB0w94IlpLWJH">
+      <p data-page-node-id="6PbWeTYOgKU2lH2cKGX5Tv"><strong data-page-node-id="uMMHYWv1dVuWyijeTldlzn">经典控制理论</strong>：研究的对象是单变量常系数线性系统，且只适用于单输入单输出控制系统。</p>
+      <p data-page-node-id="ZLnOiEvwigrLe4DfA8JecC"><strong data-page-node-id="8ecxZTqEQCAmybtNO6GQtl">现代控制理论</strong>：研究的对象是多变量常系数线性系统。</p>
+      <p style="margin-top:14px" data-page-node-id="FqxeWdgQ71hHV2epHVC4EV">那么对于以下这类系统，如何处理：</p>
+      <ul class="clean" data-page-node-id="9KVGnyzoeCAMhYWc0hg6yn">
+        <li data-page-node-id="7sgws8ZhNfSO6iqNaE0HUm">不确定性系统</li>
+        <li data-page-node-id="GaPxsZdjVLhvrOXQf724nJ">高度非线性系统</li>
+        <li data-page-node-id="Ra6ugsQNjOBk30yGoSFB9S">复杂任务的控制要求</li>
+      </ul>
+      <p style="margin-top:12px" data-page-node-id="4ByO6SYtS2DlpbfRQf7GCs"><span class="kw" data-page-node-id="ne5qyGeXpHAQ7WqS8V18pZ">智能控制理论是针对此类问题的控制提出的一种新方法。</span></p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="oKtGn4AsBlBa4hccM0XNDx">智能控制的发展得益于</h3>
+    <div class="card" data-page-node-id="SGDBntiUaV71Gmb5l77c4H">
+      <ul class="clean" data-page-node-id="hTQ1HIQARMKAVPpNmEbUKS">
+        <li data-page-node-id="UKvZbXgcuKAqKuMDxiIbKs">现代计算机技术发展</li>
+        <li data-page-node-id="RzLXjf2pacRhJHvyYM51M8">数字通讯技术发展</li>
+        <li data-page-node-id="NGXlXCGDFvURWofbcok0qt">数字控制技术发展</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="l9tUExnOjJPUIzXSSE8cU4">智能控制的发展</h3>
+    <div class="card" data-page-node-id="v4btCiDExrNGdzWo17nylh">
+      <h4 class="minor" data-page-node-id="5yQXFg9nOLk0jv4nADfEOv">概念的提出</h4>
+      <ul class="clean" data-page-node-id="b5jOXKk4itYpuqPlE5JaEj">
+        <li data-page-node-id="GeDMGRfcWx5WhWMRIITPl6"><strong data-page-node-id="zG0U6dK0QYAo7GswjQAVCV">1965 年</strong>，著名学者 K. S. Fu（傅京逊）把人工智能的启发式推理规则用于学习系统，为控制技术迈向智能化揭开了崭新的一页。</li>
+        <li data-page-node-id="G5rb7ApsxKXOOUCT3lhSLY"><strong data-page-node-id="FOqcRALc3uWqqz15AvoLNm">1966 年</strong>，Mendel 提出了"人工智能控制"的新概念。</li>
+        <li data-page-node-id="okmSEmEwECqjsytwrMHIDI"><strong data-page-node-id="DCd8EcbZ7FPWq2V5MVHpyH">1967 年</strong>，Leondes 和 Mendel 首次使用了"智能控制（Intelligent Control）"一词，并把记忆、目标分解等技术应用于学习控制系统。</li>
+      </ul>
+      <h4 class="minor" data-page-node-id="8LDEHTvIKSz8jtRjm8QWqy">学科的形成</h4>
+      <ul class="clean" data-page-node-id="xREeB7ACvmURfinmkJ4lwB">
+        <li data-page-node-id="QgeHjvB5u9ym9JxQAkjESG"><strong data-page-node-id="0TkCJAPZr4MBq8WDatLj4s">1971 年</strong>，K. S. Fu（傅京逊）从发展学习控制的角度首次提出智能控制这一新兴学科，归纳了三种类型的智能控制系统：
+          <ol class="num" style="margin-top:8px" data-page-node-id="OerCSDvyRjvFjfxoTCUnBr">
+            <li data-page-node-id="OrV1HDCAo6n6HgPxjtBONh">人作为控制器的控制系统</li>
+            <li data-page-node-id="CUqcZG9nClngxKNmLkJMYD">人机结合作为控制器的控制系统</li>
+            <li data-page-node-id="gW0raiclrjpjrSQFWPguX7">无人参与的自主控制系统</li>
+          </ol>
+        </li>
+        <li data-page-node-id="WL2AG0Njnkfh45ocCzb39G"><strong data-page-node-id="pBxHBL8TSj9EOWfMVw2jrW">1977 年</strong>，Saridis 出版了《随机系统的自组织控制》，丰富了智能控制的内涵。</li>
+        <li data-page-node-id="Ckvq0DQlEXqFCH7mDk2dtg">K. J. Åström 提出了"专家控制"思想。</li>
+        <li data-page-node-id="Dtu2AhwO7HtkO6RhJRawOz"><strong data-page-node-id="wLPdv5UntZ4i0T0WerGCOq">1985 年 8 月</strong>，IEEE 在美国纽约召开了第一届智能控制学术讨论会。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== P12–19：1.2 主要方法 ========== -->
+  <section class="slide" id="sec1-2" data-page-node-id="UqAkQVT8LDoqYEcHWgD4e5">
+    <span class="slide-tag" data-page-node-id="B3bOSC2GanDLevEHlxSvl5">PPT 第 12–19 页</span>
+    <h2 class="sec-title" data-page-node-id="ZKGSmat8XLpeTCBGEWdNp4">二、智能控制的主要方法</h2>
+    <p data-page-node-id="2hbNhFHGz2VjGIB1GqQVBu">四类基础方法：<strong data-page-node-id="1rMeE1psH4BrexEV4E1lxu">专家系统和专家控制</strong>、<strong data-page-node-id="DkcZ4VMYoE28UqsMxedu4X">模糊控制</strong>、<strong data-page-node-id="TjyXo9D2HJwAbR6iqEhH1b">神经元网络控制</strong>、<strong data-page-node-id="2or9KujYBUewMrnlnnrXhp">学习控制</strong>。</p>
+
+    <div class="method" data-page-node-id="ZwuM1qSPGjT5wYmFWsSR4y">
+      <div class="mh" data-page-node-id="W3WB4SrGQPCESFpc65q6JL"><span class="no" data-page-node-id="Ez5vWXOh8CZaFim1tEAL1w">方法 1</span><h4 data-page-node-id="WI9Yk1d96vPNDgHuhoPz4r">专家系统和专家控制</h4></div>
+      <p data-page-node-id="RNBSFA03o6mnscqJ0Fqd2x">专家控制是将专家系统的理论和技术与控制理论和方法有机地结合起来，在未知环境下模仿专家的智能，实现对系统的有效控制。</p>
+      <p data-page-node-id="OYEwheFMzQ6I53CRC5GnEX">一般的专家控制系统由三部分组成：</p>
+      <ol class="num" data-page-node-id="hbJ5owiABRrdqS91nhCD1o">
+        <li data-page-node-id="5y5TyV0B7w5u7VAthoQO44"><strong data-page-node-id="p6CEZ729WHSxeHCA6iDzuC">控制机制</strong>：决定控制过程的策略，即控制哪一个规则被激活、什么时候被激活等。</li>
+        <li data-page-node-id="DNRv6Wts0pM7kkikUwlHdA"><strong data-page-node-id="IXjCP0ZW8xO4dfe47GDCHh">推理机制</strong>：实现知识之间的逻辑推理以及与知识库的匹配。</li>
+        <li data-page-node-id="PCFYrxImU1HsBCkJy6ZHcW"><strong data-page-node-id="O5wVi5q6pZ1Ediv34x3V3A">知识库</strong>：包括事实、判断、规则、经验以及数学模型。</li>
+      </ol>
+      <p class="core" data-page-node-id="aKhCS33CHdtMqqlGNB9fKK">核心：符号逻辑推理（如 IF-THEN 规则库 + 推理机）</p>
+
+      <h4 class="minor" data-page-node-id="NgT5cfTDQtUqAdolIVOMJ1">工业应用</h4>
+      <table class="data" data-page-node-id="vZv1mZfGAPRGHH9j0TEnw9">
+        <thead data-page-node-id="xBbTCZ2NAqDR5CgIAv5mgA"><tr data-page-node-id="PU11GDG1EFPaMJmgkZnX9x"><th data-page-node-id="H7oJnY240YYoCT53r6Aw71">工业应用</th><th data-page-node-id="MQPysNNPQ9oAwM42fPNOqz">专家控制的作用</th></tr></thead>
+        <tbody data-page-node-id="AArlkDjkN5KUTfheI6sORn">
+          <tr data-page-node-id="2AmmCFVW1PyOjugMwAUiqU"><td style="text-align:left" data-page-node-id="nuAVaVDBugPiPX7qUzC9JM">水泥回转窑控制</td><td data-page-node-id="p6dGiKmQQFiXxqCUuu0Fa8">处理非线性、大时滞，稳定煅烧温度</td></tr>
+          <tr data-page-node-id="6yJQwGPKCEoNvz3dJAj0JW"><td style="text-align:left" data-page-node-id="EKX5intLzL3nBNaQHeaX6r">水泥磨机控制</td><td data-page-node-id="FOgdHsMPHOSTeJR0QFzzOR">优化粉磨工艺，降低能耗</td></tr>
+          <tr data-page-node-id="zFfldTljDwJX49tzocIzSB"><td style="text-align:left" data-page-node-id="9OhpWMNOo90NHEcy0hYxW0">沉降电炉电极控制</td><td data-page-node-id="ltksfEkcoLQnSXxLi90SW4">自动调节电极插入深度，精确控制电功率</td></tr>
+          <tr data-page-node-id="lpNmmA9nNPzgwm1Riu6nye"><td style="text-align:left" data-page-node-id="k9DpxsF6gCLZh0oUV1bqOm">篦冷机控制</td><td data-page-node-id="DVQhf8DUVpxV7hkorDE2la">提升熟料产量，降低煤耗</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="minor" data-page-node-id="yfhbmgD9hOglqR5zvKsmLF">专家控制系统存在的困难</h4>
+      <ul class="clean" data-page-node-id="bCLiIr3jShSl4ixopYVti8">
+        <li data-page-node-id="mo0XV5aCQI1Huh64iKlTsf">专家经验知识的获取问题</li>
+        <li data-page-node-id="SMVodShjfTZnDDFfbrm6eV">动态知识的获取问题</li>
+        <li data-page-node-id="WHcgTmdirtE71xHKNTJ3oG">专家控制系统的稳定性分析</li>
+      </ul>
+      <div class="note" data-page-node-id="ysbdVY2BNCWE3inHO1jEHf"><span class="nt" data-page-node-id="BQYLdtOEutztR5FXNBUvdy">现状</span>纯规则式专家系统已被数据驱动方法（如深度学习、强化学习）全面取代；仅存于小家电（如洗衣机模糊逻辑）、工业报警管理或可解释性要求极高的低维度决策场景。</div>
+    </div>
+
+    <div class="method" data-page-node-id="XupGJDsOtdkPQhDA9L5NS5">
+      <div class="mh" data-page-node-id="DXjFpswJBskb4T1kLPRafO"><span class="no" data-page-node-id="Te9qmReqGfnBbsA2JtZcWw">方法 2</span><h4 data-page-node-id="Ylg4dBdM1PYUqg3HyeN5rW">模糊控制</h4></div>
+      <p data-page-node-id="ryHLJ67lVz8hYJmQhXPbtU">模糊控制主要是<span class="kw" data-page-node-id="NtuDLt4xX5x9m9Q59epDcU">模仿人的控制经验</span>而不是依赖控制对象模型，因此模糊控制器实现了人的某些智能。</p>
+      <p data-page-node-id="W4YKDVW9i2Xjx5H1lScEu9">模糊控制的三个基本组成部分：</p>
+      <ol class="num" data-page-node-id="yr4VaA2N8mpKMtGqBEdNoj">
+        <li data-page-node-id="xWqOurrb26aDD1FpC8pv4H">模糊化</li>
+        <li data-page-node-id="UoUBYtRLOQbikWE4H8H5vg">模糊决策</li>
+        <li data-page-node-id="JnFRym0rD8f3DKxKVjpkjK">精确化计算</li>
+      </ol>
+      <h4 class="minor" data-page-node-id="sdsTu1iQvyoKtQavAq8hez">模糊控制研究的问题</h4>
+      <ul class="clean" data-page-node-id="ZfYadUHP8uWIHyH4CBjjPT">
+        <li data-page-node-id="sWiUa9Q45fDdnaX6LLMNud">适合于解决工程上普遍适用的稳定性分析方法、稳定性评价方法和可控性评价方法</li>
+        <li data-page-node-id="2k7e6uyNDlByQTYmsuXCi6">模糊控制规则设计方法的研究</li>
+        <li data-page-node-id="YHByUOaqMMb6Y6GpuWHheg">模糊控制器参数的最优调整理论的确定及修正推理规则的学习方式</li>
+        <li data-page-node-id="jjbDXXgAw1bbog5RZBeHL0">模糊动态系统的辨识方法</li>
+        <li data-page-node-id="O9gxZDvGvhIMpVd4PYnqrq">模糊预测系统的设计方法和提高计算速度的算法</li>
+      </ul>
+      <div class="note" data-page-node-id="zxjet0AM22pnFOtkXelOhK"><span class="nt" data-page-node-id="qEXTvZwyPlZcvrovpzoTUx">现状</span>工业应用成熟，非学术前沿。</div>
+    </div>
+
+    <div class="method" data-page-node-id="mFk6ZV4Wnx41QACnizD82z">
+      <div class="mh" data-page-node-id="U0s5bcHTbdQgIvuyZAMiCY"><span class="no" data-page-node-id="m752EA69WSiaAVLAZ7LSBq">方法 3</span><h4 data-page-node-id="FK0XdCsdE33bjCkNLEbXPP">神经元网络控制</h4></div>
+      <p data-page-node-id="v22XNZEfsfnLwCccFti5L6">神经元控制是模拟人脑神经中枢系统智能活动的一种控制方式。从本质上看，<span class="kw" data-page-node-id="flMSRU53etFWLWW8qQqxGr">神经网络是一种不依赖模型的自适应函数估计器</span>。</p>
+      <p data-page-node-id="E9webJ0jgmH2G5Fq3uusQG">神经元网络具有特点：</p>
+      <ul class="clean" data-page-node-id="FsbEq5zRrhjCuMJ2Hn7aMo">
+        <li data-page-node-id="L9Mlq1cNK0Ypp1WAKCHTcm">非线性映射能力</li>
+        <li data-page-node-id="AVplW0uLxYVwKgRAb95v9J">并行计算能力</li>
+        <li data-page-node-id="Uoz2mhNrWosb7aRurVXnMN">自学习能力</li>
+        <li data-page-node-id="30XhoZRpr6BTGs7uHCbEXH">强鲁棒性</li>
+      </ul>
+      <h4 class="minor" data-page-node-id="gWDKfXOIvFonsIUqVUYS09">神经元网络在控制系统中所起的作用（四大类）</h4>
+      <ol class="num" data-page-node-id="4ywu6UFmLayB0byawbaJnp">
+        <li data-page-node-id="y8Nw0WatS6OOTA8sICNQHU">在基于模型的各种控制结构中充当对象的模型；</li>
+        <li data-page-node-id="zdXLLvvniEDLMabCzg8IBd">充当控制器；</li>
+        <li data-page-node-id="VORxH2YA9jdb6gRi05v18T">在控制系统中起优化计算的作用；</li>
+        <li data-page-node-id="kWYyTMf9Gr4hNEUNZkjnkH">与其它智能控制（如专家系统、模糊控制）相结合，为其提供非参数化对象模型、推理模型等。</li>
+      </ol>
+      <div class="note" data-page-node-id="SEIzISvAyLXdV78ZF3WbhQ"><span class="nt" data-page-node-id="QypK3wPfwHhnkna1Xso2I5">现状</span>浅层网络的技术形态过时，但梯度下降的训练思想是永恒的经典。</div>
+    </div>
+
+    <div class="method" data-page-node-id="4zJDob1L0l7RpL5gG9553R">
+      <div class="mh" data-page-node-id="vIWClIdj2mGKzK4gGnE7in"><span class="no" data-page-node-id="Dt84nwfbGGGa38A8ALQtNT">方法 4</span><h4 data-page-node-id="iUYnjGWo2X2yC5lCaeSzWR">学习控制</h4></div>
+      <p data-page-node-id="o266fCQAoVNkZ9yeJpUhSP">学习控制：通过重复各种输入信号，并从外部校正该系统，从而使系统对特定输入具有特定响应。</p>
+      <p data-page-node-id="sn7UxTeGjXYvVL5dAM0mBI">学习控制根据系统工作对象的不同可分为两大类：</p>
+      <ol class="num" data-page-node-id="hv0a4WnCfTcNmiTq1gCHPa">
+        <li data-page-node-id="YT26Eo456vgANo4j8irvod"><strong data-page-node-id="dGcHs2KrFqU0GWUDux6EkF">迭代学习控制</strong>：对具有可重复性的被控对象，利用控制系统的先前经验，寻求一个理想的控制输入。而这个寻求的过程就是对被控对象反复训练的过程。</li>
+        <li data-page-node-id="eoIidYlv0mo9zku0TXcvkZ"><strong data-page-node-id="CPOvTgEvL6BbivDilNQlYN">自学习控制系统</strong>：不要求被控过程必须是重复性的。它能通过在线实时学习，自动获取知识，并将所学的知识用来不断地改善具有未知特征过程的控制性能。</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== P21–25：1.3 构成原理 ========== -->
+  <section class="slide" id="sec1-3" data-page-node-id="OVLHlYHBj1kc465Rj9gtuZ">
+    <span class="slide-tag" data-page-node-id="d8pnSvito9AwHXDllUc61F">PPT 第 21–25 页</span>
+    <h2 class="sec-title" data-page-node-id="syMAuNBjyMyj89I670zINS">三、智能控制系统的构成原理</h2>
+
+    <div class="defbox" data-page-node-id="IJtbtkM3mEqKPv2PkEya9b">
+      <p class="dt" data-page-node-id="OhotzOT5hF55pIstK7B4mW">智能系统</p>
+      <p data-page-node-id="kGOqK2C3t4e7c7KQDutUbN">具备一定智能行为的系统。具体地说，若对于一个问题的激励输入，系统具备一定的智能行为，它能够产生合适的求解问题的响应，这样的系统就称为智能系统。</p>
+    </div>
+
+    <p data-page-node-id="BhVoUG149mbI2wItVXDyL2">按照智能控制系统的定义，其典型的原理结构可由<strong data-page-node-id="boYjEGC2uq1lofZOSpH9vO">七部分</strong>组成：广义对象、执行器、传感器、感知信息处理、规划与控制、认知、通讯交互接口。</p>
+
+    <figure class="fig" data-page-node-id="zdyuufi6P5N6lYIxNDqGWA">
+      <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="vdwHUUSuFGHkbQyev9JP0Q">
+        <defs data-page-node-id="4hiQ7UHsEA5n14LEoTwnIL">
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="nvA1YJmUamkhHakg5GzCAn">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="3Yv39oxpULdFYFmV4GglnV"/>
+          </marker>
+        </defs>
+        <!-- 左图：智能控制系统结构 -->
+        <rect x="15" y="28" width="370" height="212" rx="12" fill="none" stroke="#4C7D2C" stroke-width="1.5" stroke-dasharray="6 5" data-page-node-id="UAyyeJtEKvuKrLDb8Jsfjf"/>
+        <text x="30" y="24" font-size="13" fill="#3A6122" font-weight="600" data-page-node-id="xk0i0vUeGjbEfWFPxX8Q3e">智能控制器</text>
+        <rect x="155" y="42" width="92" height="30" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="euoDbFFgUNFgDFbKPrQJj9"/>
+        <text x="201" y="61" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="X4MaAGcpgDE5Y9IFAafs3A">通信接口</text>
+        <rect x="40" y="98" width="104" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="HjWEZan443K2Z2H0yDx4ss"/>
+        <text x="92" y="118" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="dvKuMC5jIUkAb6ACYbGrrB">感知信息处理</text>
+        <rect x="168" y="98" width="64" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="RnBoAS7XxY7WIlofa9kjSb"/>
+        <text x="200" y="118" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="spRG5Z7wQyXOZioiD6cQWl">认知</text>
+        <rect x="256" y="98" width="104" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="Qhh0MYlw1MiRSWJA6uRvaB"/>
+        <text x="308" y="118" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="0JpCvG5Ana2EgzCvNjGnFD">规划和控制</text>
+        <line x1="92" y1="72" x2="92" y2="96" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="kDBepeSOKT78ZjXflhwFci"/>
+        <line x1="201" y1="72" x2="201" y2="96" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="FKN1JkxG7uhVxvc8WOUjJ6"/>
+        <line x1="308" y1="72" x2="308" y2="96" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="WGHR98vxuA4HJDp7D91TPB"/>
+        <line x1="144" y1="114" x2="166" y2="114" stroke="#3A6122" marker-start="url(#ar)" marker-end="url(#ar)" data-page-node-id="cF7ihng32HrbYE3USyal6Z"/>
+        <line x1="232" y1="114" x2="254" y2="114" stroke="#3A6122" marker-start="url(#ar)" marker-end="url(#ar)" data-page-node-id="hKIgU2RpzLFozzacGBVQ9Y"/>
+        <rect x="52" y="164" width="80" height="32" rx="6" fill="#FDD000" stroke="#C9A900" data-page-node-id="rbAseGATA7oeNX4YNooASY"/>
+        <text x="92" y="184" font-size="13" text-anchor="middle" fill="#574500" data-page-node-id="J4MdwcGQlSqZmOqlRfzY2h">传感器</text>
+        <rect x="268" y="164" width="80" height="32" rx="6" fill="#FDD000" stroke="#C9A900" data-page-node-id="SZmAkPzhahrNmA7FyNDr7P"/>
+        <text x="308" y="184" font-size="13" text-anchor="middle" fill="#574500" data-page-node-id="pdoZaAG63Tb52aaFrSe9Tr">执行器</text>
+        <line x1="92" y1="130" x2="92" y2="162" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="5DmXqH4FSoYWH0AacJzgPK"/>
+        <line x1="308" y1="130" x2="308" y2="162" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="zK3cmfFedIfk3OVGHkgImn"/>
+        <rect x="150" y="258" width="104" height="34" rx="6" fill="#fff" stroke="#3A6122" stroke-width="1.5" data-page-node-id="fwvxWHvShP1Kw1NE3X52bB"/>
+        <text x="202" y="279" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="96O7dBC1HoAL57cbGusVRH">广义对象</text>
+        <text x="262" y="279" font-size="12" fill="#5B5648" data-page-node-id="dOLjwpsXCExCilDxq8QXKS">（被控对象）</text>
+        <path d="M92,196 L92,275 L148,275" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="uZppLjPejLapLAH53jTNdP"/>
+        <path d="M308,196 L308,275 L256,275" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="R9bTT9WPUdkGDxDPYJyE5y"/>
+        <!-- 右图：分层递阶结构 -->
+        <text x="470" y="24" font-size="13" fill="#3A6122" font-weight="600" data-page-node-id="ZItGaeFU2JrmqEXIe6mpTA">分层递阶结构</text>
+        <rect x="470" y="40" width="100" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="3ys9DyIiP6mlb4HfQzBozE"/>
+        <text x="520" y="60" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="UKWwYKGXi9Pe83N4SGBWbf">组织级</text>
+        <rect x="470" y="102" width="100" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="VVtPjdVBMYgAFVQF1IKEH6"/>
+        <text x="520" y="122" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="TknCE5IeHPlukbixMJzIqk">协调级</text>
+        <rect x="470" y="164" width="100" height="32" rx="6" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="DejnYX6aDsmYdcNtpAuLGN"/>
+        <text x="520" y="184" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="aVN0a75DOEWuKiyGE8gfES">执行级</text>
+        <rect x="470" y="226" width="100" height="32" rx="6" fill="#FDD000" stroke="#C9A900" data-page-node-id="gsOM8GQuaJaPOnWPMdv8zv"/>
+        <text x="520" y="246" font-size="13" text-anchor="middle" fill="#574500" data-page-node-id="6EcKkzJLJFlcGv97NehXFn">对象</text>
+        <line x1="520" y1="72" x2="520" y2="100" stroke="#3A6122" marker-start="url(#ar)" marker-end="url(#ar)" data-page-node-id="ZHjwZjfssUOwoc2TdgELb7"/>
+        <line x1="520" y1="134" x2="520" y2="162" stroke="#3A6122" marker-start="url(#ar)" marker-end="url(#ar)" data-page-node-id="Y4DAq4y127MJ7llUTd7GY9"/>
+        <line x1="520" y1="196" x2="520" y2="224" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="gBbjW20poMaxEqHiuRjxxc"/>
+        <rect x="596" y="102" width="66" height="32" rx="6" fill="#fff" stroke="#8FB469" data-page-node-id="jCLa6UsH2WXlwyG9Eaw6vC"/>
+        <text x="629" y="122" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Jjc14EE6sYYKXkZgwEW9zo">识别</text>
+        <line x1="596" y1="118" x2="572" y2="118" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="NT56aFKmbwA4SWLs3UHWIa"/>
+      </svg>
+      <figcaption data-page-node-id="B1AfYNX9Ya4pRSU1kEFsp7">智能控制系统典型原理结构（左：七部分组成；右：分层递阶结构）｜重绘自 PPT 第 22 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="mJ5TxI6JjMb4J1ReodDuJV">智能控制系统特点</h3>
+    <div class="card" data-page-node-id="eLPoV9V9uwwVT8bxMrIv4l">
+      <ul class="clean" data-page-node-id="Qh0rqX7rb9jEpC7wvdTJzR">
+        <li data-page-node-id="zEgf1e33avrVaTFrpA0WCT">智能控制系统一般具有以知识表示的非数学广义模型和以数学模型表示的混合控制过程。它适用于含有复杂性、不完全性、模糊性、不确定性和不存在已知算法的生产过程。</li>
+        <li data-page-node-id="mq0QFrZev9ZtKUcRvLzGFC">智能控制器具有分层信息处理和决策机构。它实际上是对人神经结构和专家决策机构的一种模仿。</li>
+        <li data-page-node-id="q9FmbPEaghx1lcpkZyEgk1">智能控制器具有<strong data-page-node-id="9Vp4dMpmo3C2y2REvLmGgl">非线性</strong>和<strong data-page-node-id="hoEnXC5DAWO2z0MJby94Oz">变结构</strong>特点。</li>
+        <li data-page-node-id="AFelkZeRdOlJzevAn3lIxU">智能控制器具有<strong data-page-node-id="V0Cwi9nDWqC284JtSs13Fd">多目标优化</strong>能力。</li>
+        <li data-page-node-id="PArUuSNFGwZXvCdAE35unt">智能控制器能够在复杂环境下<strong data-page-node-id="JtqARpZ8pA2RF1vxGZJnrH">学习</strong>。</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="y1fg9WsawQcpZhpbfUr7KF">智能控制系统应具备的功能特点（一条或几条）</h3>
+    <div class="card" data-page-node-id="BJvg9X490MQq48JdGqALJF">
+      <ul class="clean" data-page-node-id="iEvjsL7AxHLq7hHMsQVdWP">
+        <li data-page-node-id="PANU5h4cOWAAACf0NPmuFK">自适应（self-adaptation）</li>
+        <li data-page-node-id="IK48kt77eTprN4C0IYjvvD">自学习（self-recognition）</li>
+        <li data-page-node-id="UcOgnASvThR5KgSYhzCS3z">自组织（self-organization）</li>
+        <li data-page-node-id="EmEpJTGlpG6tTRxJTnuJ2d">自诊断（self-diagnosis）</li>
+        <li data-page-node-id="KRVs3E7MM0w1GMC9NSKF49">自修复（self-repairing）</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="L4mZMwbkxG1SbMLt5tI9gD">智能控制系统研究的主要数学工具</h3>
+    <ul class="clean" data-page-node-id="FfrSAnJhAtxzTso2TcTVFy">
+      <li data-page-node-id="nLvXSOGyDmzwGJQvEKYb6A">符号推理与数值计算的结合</li>
+      <li data-page-node-id="hYM11zLkXomy5HBECn8iil">离散事件系统与连续时间系统分析的结合</li>
+      <li data-page-node-id="4l59wLrErx1QeqhwC1RQyC">模糊集理论</li>
+      <li data-page-node-id="M9ycANBCMeLssbxn3d9ryK">神经元网络理论</li>
+      <li data-page-node-id="hDGP8H8phddP4jFvGdzsyM">优化理论</li>
+    </ul>
+
+    <figure class="fig" data-page-node-id="JXc9qeykEvfWh4jlEFnUNA">
+      <svg viewBox="0 0 680 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="dxhHbqXJD3whlNFHt8olKk">
+        <!-- 三元交集：人工智能 ∩ 运筹学 ∩ 控制 -->
+        <ellipse cx="255" cy="150" rx="165" ry="105" fill="#4C7D2C" fill-opacity=".10" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="FnKE58wCR4uNOWzEsMAc5D"/>
+        <ellipse cx="425" cy="150" rx="165" ry="105" fill="#8FB469" fill-opacity=".14" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="YSToObzLu4wLTPtMTCIFjF"/>
+        <ellipse cx="340" cy="228" rx="165" ry="95" fill="#FDD000" fill-opacity=".16" stroke="#C9A900" stroke-width="1.6" data-page-node-id="O8h6p3B815ELmwoDyO0Crk"/>
+        <text x="150" y="80" font-size="16" font-weight="700" fill="#2C4A1A" data-page-node-id="VLpIkEEFBTz6xVT1aUZNOb">人工智能</text>
+        <text x="120" y="115" font-size="12.5" fill="#3A6122" data-page-node-id="jH2CXaOFcHeDslCsHJntJi">信号处理 · 形式语言</text>
+        <text x="140" y="135" font-size="12.5" fill="#3A6122" data-page-node-id="kclHHUfoWYUq4c4OvmzXD2">启发</text>
+        <text x="130" y="190" font-size="12.5" fill="#3A6122" data-page-node-id="7EAhDdGLAoQdmdQRjCSVDn">学习 · 记忆</text>
+        <text x="495" y="80" font-size="16" font-weight="700" fill="#2C4A1A" data-page-node-id="0xhQSioLbZvCiMAeu3LMUf">运筹学</text>
+        <text x="480" y="115" font-size="12.5" fill="#3A6122" data-page-node-id="HTEIlwSb1bEQGCEqsLZPGJ">规划 · 调度</text>
+        <text x="495" y="135" font-size="12.5" fill="#3A6122" data-page-node-id="cUGEwjqI3dC5i4Zm2XakCu">管理</text>
+        <text x="480" y="190" font-size="12.5" fill="#3A6122" data-page-node-id="8BRyjVFvQEYEouOJ86HcYu">管理 · 协调</text>
+        <text x="320" y="310" font-size="16" font-weight="700" fill="#574500" data-page-node-id="DxmuB1PVjwU6H3BIE5tyBE">控制</text>
+        <text x="200" y="265" font-size="12.5" fill="#574500" data-page-node-id="O2UlqEHaooBwTxsCx3lF0B">优化 · 动力学 · 动态反馈</text>
+        <text x="430" y="265" font-size="12.5" fill="#574500" data-page-node-id="9jsz4bFFvrkIL3C4rQymTr">动力学 · 动态反馈</text>
+        <text x="316" y="180" font-size="15" font-weight="700" fill="#2C4A1A" data-page-node-id="LRlfqvANbIFWKnxUemy3d1">智能控制</text>
+        <!-- 区域间箭头 -->
+        <line x1="255" y1="150" x2="305" y2="160" stroke="#4C7D2C" stroke-width="1.2" marker-end="url(#ar)" data-page-node-id="A10ow74pElT7LGZ5jb3rae"/>
+        <line x1="425" y1="150" x2="375" y2="160" stroke="#4C7D2C" stroke-width="1.2" marker-end="url(#ar)" data-page-node-id="ecI1E0pHrHRYX0uAaxYYUF"/>
+        <line x1="340" y1="255" x2="340" y2="195" stroke="#C9A900" stroke-width="1.2" marker-end="url(#ar)" data-page-node-id="bxUiyzgKUDGFBhPjjd6E5T"/>
+      </svg>
+      <figcaption data-page-node-id="GS1alanlIH1AMxYxAYEgVT">智能控制是人工智能、运筹学、控制三者的交集（三元交集论）｜重绘自 PPT 第 25 页</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P26：课程模块地图 ========== -->
+  <section class="slide" data-page-node-id="94AQ9DwrgqAiVD8NpHHaiA">
+    <span class="slide-tag" data-page-node-id="ndkDsqdAdvDJYZtri3BBCi">PPT 第 26 页</span>
+    <h2 class="sec-title" data-page-node-id="0fXGTYjmBkFPRfDVsaVEUX">本课程模块地图</h2>
+    <div class="card" data-page-node-id="wpIvUfpDRAuoHkAhJFFQbC">
+      <p data-page-node-id="Z1oiqPMSjCy9YObEn8GDDv">全课程按模块展开：<strong data-page-node-id="Jkchruoojd1EFZUJlc7z6d">模糊控制</strong>（第 0–2 周）→ <strong data-page-node-id="2A8Oyyia16hGZ65Lin2FvK">神经网络控制</strong>（第 4–6 周）→ <strong data-page-node-id="C9ciRWQDkb6rTIPak7WV6m">智能控制集成技术</strong>（第 7–8 周）→ <strong data-page-node-id="1ST4Yl4gwi3IMLVBPf0FKS">强化学习</strong>（第 9–10 周）→ <strong data-page-node-id="Rk9437eGv1y3C49StOjbvt">先进智能控制概论</strong>（第 11 周）。本讲覆盖第 0 周内容：绪论 + 模糊控制理论基础。</p>
+    </div>
+  </section>
+
+  <!-- ========== P27：第二章章节页 ========== -->
+  <section class="slide" id="ch2" data-page-node-id="jDya2OuzIwB9mxgbOBmG8s">
+    <span class="slide-tag" data-page-node-id="aq3w9sUCcfPgu5h6FWLXxH">PPT 第 27 页</span>
+    <div class="chapter" data-num="2" data-page-node-id="CZpMhyYwTggpj0dzDvr3q4">
+      <div class="ch-kicker" data-page-node-id="hFtKAfpwca4rBTkaAlMyU6">CHAPTER 2</div>
+      <h1 data-page-node-id="CnO2P4Lb0UTnxcEeD2zE5a">第二章&nbsp;&nbsp;模糊控制的理论基础</h1>
+    </div>
+  </section>
+
+  <!-- ========== P28：本章提纲 ========== -->
+  <section class="slide" data-page-node-id="RcSUjOAOF5goIF0CKOJzHO">
+    <span class="slide-tag" data-page-node-id="01Zqdcaw9GYYyDwnxnRA1G">PPT 第 28 页</span>
+    <h2 class="sec-title" data-page-node-id="xBP3YAz7oi5UysAvew1oE6">本章提纲</h2>
+    <ol class="toc" data-page-node-id="EGaukM1LaYZU7BBTwvFQ9R">
+      <li data-page-node-id="FXWcEn1e6PiDD9lNqSsJks">引言</li>
+      <li data-page-node-id="QJmImT5XJJhdfJL8tvrlxZ">模糊集合论基础</li>
+      <li data-page-node-id="Vjkynm7QjxIc4ZDbPIxGJC">模糊逻辑、模糊逻辑推理和合成</li>
+    </ol>
+  </section>
+
+  <!-- ========== P29–32：2.1 引言 ========== -->
+  <section class="slide" id="sec2-1" data-page-node-id="EYpLqGpGHFv2d49wufJkn5">
+    <span class="slide-tag" data-page-node-id="zuKrrt3srkCKF5bXwfVZ7n">PPT 第 29–32 页</span>
+    <h2 class="sec-title" data-page-node-id="Bbzo2wfpVlqxdjhnQyyIys">一、引言</h2>
+
+    <h3 class="sub-title" data-page-node-id="MeLzfTKEX1BeUo0PfV3Aru">模糊控制理论的发展</h3>
+    <div class="card" data-page-node-id="T6QyBTK9sR3TZd4p9qzEg2">
+      <ul class="clean" data-page-node-id="C6hoRDFzcVa75iK2jlu4Ga">
+        <li data-page-node-id="H5Vq4gt3EbxkwunyXoQLCf"><strong data-page-node-id="g5KFLXgFF5SgYFWu5hdalJ">1965 年</strong>，L. A. Zadeh 提出模糊集理论；</li>
+        <li data-page-node-id="fJ8pDsT2FVUvKutUKksgv7"><strong data-page-node-id="vQQeA15BKgwyNEzPSg9kgu">1972 年</strong>，L. A. Zadeh 提出模糊控制原理；</li>
+        <li data-page-node-id="BdSVSK1qbmvfatP3PpuPOV"><strong data-page-node-id="xH4C3WNBElHO4cB2M0VYRw">1974 年</strong>，E. H. Mamdani 应用于蒸汽机和锅炉控制中；</li>
+        <li data-page-node-id="4iy8ZlW8sD7FuwENowmOo4"><strong data-page-node-id="yF3hhH0azzvMohJrKiwzDK">80 年代</strong>：污水处理、汽车、交通管理、模糊芯片、模糊控制的硬件系统；</li>
+        <li data-page-node-id="x1nNOauHlfI8mABziAporE"><strong data-page-node-id="4uiJWEfnkcV27oQOuwy1wf">90 年代</strong>：家电、机器人、地铁；</li>
+        <li data-page-node-id="GjFgCi86q8zvtmAMQUCVvA"><strong data-page-node-id="aK4DNMBPnJMBzW1cibvmgW">21 世纪</strong>：更为广泛的应用。</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="96khQkMkAwuShyKABDwCn5">模糊控制理论的特点</h3>
+    <div class="card" data-page-node-id="b9zrOWKWrN84SPHXO2yEgY">
+      <ul class="clean" data-page-node-id="F6TIhTcfaPgHYrVrUu7D5Q">
+        <li data-page-node-id="omxKtFtYd21xjFqA8mI0Eg"><span class="kw" data-page-node-id="CN1LNZ1fqVFUoVTfDw5XtL">无需知道被控对象的数学模型</span></li>
+        <li data-page-node-id="OwCtqfDiJrts3mXz6dKJiI">与人类思维的特点一致：模糊性、经验性</li>
+        <li data-page-node-id="sTeEvUN0Fayt9oHrmmW929">构造容易</li>
+        <li data-page-node-id="SpdJAnnYqIm4K3MeqI5E22">鲁棒性好</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="QqAnEFKKCm7dEdmnKotvU3">模糊控制的定义</h3>
+    <div class="defbox" data-page-node-id="c06dHP10qvaQckmozth1X0">
+      <p data-page-node-id="CWXBvUKLetGPYMtF0DB5wH">模糊控制器的输出是通过观察过程的状态和一些如何控制过程的规则的推理得到的。</p>
+    </div>
+    <p data-page-node-id="BgLeEb7lGz1FJyOzjyHSok">定义主要基于三个概念：</p>
+    <ol class="num" data-page-node-id="4EdblEK0hP3TlAvANL0kQk">
+      <li data-page-node-id="QzNMK0pHoNxlivko5JPOHn"><strong data-page-node-id="iYEP81vffoZTs7hAKuwxSr">测量信息的模糊化</strong>：将实测物理量转化为在该语言变量相应论域内不同语言值的模糊子集。</li>
+      <li data-page-node-id="moMnjJBnL1AtraupBJ9zGF"><strong data-page-node-id="yjAYG1ICrHvUHlFKLCJwFm">推理机制</strong>：使用数据库和规则库，它的作用是根据当前的系统状态信息来决定模糊控制的输出子集。</li>
+      <li data-page-node-id="THP8nCL5DiDgw0AKzBJIJC"><strong data-page-node-id="4Z2zp8KTu4T81kOijAv7HG">模糊集的精确化计算</strong>：将推理机制得到的模糊控制量转化为一个清晰、确定的输出控制量的过程。</li>
+    </ol>
+
+    <figure class="fig" data-page-node-id="p3ZimFu6ITBDbUk6JFcEFH">
+      <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="5mozRxkGD1eCTEwgAWEecO">
+        <defs data-page-node-id="GrJjzE8lp244IG1D5luhqs">
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="KKCjGAE3vXqOXTY0juvPMk">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="cIUJMD9zqiEfr0jublGgyn"/>
+          </marker>
+        </defs>
+        <!-- 顶部：数据库和规则库 -->
+        <rect x="255" y="14" width="170" height="34" rx="8" fill="#FDD000" stroke="#C9A900" data-page-node-id="nKYQTYculOYHVfiK9JMbqh"/>
+        <text x="340" y="35" font-size="13.5" text-anchor="middle" fill="#574500" font-weight="700" data-page-node-id="aj0nbKSK3ieQQptq9gqvoM">数据库和规则库</text>
+        <line x1="195" y1="48" x2="195" y2="92" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="SfCFCe8uA5ODxFgTJBoqCz"/>
+        <line x1="340" y1="48" x2="340" y2="92" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="yzuHzBuczU1xruu7CsV0MW"/>
+        <line x1="470" y1="48" x2="470" y2="92" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="IvJ9AoXmJIwMJlPmCkQbBN"/>
+        <path d="M290,31 L195,31 L195,48" fill="none" stroke="#3A6122" data-page-node-id="45Z4Ayw8dfN6woOHrDJS7c"/>
+        <path d="M390,31 L470,31 L470,48" fill="none" stroke="#3A6122" data-page-node-id="eJxyW6fCkdLeHReAfllHJA"/>
+        <!-- 主回路 -->
+        <text x="30" y="118" font-size="13.5" fill="#2C4A1A" data-page-node-id="WV9hfONuqTkvSiMalnyAKB">给定值</text>
+        <circle cx="110" cy="112" r="13" fill="#fff" stroke="#3A6122" stroke-width="1.5" data-page-node-id="cBzvmjrIpPHjpiCZEN950z"/>
+        <text x="110" y="117" font-size="14" text-anchor="middle" fill="#2C4A1A" data-page-node-id="aWP77P2dbPp7WqFbNDwzgn">−</text>
+        <line x1="72" y1="112" x2="95" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="YxNGIm4GFiXh9O35qxTfWF"/>
+        <rect x="150" y="95" width="90" height="34" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="tuUsWLl9vGNCtclpSaKyML"/>
+        <text x="195" y="116" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Ccto8ZrdpvqqKhtX6BkPH6">模糊化</text>
+        <line x1="123" y1="112" x2="148" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="UYfxfv1yfGRJtkFlIsux7E"/>
+        <rect x="290" y="95" width="100" height="34" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="AED0fw48Or1J1KCfiqdBIy"/>
+        <text x="340" y="116" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="uOJ2KDLzH4Nybrbv35PiwP">推理机制</text>
+        <line x1="240" y1="112" x2="288" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="eaqDg9wZqft2Ea7Ez3pU2J"/>
+        <rect x="425" y="95" width="90" height="34" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="OEYH8QKep0v4YUKlQA5SCi"/>
+        <text x="470" y="116" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Cx0slcvsSQJvnWOIIDaImc">精确化</text>
+        <line x1="390" y1="112" x2="423" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="GgXSAv0tgaHWsOaDo9LuEp"/>
+        <rect x="548" y="95" width="100" height="34" rx="8" fill="#fff" stroke="#3A6122" stroke-width="1.5" data-page-node-id="sEjZYvFOdRqfLKcTTVFmk7"/>
+        <text x="598" y="116" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Des0HIc0PINOsmCmZ8qfZH">被控过程</text>
+        <line x1="515" y1="112" x2="546" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="wibJaNbh8tWdFYMivRcnAj"/>
+        <!-- 反馈 -->
+        <path d="M598,129 L598,190 L110,190 L110,127" fill="none" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="ThW8I32yFQA9kjfzY9RWZ8"/>
+        <text x="350" y="184" font-size="12.5" fill="#5B5648" data-page-node-id="FI7knWDrjWY3qkhMlM78X0">输出反馈</text>
+        <!-- 输出 -->
+        <line x1="648" y1="112" x2="672" y2="112" stroke="#3A6122" marker-end="url(#ar2)" data-page-node-id="CywJxyhsdOG0c7yhZV6PuM"/>
+      </svg>
+      <figcaption data-page-node-id="RrOuajpaUZkH8AnbQGGczh">模糊控制系统结构示意图｜重绘自 PPT 第 32 页</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P33–34：2.2.1 经典集合 ========== -->
+  <section class="slide" id="sec2-2-1" data-page-node-id="nVlNuaXzhpLCp3D0RpMC6p">
+    <span class="slide-tag" data-page-node-id="Mi0pE57vUjdNhfmStOU5Y9">PPT 第 33–34 页</span>
+    <h2 class="sec-title" data-page-node-id="FHuZfeDX4P3s9SwoPOEPS7">二、模糊集合论基础：经典集合</h2>
+    <div class="card" data-page-node-id="7tMLejNIItnX3EFwzQRw0F">
+      <p data-page-node-id="MAf6r41OSi3rID6NjP8IRT"><strong data-page-node-id="bJer1OXPQN3ckGaHl324P6">经典集合论</strong>：19 世纪末德国数学家乔·康托尔（Georg Cantor, 1845–1918）创立，是现代数学的基础。</p>
+      <p data-page-node-id="CJeMFK2h4rJLCQ2BsusZT9"><strong data-page-node-id="59xMEGuyyl3TD5rYzUvEP6">特点</strong>：<span class="kw" data-page-node-id="bLBUhrMeX64N1zRb9IikNT">内涵和外延都必须是明确的</span>。</p>
+      <h4 class="minor" data-page-node-id="wRbNA2D8ZaV9FPRrJwHEEM">表示方法</h4>
+      <ul class="clean" data-page-node-id="A0fmmpMBzGm4eOq9fN1G4S">
+        <li data-page-node-id="h9rXWmqUlmTr8bBkPNejsA"><strong data-page-node-id="jNrIHklahB24wdnIFGC1di">列举法</strong>：$U=\{1,2,3,4,5,6,7,8,9,10\}$</li>
+        <li data-page-node-id="pqGACSVBY1x0TXTFw8hyKw"><strong data-page-node-id="CoZjmqS5fgVGQPYALXzNNi">定义法</strong>：$U=\{u \mid u \text{ 为自然数且 } u&lt;5\}$</li>
+        <li data-page-node-id="kPptvrBe9olF9xhNghO6uB"><strong data-page-node-id="4U5jGGJakAhPWKtRk0KftC">归纳法</strong>：$U=\{u_{i+1}=u_i+1,\ i=1,2,\dots,\ u_1=1\}$</li>
+        <li data-page-node-id="sJMg6fLmTJHzSLVhSj8klW"><strong data-page-node-id="9vWRRnKs3nEhclmMcbnBj5">特征函数法</strong>：用特征函数值表示元素属于集合的程度</li>
+      </ul>
+    </div>
+
+    <div class="example" data-page-node-id="DGjrJ0O797sE4wDRJtP7jE">
+      <p class="et" data-page-node-id="LP6AMGCx1k2a5DSXDBJzDt">例 2-1</p>
+      <p data-page-node-id="GkcVKAzqVaWtGulY5IEAzd">设集合 $U$ 是由 1 到 10 的十个自然数组成。</p>
+      <p data-page-node-id="3JU2SOOr3JGGJkT8ktm9M7"><strong data-page-node-id="JtNcQdHw7bIJaxQ2GyYLb7">求</strong>：试用上述前三种方法写出该集合的表达式。</p>
+      <p data-page-node-id="KZcJnZj0ZvLLdjKfTLtVDl"><strong data-page-node-id="M7fWCDdACpX0bXOcgEglIn">解</strong>：</p>
+      <ol class="num" data-page-node-id="7zXyyP8n8dTaEwPWLMPexN">
+        <li data-page-node-id="6EAAJK3ZzWtF4H0TEIezwr">列举法：$U=\{1,2,3,4,5,6,7,8,9,10\}$</li>
+        <li data-page-node-id="YgmiIoAIb8wtVDi02kLdRk">定义法：$U=\{u \mid u \text{ 为自然数且 } 1\le u\le 10\}$</li>
+        <li data-page-node-id="fazHD90Taqe10HUzmNaVGj">归纳法：$U=\{u_{i+1}=u_i+1,\ i=1,2,\dots,9,\ u_1=1\}$</li>
+      </ol>
+      <p style="margin-top:8px" data-page-node-id="oJgWsx8D83KSWMdNjl22f8">经典集合的内涵和外延都是明确的。</p>
+    </div>
+  </section>
+
+  <!-- ========== P35–40：2.2.2 模糊集合 ========== -->
+  <section class="slide" id="sec2-2-2" data-page-node-id="1vSocljw4ZCwtnzZOyeW5x">
+    <span class="slide-tag" data-page-node-id="oNGjCV8htHh3Ruby1NbybR">PPT 第 35–40 页</span>
+    <h2 class="sec-title" data-page-node-id="Kvey0Fgz0HgKmoq8bVgkGK">二、模糊集合论基础：模糊集合</h2>
+
+    <p data-page-node-id="f9rz6XzHeWhLQKk4fHkGVH">在人们的思维中，存在许多没有明确外延的概念，即<strong data-page-node-id="KU65UEQbdXb575KOmkZzOx">模糊概念</strong>。如"速度的快慢"、"年龄的大小"、"温度的高低"等模糊概念没有明确的外延，怎么办？</p>
+    <div class="defbox" data-page-node-id="RdD0au8awQEwN7kZMIm4if">
+      <p class="dt" data-page-node-id="2c8Bq8MC9yf1MJnDaaAJIR">模糊集合</p>
+      <p data-page-node-id="60zUbRFyFBBYeXcjuF04Dp">把"属于或不属于"扩展成用 0 到 1 之间连续变化值来描述元素的属于程度。这个 0 到 1 之间连续变化值又称作<span class="kw" data-page-node-id="x3DPXr7Zzo9Fuh41q65TQ6">隶属度（Degree of Membership）</span>。</p>
+    </div>
+
+    <p data-page-node-id="7wk6ozcKzADG8EKPdwg1ar"><strong data-page-node-id="G8B7m6rfWSQbTPnVvz1XSS">隶属度函数</strong>：将特征函数值扩展为取值为 0–1 之间的值，用隶属度 $\mu_F$（Degree of Membership）表示。</p>
+
+    <figure class="fig" data-page-node-id="ekCg8hfbA2M2opXcxuhBYJ">
+      <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="tEs39w46EQSx2NGsb17Xe1">
+        <!-- 左：经典集合（冷/舒适/热 矩形） -->
+        <text x="150" y="18" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="H5tV3nRDkQDJlKP4yWxRQs">经典集合（特征函数）</text>
+        <line x1="40" y1="190" x2="300" y2="190" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="omzy1bBAb9R4qhGxyx5itB"/>
+        <line x1="40" y1="190" x2="40" y2="35" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="HG4zMXF2IVRD2KCJEvYERI"/>
+        <text x="305" y="194" font-size="12" fill="#26231B" data-page-node-id="nkaPebAb5uOJmZs9bQdp9a">T(°)</text>
+        <text x="18" y="50" font-size="12" fill="#26231B" data-page-node-id="ZJ8td2YZIuWVDZoHiAmPrd">1.0</text>
+        <text x="28" y="194" font-size="12" fill="#26231B" data-page-node-id="3RdBFrJxuQyx0Mq2Hf2Ahn">0</text>
+        <line x1="40" y1="60" x2="300" y2="60" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="Ts4ZDZwuaRBUxb2PITV6A5"/>
+        <!-- 冷 [40?,15] 舒适 [15,25] 热 [25,40] -->
+        <path d="M40,60 L115,60 L115,190" fill="none" stroke="#4C7D2C" stroke-width="2" data-page-node-id="qHk7uIaGteBA6qrLvL6E09"/>
+        <path d="M115,60 L190,60 L190,190" fill="none" stroke="#C9A900" stroke-width="2" data-page-node-id="AuWvHHB2Bl5oWBccmwuFZ7"/>
+        <path d="M190,60 L265,60 L265,190" fill="none" stroke="#3A6122" stroke-width="2" stroke-dasharray="6 3" data-page-node-id="jFWmx2p8et1OOtMVtSwLqd"/>
+        <path d="M40,190 L40,60" stroke="#4C7D2C" stroke-width="2" data-page-node-id="QZqDFvAO5jEmtYctTmVClK"/>
+        <text x="66" y="90" font-size="12" fill="#4C7D2C" data-page-node-id="WTTq4Al211p1Pj7itaktaf">冷</text>
+        <text x="128" y="90" font-size="12" fill="#574500" data-page-node-id="QAPKsXR43cI4O6nI4WMScX">舒适温度</text>
+        <text x="216" y="90" font-size="12" fill="#3A6122" data-page-node-id="3kE8ATh86Su44Lf2D3yqov">热</text>
+        <text x="108" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="sSB7LUMNU7xFV19xpwadgz">15</text>
+        <text x="183" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="RsFH9UP2Msb0tSWoE9ZFeb">25</text>
+        <text x="258" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="tcwvfpD4AqmaDtWC07ysh5">40</text>
+        <!-- 右：模糊集合（光滑曲线） -->
+        <text x="490" y="18" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="So4lplTdWFlLr1KcbM4P8o">模糊集合（隶属度函数）</text>
+        <line x1="380" y1="190" x2="640" y2="190" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="yAnpltyfkknukaWwvXaQPB"/>
+        <line x1="380" y1="190" x2="380" y2="35" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="74B5i0yahzz2O6B7doCQB0"/>
+        <text x="645" y="194" font-size="12" fill="#26231B" data-page-node-id="YsVDXKEYNJj7MkdF92TV0N">T(°)</text>
+        <text x="358" y="50" font-size="12" fill="#26231B" data-page-node-id="eYb4dKBnCfGLVBqsVcb2bS">1.0</text>
+        <text x="368" y="194" font-size="12" fill="#26231B" data-page-node-id="Kw356zDmnK0w9XsKaslYRU">0</text>
+        <line x1="380" y1="60" x2="640" y2="60" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="h7m1NiS3EbMpkyJsO7y8jQ"/>
+        <!-- 冷：Z 型曲线 -->
+        <path d="M380,60 C420,60 430,60 450,110 C470,160 480,190 510,190" fill="none" stroke="#4C7D2C" stroke-width="2" data-page-node-id="dwE9Cxqa0oBDElK6kNeaXk"/>
+        <!-- 舒适：Π 型曲线 -->
+        <path d="M430,190 C450,190 460,60 490,60 C520,60 530,190 555,190" fill="none" stroke="#C9A900" stroke-width="2" data-page-node-id="IjE1iafkhJZ8FyDajmKIJt"/>
+        <!-- 热：S 型曲线 -->
+        <path d="M500,190 C520,190 535,190 555,120 C575,60 590,60 625,60" fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="GmRGAZtjLR1A7FOdx1mW8p"/>
+        <text x="398" y="90" font-size="12" fill="#4C7D2C" data-page-node-id="8NmI9O2CEAc4r47X0nvvwo">冷</text>
+        <text x="468" y="90" font-size="12" fill="#574500" data-page-node-id="wz4jruU1pvlwBDBlFKXPpl">舒适温度</text>
+        <text x="586" y="90" font-size="12" fill="#3A6122" data-page-node-id="j0tyGc8KPTB8Lgi5AwYAlw">热</text>
+        <text x="448" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="9KKzgSC8FQinlqwJVXMajT">15</text>
+        <text x="523" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="1FUNjTNcQm1mkczCbZrNtU">25</text>
+        <text x="598" y="207" font-size="11.5" fill="#5B5648" data-page-node-id="bsLjRBFzWbfcn6V1wWWwah">40</text>
+      </svg>
+      <figcaption data-page-node-id="ZYxEDXI7SxSfARHcuTOzEw">特征函数扩展为隶属度函数：温度"冷 / 舒适 / 热"的两种描述对比｜重绘自 PPT 第 36 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="7ZxtB5UFlvurwEdgUWQq4l">模糊集合（Fuzzy Sets）</h3>
+    <div class="card" data-page-node-id="DqvmoQOeNaHK8cHmqCRFDV">
+      <p data-page-node-id="jEftOo5KjseWFOAAJvhlWS"><strong data-page-node-id="SpWpbY19o7dv0HYmBSYUJ9">论域</strong>：记 $U$ 为一可能是离散或连续的集合，用 $\{u\}$ 表示。</p>
+    </div>
+    <div class="defbox" data-page-node-id="kTTgUBjtNWJhImhtbgKSNu">
+      <p class="dt" data-page-node-id="SGV9aUko3BOjmXw7nSGXay">定义 2-1　模糊集合（Fuzzy Sets）</p>
+      <p data-page-node-id="DOFcr8A2kSTJzHfUORu8L4">论域 $U$ 中的模糊集合 $F$ 是用一个在闭区间 $[0,1]$ 上取值的隶属度 $\mu_F$ 来表示，即：</p>
+      <div class="math-scroll" data-page-node-id="o4dR28btNCnUO4hOwmRLRj">$$\mu_F:\ U \rightarrow [0,1]$$</div>
+      <ul class="clean" data-page-node-id="nxVcupoYMbnZk37lHJQXbG">
+        <li data-page-node-id="3dBXDpVhnDyMBzOD5GKgFg">$\mu_F(u)=1$，表示 $u$ 完全属于 $F$；</li>
+        <li data-page-node-id="CCrMB1eVLiBkHERDeRuYVe">$\mu_F(u)=0$，表示 $u$ 完全不属于 $F$；</li>
+        <li data-page-node-id="rxAFmmPrbIWFzVLCUGkWfR">$0&lt;\mu_F(u)&lt;1$，表示 $u$ 部分属于 $F$。</li>
+      </ul>
+    </div>
+    <p data-page-node-id="eZBYgPMhnrxx6nDnctSAbB">论域 $U$ 中的模糊集 $F$ 可以用元素 $u$ 和它的隶属度 $\mu_F$ 来表示：</p>
+    <div class="math-scroll" data-page-node-id="t9VysHWeBZLJLSHTXxDbqi">$$F=\left\{\left(u,\ \mu_F(u)\right)\ \middle|\ u\in U\right\}\quad(\text{离散域})$$</div>
+    <div class="math-scroll" data-page-node-id="HFqLDuZ27rVgGEMsseoXpw">$$F=\int_U \mu_F\,/\,u\quad(\text{连续域})$$</div>
+
+    <div class="example" data-page-node-id="ZPnnLnET8sxrhZLFT1kmXq">
+      <p class="et" data-page-node-id="gTo45h9Dtu86Oqw87roMu7">例 2-2</p>
+      <p data-page-node-id="5VM1o0jxwchjOwjM7lYiB6">设 $F$ 表示远远大于 0 的实数集合。</p>
+      <p data-page-node-id="wALEZlgs51hxX5ttIZ50K8"><strong data-page-node-id="WHhX0ab0lCz3QjSBAjKdKk">求</strong>：$F$ 的隶属度函数。</p>
+      <p data-page-node-id="SazZwqLOOtRqrr7HmdIX4i"><strong data-page-node-id="CDGNhZqO9sB450GPsO4p4q">解</strong>：</p>
+      <div class="math-scroll" data-page-node-id="P41umdHHEHnB14EHBbs8WO">$$\mu_F(x)=\begin{cases} 0, & x\le 0 \\[4pt] \dfrac{1}{1+\dfrac{100}{x^2}}, & x&gt;0 \end{cases}$$</div>
+    </div>
+
+    <div class="example" data-page-node-id="gCk104CFrd74A0GER4Cm5h">
+      <p class="et" data-page-node-id="Kpp5WkebCJanVFGkS4nbYJ">例 2-3　Zadeh（扎德）表示法</p>
+      <p data-page-node-id="Fg8Qm5EzwYGfU15fpLKFLg">考虑论域 $U=\{0,1,2,3,4,5\}$，和模糊集 $F$"接近 0 的整数"。</p>
+      <p data-page-node-id="6U9jrZjpXQbNkgu6xQMI4C"><strong data-page-node-id="hFZEzoBqOJj3eWbEE3xExl">求</strong>：$F$ 的隶属度函数。</p>
+      <p data-page-node-id="yxgMZdQ5BCg6hOXGeeQoTq"><strong data-page-node-id="PQehh99WFOCHNlHaxG3yaP">解</strong>：</p>
+      <div class="math-scroll" data-page-node-id="WS7rEkjQVc2GAuWgXhgR7L">$$F=\frac{1.0}{0}+\frac{0.9}{1}+\frac{0.75}{2}+\frac{0.5}{3}+\frac{0.2}{4}+\frac{0.1}{5}$$</div>
+    </div>
+  </section>
+
+  <!-- ========== P41–47：2.2.3 模糊集合的运算 ========== -->
+  <section class="slide" id="sec2-2-3" data-page-node-id="FLMReUDy0vA4fMHQckhhC0">
+    <span class="slide-tag" data-page-node-id="ySH7eCKWecJfDLop6WGQDS">PPT 第 41–47 页</span>
+    <h2 class="sec-title" data-page-node-id="aQorCmHOonHTPpqFRKbn05">二、模糊集合论基础：模糊集合的运算</h2>
+
+    <div class="card" data-page-node-id="hJbqQAwtX1gGsaLypE8yLL">
+      <h4 class="minor" data-page-node-id="pvmzw7sZHa4mJ1DfT0yOW9">基本运算</h4>
+      <ul class="clean" data-page-node-id="ZXQHQTa2XN5WBzCYzVrHxb">
+        <li data-page-node-id="lP62PIeKaCiZLByrmA7zNr"><strong data-page-node-id="WxELFwiYeGlk5WvPyTJrRq">包含</strong>：$A\subseteq B \;\leftrightarrow\; \mu_A(u)\le \mu_B(u)$</li>
+        <li data-page-node-id="H3Jj96HYmM0JlNH0Viu0C7"><strong data-page-node-id="Vec8TIKfRIHelJhlxhhc5m">并集</strong>：$\mu_{A\cup B}(u)=\max\left[\mu_A(u),\mu_B(u)\right]=\mu_A(u)\vee\mu_B(u)$</li>
+        <li data-page-node-id="uzNfVfMGGvFVjVaCjFAYAf"><strong data-page-node-id="rGfZ6WFsba0tfJZ6i6kE6f">交集</strong>：$\mu_{A\cap B}(u)=\min\left[\mu_A(u),\mu_B(u)\right]=\mu_A(u)\wedge\mu_B(u)$</li>
+        <li data-page-node-id="eZcM68k1eyyFqnzvRAZx8D"><strong data-page-node-id="CEGq1ci1qpuCqMEsjiqWuU">补集</strong>：$B=\bar{A} \;\leftrightarrow\; \mu_B(u)=1-\mu_A(u)$</li>
+      </ul>
+    </div>
+
+    <div class="example" data-page-node-id="T0qpqNdKB19OxSDdfoIwwB">
+      <p class="et" data-page-node-id="AQ5B9JqFYkhTEgaVAmlS8B">例 2-4</p>
+      <p data-page-node-id="dVBjgbKpLWQ1wEm8O8FK0Y">已知模糊子集：</p>
+      <div class="math-scroll" data-page-node-id="eYcFQGXamq3nsgToHINRQW">$$A=\frac{0.6}{u_1}+\frac{0.5}{u_2}+\frac{1}{u_3}+\frac{0.4}{u_4}+\frac{0.3}{u_5},\qquad B=\frac{0.5}{u_1}+\frac{0.6}{u_2}+\frac{0.3}{u_3}+\frac{0.4}{u_4}+\frac{0.7}{u_5}$$</div>
+      <p data-page-node-id="dhEeQRKInGEguram33HKBO"><strong data-page-node-id="rTpUGyJTDH1vVfOH4tRsiU">求</strong>：$A\cup B$，$A\cap B$。</p>
+      <p data-page-node-id="aBm7edRbUNsfnPHDy7WGHy"><strong data-page-node-id="eVJcGjZq5RyFhRxUtGCVgx">解</strong>：</p>
+      <div class="math-scroll" data-page-node-id="W5Z9LiRbps3RsOzcH2yFqP">$$\begin{aligned} A\cup B&=\frac{0.6\vee 0.5}{u_1}+\frac{0.5\vee 0.6}{u_2}+\frac{1\vee 0.3}{u_3}+\frac{0.4\vee 0.4}{u_4}+\frac{0.3\vee 0.7}{u_5}\\ &=\frac{0.6}{u_1}+\frac{0.6}{u_2}+\frac{1}{u_3}+\frac{0.4}{u_4}+\frac{0.7}{u_5}\end{aligned}$$</div>
+      <div class="math-scroll" data-page-node-id="O6u0g6wELZQcc2kbwHaGlK">$$\begin{aligned} A\cap B&=\frac{0.6\wedge 0.5}{u_1}+\frac{0.5\wedge 0.6}{u_2}+\frac{1\wedge 0.3}{u_3}+\frac{0.4\wedge 0.4}{u_4}+\frac{0.3\wedge 0.7}{u_5}\\ &=\frac{0.5}{u_1}+\frac{0.5}{u_2}+\frac{0.3}{u_3}+\frac{0.4}{u_4}+\frac{0.3}{u_5}\end{aligned}$$</div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="78tAigCpjxUeBPRD1YqJ6l">其他算子</h3>
+    <div class="card" data-page-node-id="F6tblBSLoiXP5XlfeeXUNH">
+      <ul class="clean" data-page-node-id="BW9ALgHCplLm7AX72zHJCc">
+        <li data-page-node-id="mEaPhIZNoPUg1eAi6zQiLc"><strong data-page-node-id="q6VOYcoVa4sPwb9Ff4q9MT">代数积</strong>：$A\cdot B \;\leftrightarrow\; \mu_{A\cdot B}(u)=\mu_A(u)\,\mu_B(u)$</li>
+        <li data-page-node-id="x7HHiy5GCd2r8fAcf1B3Ud"><strong data-page-node-id="vqfju8CzRHVGGlLZAC3MN9">代数和</strong>：$A\hat{+}B \;\leftrightarrow\; \mu_{A\hat{+}B}(u)=\mu_A(u)+\mu_B(u)-\mu_A(u)\mu_B(u)$</li>
+        <li data-page-node-id="U558mmftIgZOD4oWdchZcq"><strong data-page-node-id="NDwZVWnaGKlIF4u4PhsEFZ">有界和</strong>：$A\oplus B \;\leftrightarrow\; \mu_{A\oplus B}(u)=\left[\mu_A(u)+\mu_B(u)\right]\wedge 1$</li>
+        <li data-page-node-id="gq9wW9A3pItdYGrAXSrI9s"><strong data-page-node-id="5BNra9W9eVw4zBJIKbWGSm">有界差</strong>：$A\ominus B \;\leftrightarrow\; \mu_{A\ominus B}(u)=\left[\mu_A(u)-\mu_B(u)\right]\vee 0$</li>
+        <li data-page-node-id="QH3GsqfWjuaFA0VAeJQqxC"><strong data-page-node-id="UsH9EmQFEls5uXOx7rKof7">有界积</strong>：$A\otimes B \;\leftrightarrow\; \mu_{A\otimes B}(u)=\left[\mu_A(u)+\mu_B(u)-1\right]\vee 0$</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="DXBZelcrIDtQWiMGpZxhNX">模糊集合运算的基本性质</h3>
+    <div class="card" data-page-node-id="0YOqDNZCfo5JQr1xtlgPju">
+      <ul class="clean" data-page-node-id="w72I1XeFw6yJCxHqLxuVR4">
+        <li data-page-node-id="EE3RF1934qRqI6Uhq6xIx5"><strong data-page-node-id="fcmXoFVVnVuT5i0Dquku30">幂等律</strong>：$A\cup A=A$，$A\cap A=A$</li>
+        <li data-page-node-id="ltd6QmoWL65ek9xhPRqN3B"><strong data-page-node-id="rhnhLjUppHtockXpQdSElX">交换律</strong>：$A\cup B=B\cup A$，$A\cap B=B\cap A$</li>
+        <li data-page-node-id="dZCuzkTlJODyyxsBjniLdd"><strong data-page-node-id="wjyQRpCipqTPckt0EYxRkv">结合律</strong>：$(A\cup B)\cup C=A\cup(B\cup C)$，$(A\cap B)\cap C=A\cap(B\cap C)$</li>
+        <li data-page-node-id="MToR9xr5RcN5d8i2CNnXRw"><strong data-page-node-id="jcs9rIkcup854IB7icFTAY">分配律</strong>：$A\cup(B\cap C)=(A\cup B)\cap(A\cup C)$，$A\cap(B\cup C)=(A\cap B)\cup(A\cap C)$</li>
+        <li data-page-node-id="rkfekaJmIghvAh1e6okvtb"><strong data-page-node-id="4BEN81jDKJqoRNehDFLzcL">吸收律</strong>：$A\cap(A\cup B)=A$，$A\cup(A\cap B)=A$</li>
+        <li data-page-node-id="58Wr5NGkMiLEUYFnZ8dCDE"><strong data-page-node-id="yjC9yBUFp03C2AaoEhlzwq">德·摩根律</strong>：$\overline{(A\cap B)}=\bar{A}\cup\bar{B}$，$\overline{(A\cup B)}=\bar{A}\cap\bar{B}$</li>
+        <li data-page-node-id="fMXbv3C1W9WFXKLXxBOkKv"><strong data-page-node-id="gGhtptKJKdzdUfdxDRmADt">双重否定律</strong>：$\bar{\bar{A}}=A$</li>
+      </ul>
+      <p style="margin-top:10px" data-page-node-id="B3MfYDIVSccDCPdolaRe9L"><span class="kw" data-page-node-id="eVbj9OM4uoM1vRQEpPjAnQ">不满足互补律</span>，即：$A\cap\bar{A}\ne\varnothing$，$A\cup\bar{A}\ne U$。</p>
+    </div>
+  </section>
+
+  <!-- ========== P48–62：2.2.4 隶属度函数的建立 ========== -->
+  <section class="slide" id="sec2-2-4" data-page-node-id="C5N5DJ2wCHQ6oKCxF0FveG">
+    <span class="slide-tag" data-page-node-id="XjSy9XqVqFDjEvJhFqcfmY">PPT 第 48–62 页</span>
+    <h2 class="sec-title" data-page-node-id="GWZKWBBrFFR57xWZ2Vm1JF">二、模糊集合论基础：隶属度函数的建立</h2>
+
+    <div class="card" data-page-node-id="IQfwmLAuFdABfglsUghDev">
+      <p data-page-node-id="B8T7HjAuizErFfBVLdXHYa">隶属度函数的建立：</p>
+      <ul class="clean" data-page-node-id="L4p3baXf71bmFUubNjBNhj">
+        <li data-page-node-id="OHixQJhFaniLA3Ko7ifLx3">是一个<strong data-page-node-id="Q3RzePzAEMcYB0befkgvpb">关键问题</strong>，也是一个<strong data-page-node-id="Dn46pKVeWTNReuuwMpERxd">难题</strong></li>
+        <li data-page-node-id="KJF3q8lOhB5Op8O2UlCPgO">具有"模糊性"、经验性和主观性</li>
+        <li data-page-node-id="1diG8IYygWDJ6eBgNUqBBI">无统一的设计方法</li>
+        <li data-page-node-id="q6jzFTH82Us9GEkXO5k7yv">具有客观的原则，一般具备以下<span class="kw" data-page-node-id="UQffblRCNrS6R4agL7KZss">四大原则</span></li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="uL2LA9X96FcCymhRA9raJa">原则 1：必须是凸模糊集合（呈单峰形）</h3>
+    <figure class="fig" data-page-node-id="XXKmwMDqBfkH7q0v6OBfCP">
+      <svg viewBox="0 0 680 210" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="icZu8LAj8JaKmbHAvdPmzX">
+        <!-- 凸模糊集合 -->
+        <text x="170" y="20" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="D3CLoXKDF4DRQoa3lzdkDJ">凸模糊集合</text>
+        <line x1="50" y1="175" x2="300" y2="175" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="GWkLbHbjnHgxHveTsNpb0m"/>
+        <line x1="50" y1="175" x2="50" y2="40" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="rlB9dN2uEt0Be4HsXMT1Hp"/>
+        <path d="M60,175 C100,175 110,60 160,60 C210,60 230,175 285,175" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="zFBFm1T7MFqXifZa9PnfKb"/>
+        <!-- 非凸模糊集合 -->
+        <text x="500" y="20" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="AKeKlEkL4YtwvkFJbeL3rU">非凸模糊集合</text>
+        <line x1="390" y1="175" x2="640" y2="175" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="4Y0XBTmqODpp5XKQAdIRBP"/>
+        <line x1="390" y1="175" x2="390" y2="40" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="UTfQLWnTknamEsqMRhm7G8"/>
+        <path d="M400,175 C425,175 430,75 460,75 C480,75 485,130 510,130 C535,130 545,75 570,75 C600,75 610,175 630,175" fill="none" stroke="#C9A900" stroke-width="2.2" data-page-node-id="GnRQNfjeTpWQt3A7KvGxbQ"/>
+      </svg>
+      <figcaption data-page-node-id="kh2JvOGMAJMvEHSEAqVFsQ">凸模糊集合（单峰）与非凸模糊集合（多峰）对比｜重绘自 PPT 第 49 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="MzF9QwqBN64SftJfTNLACG">原则 2：变量所取隶属度函数通常是对称和平衡的</h3>
+    <div class="card" data-page-node-id="yS2eOjjKoKN3bIqhWDGXdV">
+      <p data-page-node-id="btEwjf1FCup5P5xbvuPcEO">在模糊控制系统中，每一个输入变量（以后又可称<strong data-page-node-id="093mbASYR1mwQ8DGAOLhWY">语言变量</strong>）可以有多个标称名（即又称<strong data-page-node-id="SRJwvqUVzixcsR89d1xavL">语言值</strong>）。模糊变量的标称值选择既不能过多又不能过少，<span class="kw" data-page-node-id="PBuQhsYSvFJzGwPga1kwBg">一般取 3～9 个为宜，并且通常取奇数个</span>。在"零"、"适中"或"合适"集合的两边语言值的隶属度函数通常是取对称和平衡的。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="4i5DidCBZOEW917XsyqrdX">原则 3：遵从语意顺序、避免不恰当的重叠</h3>
+    <div class="card" data-page-node-id="1fPKqiON1KkDIyFAYEv7kt">
+      <p data-page-node-id="Q7BUIqJFILhqnSnDBxYysw">在相同论域上使用的具有语义顺序关系的若干标称的模糊集合，例如"速度很低"、"速度低"、"速度适中"、"速度高"、"速度很高"等子集的中心值位置必须按这一次序排列。</p>
+    </div>
+    <figure class="fig" data-page-node-id="g4bdX6lsuiP4eo7ndnEdhj">
+      <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="FZ9hP1FOGXwEgpyEPp0MsY">
+        <line x1="60" y1="185" x2="640" y2="185" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="enUZEB2HlpumrSdoOKQKGs"/>
+        <line x1="60" y1="185" x2="60" y2="35" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="eOeEDZitzgTwcm3FTexDXm"/>
+        <text x="28" y="50" font-size="12" fill="#26231B" data-page-node-id="KHOMClWJwcHxzl3izHJ6uH">1.0</text>
+        <line x1="60" y1="50" x2="640" y2="50" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="g2S0aIGw5WFbMJakK4HWi6"/>
+        <text x="645" y="189" font-size="12.5" fill="#26231B" data-page-node-id="EcayDy20foFQuTnTYXFr7u">速度</text>
+        <text x="300" y="207" font-size="12" fill="#5B5648" data-page-node-id="WBVlX6AxjSA8SM4iB6xHqx">（公里 / 小时）</text>
+        <!-- 适中 -->
+        <path d="M120,185 L280,50 L440,185" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="a6JwSnW2Wd17aA0nW2gCzR"/>
+        <text x="262" y="42" font-size="13" fill="#4C7D2C" font-weight="700" data-page-node-id="SNmGLOstuwjfWKCR2isNmg">适中</text>
+        <!-- 高 -->
+        <path d="M280,185 L420,50 L560,185" fill="none" stroke="#C9A900" stroke-width="2.2" data-page-node-id="odB5wlTzTSI4HnrsLxFAU9"/>
+        <text x="406" y="42" font-size="13" fill="#574500" font-weight="700" data-page-node-id="iVPHBgUNQP6CGUKaNO0BmG">高</text>
+        <!-- 很高 -->
+        <path d="M440,185 L540,50 L640,185" fill="none" stroke="#3A6122" stroke-width="2.2" stroke-dasharray="7 4" data-page-node-id="e19IJqjRp99y0lVGAz10CW"/>
+        <text x="522" y="42" font-size="13" fill="#3A6122" font-weight="700" data-page-node-id="vI5tZXVOEiz3mmxwSeskfC">很高</text>
+      </svg>
+      <figcaption data-page-node-id="laLMTdHp87f5x7PkDS5kUy">语言值的隶属度函数按语意顺序排列（适中 → 高 → 很高）｜重绘自 PPT 第 51 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="0IDpxjXquDWxwUCI4178V3">原则 4：要考虑重叠指数（一般取重叠率 0.2～0.6）</h3>
+    <div class="math-scroll" data-page-node-id="Xxl7veSu52fiF8zNAwRyBw">$$\text{重叠率}=\frac{\text{重叠范围}}{\text{附近模糊隶属函数的范围}}$$</div>
+    <div class="math-scroll" data-page-node-id="97Cr208zkNy38h8JaCvFtv">$$\text{重叠鲁棒性}=\frac{\text{总的重叠面积}}{\text{总的重叠最大面积}}=\frac{\displaystyle\int_L^U\left(\mu_{A1}+\mu_{A2}\right)\mathrm{d}x}{2\,(U-L)}$$</div>
+    <figure class="fig" data-page-node-id="Z6PaLebov1JB35KMaBOx1c">
+      <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="670YKu9UBMe45zKcbSH5pq">
+        <line x1="60" y1="190" x2="640" y2="190" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="26VTThnh551PHpofiSaZ1t"/>
+        <line x1="60" y1="190" x2="60" y2="30" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="Hq5JvAtCAyUH9FVdqBph1m"/>
+        <text x="28" y="45" font-size="12" fill="#26231B" data-page-node-id="v8AVaM5PZtJ2gmHfLH2tGA">1.0</text>
+        <text x="28" y="122" font-size="12" fill="#26231B" data-page-node-id="eNIcAwCECooz7eBZqmmkLp">0.5</text>
+        <line x1="60" y1="45" x2="640" y2="45" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="7aDCT918tcefzYXqw0edaw"/>
+        <line x1="60" y1="117" x2="640" y2="117" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="3AKMorJNGbRVMU095cYzZp"/>
+        <!-- 重叠区域阴影 -->
+        <path d="M340,190 L430,117 L430,190 Z" fill="#FDD000" fill-opacity=".55" data-page-node-id="COYLnMY13ElllrAELtBjac"/>
+        <path d="M340,117 L430,190 L340,190 Z" fill="#FDD000" fill-opacity=".55" data-page-node-id="W7KPdf0QGLOsKRtHmbNtrF"/>
+        <!-- A1 三角 -->
+        <path d="M140,190 L340,45 L430,190" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="C9hUr1bUPHjApqMmlkTrkR"/>
+        <text x="322" y="38" font-size="13.5" fill="#4C7D2C" font-weight="700" data-page-node-id="gwawoS15n8lYj5mCF4EZbj">A1</text>
+        <!-- A2 三角 -->
+        <path d="M340,190 L430,45 L610,190" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="vVp0OioY97et0PC4nYDrnx"/>
+        <text x="416" y="38" font-size="13.5" fill="#3A6122" font-weight="700" data-page-node-id="DMMw2iKNiWTvpQTMiFwCoJ">A2</text>
+        <!-- L, U 标记 -->
+        <line x1="340" y1="190" x2="340" y2="205" stroke="#26231B" data-page-node-id="315QSvLdRtXZbnZ5AWEGy6"/>
+        <line x1="430" y1="190" x2="430" y2="205" stroke="#26231B" data-page-node-id="rKzdbPMnKxlUgVU7wFrm7m"/>
+        <text x="333" y="220" font-size="12.5" fill="#26231B" data-page-node-id="a48myXwRiKinzucWBKh7TI">L</text>
+        <text x="424" y="220" font-size="12.5" fill="#26231B" data-page-node-id="xyEQV53p1rwQiGMTZH9xsA">U</text>
+        <path d="M340,228 L430,228" stroke="#574500" stroke-width="1.2" marker-start="url(#ar2)" marker-end="url(#ar2)" data-page-node-id="YVoFBUUEj9hRBpBZHm23Ks"/>
+        <text x="352" y="246" font-size="12.5" fill="#574500" data-page-node-id="G9zeou43SQ2jFNNaopZl2B">重叠范围</text>
+        <path d="M140,246 L610,246" stroke="#8E887A" stroke-width="1.2" marker-start="url(#ar2)" marker-end="url(#ar2)" data-page-node-id="O5AhY1bQVkz05SydpM5J2Q"/>
+        <text x="300" y="242" font-size="12.5" fill="#5B5648" data-page-node-id="T12tVOXnNc5FA7WlWuZBHP">附近隶属函数的范围</text>
+      </svg>
+      <figcaption data-page-node-id="WulHY11s6S5EUpWdgmrHo9">重叠指数示意：两个相邻隶属度函数的重叠范围与重叠面积｜重绘自 PPT 第 52 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="0bnhXxjXkJwPLg221FpAAH">隶属度函数的建立方法</h3>
+    <div class="card" data-page-node-id="6HrGtEGoQY3A2UTXwae84m">
+      <ul class="clean" data-page-node-id="Y543q6mjZFuoFXDk4duCrJ">
+        <li data-page-node-id="OUOjDyccsLjkgq6KmBEMcH">模糊统计法</li>
+        <li data-page-node-id="k4jk6BqFPLGLLH0rGKs9ro">例证法</li>
+        <li data-page-node-id="PsqqqWbqsS9hqKVTXIA0za">专家经验法</li>
+        <li data-page-node-id="gCtp7N5muQmeDJFn0Xg6UE">二元对比排序法</li>
+      </ul>
+    </div>
+
+    <h4 class="minor" data-page-node-id="zEdDMeBtkXojJcJSnBqZKB">1）模糊统计法</h4>
+    <p data-page-node-id="DOkFEWxuvHS90XTqpBAblZ">对论域 $U$ 上的一个确定元素 $v_0$ 是否属于论域上的一个可变动的清晰集合 $A^*$，并作出清晰的判断。</p>
+    <div class="math-scroll" data-page-node-id="xEeDbN3Ct7tRDazGJpEbw2">$$v_0 \text{ 对 } A \text{ 的隶属频率}=\frac{v_0\in A^*\text{ 的次数}}{\text{试验总次数 } n}$$</div>
+
+    <h4 class="minor" data-page-node-id="61oIvtpFFhFqXwGrODPizJ">2）例证法</h4>
+    <p data-page-node-id="WH3TErugdAPrc6NQo23TBi">从已知有限个 $\mu_A$ 的值，来估计论域 $U$ 上模糊子集 $A$ 的隶属度函数。</p>
+
+    <h4 class="minor" data-page-node-id="opEiakFhgGEzIWXA50ueH6">3）专家经验法</h4>
+    <p data-page-node-id="lMjg7JVXwBzDUqTn41KGFV">根据专家的实际经验给出模糊信息的处理算式或相应权系数值来确定隶属度函数的一种方法。</p>
+
+    <h4 class="minor" data-page-node-id="d7HCoq6yHbSdlQXpQrIuVS">4）二元对比排序法</h4>
+    <p data-page-node-id="q83EFBiojAyxAISxYcAZCZ">通过对多个事物之间的两两对比来确定某种特征下的顺序，由此来决定这些事物对该特征的隶属度函数的大体形状。相对比较法是设论域 $U$ 中元素 $v_1,v_2,\dots,v_n$ 要对这些元素按某种特征进行排序，首先要在二元对比中建立比较等级，而后再用一定的方法进行总体排序，以获得诸元素对于该特性的隶属函数。</p>
+    <p data-page-node-id="dScfQuMDPt5EknlbkYhCwW">设论域 $U$ 中一对元素 $(v_1,v_2)$，其具有某特征的等级分别为 $g_{v_2}(v_1)$、$g_{v_1}(v_2)$，即在 $v_1$ 和 $v_2$ 的二元对比中，如果 $v_1$ 具有某特征的程度用 $g_{v_2}(v_1)$ 来表示，则 $v_2$ 某特征的程度用 $g_{v_1}(v_2)$ 来表示。并且该二元对比级的数对 $\left(g_{v_2}(v_1),g_{v_1}(v_2)\right)$ 必须满足：$0\le g_{v_2}(v_1)\le 1$、$0\le g_{v_1}(v_2)\le 1$，令：</p>
+    <div class="math-scroll" data-page-node-id="MucWmYQyoHk4cNUrPd3HKE">$$g(v_1\,/\,v_2)=\frac{g_{v_2}(v_1)}{\max\left(g_{v_2}(v_1),\ g_{v_1}(v_2)\right)}$$</div>
+    <p data-page-node-id="1WFMvI5f91lFQVmCHXwwbV">定义 $g(v_i\,/\,v_j)=1$（当 $i=j$ 时），则可构造出矩阵 $G$，并称 $G$ 为<strong data-page-node-id="TNCZuSfDwsF5PZ1x4wK9pS">相及矩阵</strong>：</p>
+    <div class="math-scroll" data-page-node-id="nAdIAwdbEqO82XaFx0F5sP">$$G=\begin{bmatrix} 1 &amp; g(v_1\,/\,v_2) \\ g(v_2\,/\,v_1) &amp; 1 \end{bmatrix}$$</div>
+    <p data-page-node-id="q893Izpps0sHvrILjXkHQF">若对矩阵 $G$ 的每一行取最小值，如对第 $i$ 行取 $g_i=\min\left[g(v_i/v_1),\,g(v_i/v_2),\,\dots,\,g(v_i/v_n)\right]$，并按其值的大小排序，即可得到元素 $(v_1,v_2,\dots,v_n)$ 对某特征的隶属度函数。</p>
+
+    <h3 class="sub-title" data-page-node-id="sKKA3eaUBjCd8AifWIwJNf">隶属度函数的三大类图形</h3>
+    <p data-page-node-id="WJXHGMmHCs9mA3TRMy8X1A">隶属度函数的确定还没有一个统一的方法，但隶属度的图形基本上可归结为三大类：</p>
+    <ol class="num" data-page-node-id="rsk6UtokwMwtqRLGeXFeRc">
+      <li data-page-node-id="yH5oFQ7ISdHmSAkGoNsGBi">左大右小的偏小型下降函数（又称 <strong data-page-node-id="WOFE8vIVlx0uzlifgQT6QX">Z 函数</strong>）</li>
+      <li data-page-node-id="CSAjyvQ21UBqMNP5lwMxBx">左小右大的偏大型上升函数（又称 <strong data-page-node-id="4j1IL8BMX8bBsp2p9d3nM3">S 函数</strong>）</li>
+      <li data-page-node-id="BOCw0FSBN0Nd0GgrluBoCK">对称型凸函数（又称 <strong data-page-node-id="L9cJwJ36JaxdXSP4YnH86Z">Π 函数</strong>）</li>
+    </ol>
+    <figure class="fig" data-page-node-id="ZyfHrdMdtwOLfHEmWenpu5">
+      <svg viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="4p9Zm9dgvVsU4erHBUuPhD">
+        <!-- ============ Z 函数（偏小型） ============ -->
+        <text x="340" y="22" font-size="14.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="hDwhC7QwDBmJaZGQYbD9BM">Z 函数（偏小型下降函数）</text>
+        <!-- Z 矩形 -->
+        <text x="113" y="48" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="SFv1eKLIxtE1mp7DHVqyd5">矩形</text>
+        <line x1="40" y1="150" x2="190" y2="150" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="XZAqWnvpOVxtSxTRuBMmFI"/>
+        <line x1="40" y1="150" x2="40" y2="60" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="SGnJ7Egp8nihGmCPruKFwZ"/>
+        <path d="M40,70 L100,70 L100,150" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="eQ66V9LCghmdLYKMlL2n76"/>
+        <!-- Z 梯形 -->
+        <text x="340" y="48" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="DmUWvhSnQ71x6DCsAAIH17">梯形</text>
+        <line x1="265" y1="150" x2="415" y2="150" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="JWomRRNeAy8D7aZYlOXLV5"/>
+        <line x1="265" y1="150" x2="265" y2="60" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="LqbRbVHEQEn9H0mtR4HP1d"/>
+        <path d="M265,70 L315,70 L375,150" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="MSyTqioVF3PUdDnoWL8nvP"/>
+        <!-- Z 曲线 -->
+        <text x="565" y="48" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="SD7ZQOwUWzB2PNsBOSIWpQ">曲线形</text>
+        <line x1="490" y1="150" x2="640" y2="150" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="QvjnCHH9DMlUIH9pN17KoT"/>
+        <line x1="490" y1="150" x2="490" y2="60" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="AmOGDlskU9mnCoWL2mPXGF"/>
+        <path d="M490,70 C520,70 530,70 550,105 C570,140 585,150 615,150" fill="none" stroke="#4C7D2C" stroke-width="2.2" data-page-node-id="C4gHCZgLjDH28aTPW0ajH6"/>
+        <!-- ============ S 函数（偏大型） ============ -->
+        <text x="340" y="205" font-size="14.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="XFWKjCqY37YN8elRKNqZn3">S 函数（偏大型上升函数）</text>
+        <!-- S 矩形 -->
+        <text x="113" y="231" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="Rz83jeTsEl4eYOgVImpjpv">矩形</text>
+        <line x1="40" y1="333" x2="190" y2="333" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="kLtqFFMw7WaIeKVNM5qbaC"/>
+        <line x1="40" y1="333" x2="40" y2="243" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="EEKT2R0oLBvOTqpz8iSyx7"/>
+        <path d="M40,333 L100,333 L100,253 L185,253" fill="none" stroke="#C9A900" stroke-width="2.2" data-page-node-id="Uz1cGIkTSYhrthnzWUpPzB"/>
+        <!-- S 梯形 -->
+        <text x="340" y="231" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="p5t3PePJWCVUYuTLCsd7xG">梯形</text>
+        <line x1="265" y1="333" x2="415" y2="333" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="xIP1GOcPpiCahOi5HxOe9t"/>
+        <line x1="265" y1="333" x2="265" y2="243" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="sFVPtMaFts1FE7nSPAHiyQ"/>
+        <path d="M265,333 L325,253 L385,253" fill="none" stroke="#C9A900" stroke-width="2.2" data-page-node-id="dV2wc6aR1SVLRG2WexOu73"/>
+        <!-- S 曲线 -->
+        <text x="565" y="231" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="ft2dmCdzrwVmQYAJWB5AF6">曲线形</text>
+        <line x1="490" y1="333" x2="640" y2="333" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="MUe0h78U62tL0ihgXMAOhm"/>
+        <line x1="490" y1="333" x2="490" y2="243" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="CWepswdXvsxIoz7aLO1vZ3"/>
+        <path d="M490,333 C520,333 535,333 555,288 C575,253 590,253 625,253" fill="none" stroke="#C9A900" stroke-width="2.2" data-page-node-id="YX7aPrehuKv3ggnuk0DRmW"/>
+        <!-- ============ Π 函数（对称凸） ============ -->
+        <text x="340" y="388" font-size="14.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="EsAiZMYye1ufEDLSWJG6WF">Π 函数（对称型凸函数）</text>
+        <!-- Π 矩形 -->
+        <text x="101" y="414" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="vHLm7cDCi8XeHDkeDnE8cc">矩形</text>
+        <line x1="30" y1="516" x2="172" y2="516" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="7Nv1n7lxgEt1nvkmB5bnG4"/>
+        <line x1="30" y1="516" x2="30" y2="426" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="V2G9Vw1AXbMeQ73hAi6Jtj"/>
+        <path d="M30,516 L65,516 L65,436 L135,436 L135,516" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="U94lg9rJtnKIVUIbFLoLwS"/>
+        <!-- Π 三角形 -->
+        <text x="270" y="414" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="QusdB0q75upJhez7kSDvhd">三角形</text>
+        <line x1="200" y1="516" x2="342" y2="516" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="Ei7Ob28DNlz0gJeNZfXEFa"/>
+        <line x1="200" y1="516" x2="200" y2="426" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="eWm2MtibdRc6AQVSl9vgoW"/>
+        <path d="M215,516 L271,436 L327,516" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="xzkf8KmNv6mXW3aG67Xer7"/>
+        <!-- Π 梯形 -->
+        <text x="440" y="414" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="mjg057ub4FVXUm5wRcvL3x">梯形</text>
+        <line x1="370" y1="516" x2="512" y2="516" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="xTQyROZeynp8XVPGIcB6Rj"/>
+        <line x1="370" y1="516" x2="370" y2="426" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="GZAMEcP5VhEOdYHabjM4Py"/>
+        <path d="M385,516 L415,436 L465,436 L497,516" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="mq9OvBIAFJdkmPJ9ooF6B4"/>
+        <!-- Π 柯西 -->
+        <text x="600" y="414" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="c3Uy8zfHbVMDScbCphOvEu">柯西形</text>
+        <line x1="532" y1="516" x2="672" y2="516" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="IVwuRQWfGtcWYvb6FfSnh6"/>
+        <line x1="532" y1="516" x2="532" y2="426" stroke="#26231B" marker-end="url(#ar2)" data-page-node-id="8NfpOBylNrPjx3NHjd2OlQ"/>
+        <path d="M536,516 C560,516 570,436 602,436 C634,436 644,516 668,516" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="S1E62QQAxIiIOfvQkamMcA"/>
+      </svg>
+      <figcaption data-page-node-id="aVPDJtW3TXEB0ylAO1aGki">隶属度函数三大类：Z 函数 / S 函数 / Π 函数及其常见形态｜重绘自 PPT 第 60–62 页</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P63–74：2.2.5 模糊关系 ========== -->
+  <section class="slide" id="sec2-2-5" data-page-node-id="iTIZmih0InuZqkLvbc5VCt">
+    <span class="slide-tag" data-page-node-id="jFXE1gn4YIMryxB4b6OgkK">PPT 第 63–74 页</span>
+    <h2 class="sec-title" data-page-node-id="xAdrwQH4eeXdDBs0ZX5gtV">二、模糊集合论基础：模糊关系</h2>
+
+    <h3 class="sub-title" data-page-node-id="kOczAJRt4sJdAefjmHit0w">多元关系</h3>
+    <div class="card" data-page-node-id="k3nmNE8snQEkzyhnV2n1Xo">
+      <p data-page-node-id="1DqON5C8COFbXDSXWl2Rc4"><strong data-page-node-id="MqhXFZDQdU24JshAxrRvmV">二元关系</strong>：两个客体之间的关系；<strong data-page-node-id="rVaeXEhejvFc1lCDMo4uOP">多元关系</strong>：三个客体以上的关系。</p>
+      <p data-page-node-id="F2NObGsYd6wgmJZfk2On5M">考察 $n$ 个集合的直积 $A_1\times A_2\dots\times A_n$，其隶属度函数为 $\mu_R(a_1,a_2,\dots,a_n)$。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="dmW13VCl81yJ4RAOU7hUfl">模糊关系</h3>
+    <div class="card" data-page-node-id="vqRUEqFDasKWP5tGbbZOC3">
+      <p data-page-node-id="8Nv4MPOHQfTfx0zrLNcmnC"><strong data-page-node-id="zJjdZCzT3gaHaCvOPBSzRn">普通关系</strong>：表示元素之间是否关联。</p>
+      <p data-page-node-id="7uFCaFxvBKnFPMevBxRSZY"><strong data-page-node-id="XS9iCadj0OS03EVArd0c44">模糊关系</strong>：通过两个论域上的笛卡尔积把一个叫 $A$ 论域中的元素映射到另一个叫 $B$ 的论域上去。然而，这两个论域上的序偶间的关系"强度"不是用特征函数来测量，而是用隶属度函数在单位区间 $[0,1]$ 的不同值来表示其关系的"强度"。</p>
+    </div>
+    <div class="defbox" data-page-node-id="dGSxAprZcWUM1lCk2p5naH">
+      <p class="dt" data-page-node-id="DyBPJnk5Ew0932C56gfNfM">定义</p>
+      <p data-page-node-id="I5unEaaTDAe15EzngGAIt2">所谓 $A$，$B$ 两集合的直积</p>
+      <div class="math-scroll" data-page-node-id="lbB3kU6MTziHQ1rWkNYsT8">$$A\times B=\left\{(a,b)\mid a\in A,\ b\in B\right\}$$</div>
+      <p data-page-node-id="O6oYNjIBapVamQSh2okrLm">中的一个模糊关系 $R$，是指以 $A\times B$ 为论域的一个模糊子集，序偶 $(a,b)$ 的隶属度为 $\mu_R(a,b)$。</p>
+    </div>
+
+    <h4 class="minor" data-page-node-id="o3nD51lRRY8QC2mx6BSn5B">模糊关系的表示方法 1：模糊集合表示法</h4>
+    <div class="math-scroll" data-page-node-id="8OQJJkKtNDJV1B4BI88lYE">$$R=\int_{A\times B}\mu_R(a,b)\,/\,(a,b),\qquad a\in A,\ b\in B$$</div>
+    <div class="example" data-page-node-id="1qSy5shRmabejljnA05GNU">
+      <p class="et" data-page-node-id="6nVm8Zb1GlxguUVNwb4GWU">举例</p>
+      <p data-page-node-id="kiXCIAw3aQT8KHMTvvQ4nI">考查两个整数间的"大得多"的关系。设论域 $U=\{1,5,7,9,20\}$。</p>
+      <div class="math-scroll" data-page-node-id="3WbOQ9wG3VU9GXr4xz56vO">$$\begin{aligned} R={}&\frac{0.5}{(5,1)}+\frac{0.7}{(7,1)}+\frac{0.8}{(9,1)}+\frac{1.0}{(20,1)}+\frac{0.1}{(7,5)}+\frac{0.3}{(9,5)}\\ &+\frac{0.95}{(20,5)}+\frac{0.1}{(9,7)}+\frac{0.9}{(20,7)}+\frac{0.85}{(20,9)}\end{aligned}$$</div>
+    </div>
+
+    <h4 class="minor" data-page-node-id="0wyHoWdAJc8Nsx4C1O8kXg">模糊关系的表示方法 2：模糊矩阵表示法（适用于二元关系）</h4>
+    <div class="math-scroll" data-page-node-id="kPopZTWugrbHp6KY4Kl3ze">$$R=\begin{bmatrix} r_{11} &amp; r_{12} &amp; \cdots &amp; r_{1j} &amp; \cdots &amp; r_{1n}\\ r_{21} &amp; r_{22} &amp; \cdots &amp; r_{2j} &amp; \cdots &amp; r_{2n}\\ \vdots &amp; \vdots &amp; &amp; \vdots &amp; &amp; \vdots\\ r_{i1} &amp; r_{i2} &amp; \cdots &amp; r_{ij} &amp; \cdots &amp; r_{in}\\ \vdots &amp; \vdots &amp; &amp; \vdots &amp; &amp; \vdots\\ r_{m1} &amp; r_{m2} &amp; \cdots &amp; r_{mj} &amp; \cdots &amp; r_{mn} \end{bmatrix},\qquad r_{ij}=\mu_R(a_i,\,b_j)$$</div>
+
+    <h4 class="minor" data-page-node-id="YQDjdIguWJyYWpMHvICHQg">模糊关系与模糊逻辑推理的关系</h4>
+    <div class="card" data-page-node-id="uCewIOdiYGFLwQEbT0if7D">
+      <p data-page-node-id="DFClh24vxvIEAPYE28J6AM">如果有：<strong data-page-node-id="ciClIKQPFCKFa6JpnAtamd">IF $A(u)$　THEN　$B(v)$</strong></p>
+      <p data-page-node-id="jjmBBjY0CbETakrfWN7woK">则 $A$ 与 $B$ 存在模糊关系 $A$ 和 $B$ 的直积，记为 $A\times B$：</p>
+      <div class="math-scroll" data-page-node-id="jfUYlgDKI7evKCAsC8IiGW">$$A\times B=\int_{U\times V}\min\left(\mu_A(u),\,\mu_B(v)\right)\,/\,(u,\,v)$$</div>
+      <p data-page-node-id="rLnWqOs76wj0GoNj4TGhOL">其中 $U\times V$ 是有序对 $(u,v)$ 的集合，即 $U\times V=\{(u,v)\mid u\in U,\ v\in V\}$。</p>
+      <div class="note" data-page-node-id="0Q8WlCJadAs7obBOSJ3A0M"><span class="nt" data-page-node-id="JxtUnbiv14PpGGopE2jFke">注意</span>不表示因果，只表示存在担保。　<strong data-page-node-id="0oNMXUYpbXxu4RrEd3xRNI">思考：为什么是 min？</strong></div>
+    </div>
+
+    <h4 class="minor" data-page-node-id="RL2r2PegyUVSTueyQRFCLy">笛卡尔积算子（⊗ 算子）</h4>
+    <p data-page-node-id="hgNiVTc9pnlqF8qQZpyCKB">笛卡尔积算子也是用来计算模糊关系的重要算子：$A_1,A_2,\dots,A_n$ 的笛卡尔积是在积空间 $U_1\times U_2\times\dots\times U_n$ 中的一个模糊集，其隶属度函数为：</p>
+    <ul class="clean" data-page-node-id="HbuHzXnRVGiS7gKqRXYDcb">
+      <li data-page-node-id="7utOtigmw4YKmgsxonCBd6"><strong data-page-node-id="K7Phl68QRY4GVnP9ScDs02">直积（极小算子）</strong>，用 $\mu_{\min}$ 表示：<div class="math-scroll" data-page-node-id="w5tdsUKqBuDXlFfxeRe3kT">$$\mu_{A_1\times A_2\times\dots\times A_n}(u_1,u_2,\dots,u_n)=\min\left\{\mu_{A_1}(u_1),\mu_{A_2}(u_2),\dots,\mu_{A_n}(u_n)\right\}$$</div></li>
+      <li data-page-node-id="WrDKpQYmRiZxV9W4cY5C8E"><strong data-page-node-id="2avGQXjc13nbSIvWhjFuPp">代数积</strong>，用 $\mu_{AP}$ 表示：<div class="math-scroll" data-page-node-id="dyqlKK6ufG51UILczeib7Q">$$\mu_{A_1\times A_2\times\dots\times A_n}(u_1,u_2,\dots,u_n)=\mu_{A_1}(u_1)\,\mu_{A_2}(u_2)\,\cdots\,\mu_{A_n}(u_n)$$</div></li>
+    </ul>
+
+    <div class="example" data-page-node-id="NCNzLvvFkE77S8BulfGY1j">
+      <p class="et" data-page-node-id="mN727wSdMwpaZ98lrBHyMe">例 2-9</p>
+      <p data-page-node-id="Zd5Ij3OBwfZxBiXcTBLNQg">考虑如下模糊条件语句：</p>
+      <p style="text-align:center" data-page-node-id="IusHuJzmaUC6wtrrWZbcxe"><strong data-page-node-id="HeHcUsA4ptc1PcIU6FijZQ">如果 $C$ 是慢的，则 $A$ 是快的。</strong></p>
+      <p data-page-node-id="h7WHnO7Twnmb6jqZ0SV82I">其中 $C$，$A$ 分别属于两个不同的论域 $U$，$V$。其隶属度函数分别为：</p>
+      <div class="math-scroll" data-page-node-id="p4TysRfZWc5VxasE8CKqE9">$$A=\text{快}=\frac{0}{0}+\frac{0}{20}+\frac{0.3}{40}+\frac{0.7}{60}+\frac{1}{80}+\frac{1}{100}$$</div>
+      <div class="math-scroll" data-page-node-id="S3pCBQyot5Pj78BPoTZ7GZ">$$C=\text{慢}=\frac{1}{0}+\frac{0.7}{20}+\frac{0.3}{40}+\frac{0}{60}+\frac{0}{80}+\frac{0}{100}$$</div>
+      <p data-page-node-id="THOzsk3WW0hBgqC8og2RJ6"><strong data-page-node-id="eOG36nOfRQDOH5nUL3Vvab">求</strong>：它们的直积和代数积。</p>
+      <p data-page-node-id="hWEi79TAxTYkvJXam9o6cK"><strong data-page-node-id="IqdDazCSucQEItPdmaJgTE">解</strong>：</p>
+      <p data-page-node-id="X9dK934BwWPTwDTeCFeS3j">① 直积（极小算子）$\mu_{\min}(C\times A)=\sum\mu_C(u)\otimes\mu_A(v)$，即逐项取 $\min\left[\mu_C(u),\mu_A(v)\right]$：</p>
+      <div class="math-scroll" data-page-node-id="wdFL2q6VpuCn8MW001nXMd">$$C\times A=\begin{bmatrix} 0 &amp; 0 &amp; 0.3 &amp; 0.7 &amp; 1 &amp; 1\\ 0 &amp; 0 &amp; 0.3 &amp; 0.7 &amp; 0.7 &amp; 0.7\\ 0 &amp; 0 &amp; 0.3 &amp; 0.3 &amp; 0.3 &amp; 0.3\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \end{bmatrix}$$</div>
+      <p data-page-node-id="dAPhCiNxvbZ9u5Osx3dDhq">② 代数积 $\mu_{AP}(C\times A)=\sum\mu_C(u)\cdot\mu_A(v)$：</p>
+      <div class="math-scroll" data-page-node-id="kv2CeMdvkFbN11x8MsSWe4">$$C\times A=\begin{bmatrix} 0 &amp; 0 &amp; 0.3 &amp; 0.7 &amp; 1 &amp; 1\\ 0 &amp; 0 &amp; 0.21 &amp; 0.49 &amp; 0.7 &amp; 0.7\\ 0 &amp; 0 &amp; 0.09 &amp; 0.21 &amp; 0.3 &amp; 0.3\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \end{bmatrix}$$</div>
+    </div>
+
+    <h4 class="minor" data-page-node-id="Z80wdTVAYpIf4CMOhX1h2P">上确界（Sup）算子与下确界（Inf）算子</h4>
+    <div class="math-scroll" data-page-node-id="zHev09Xzws5amDnGWpO7Kl">$$R\circ S=\left\{\left[\sup_{V}\left(\mu_R(u,v)\otimes\mu_S(v,w)\right)\right],\ u\in U,\ v\in V,\ w\in W\right\}$$</div>
+    <p data-page-node-id="3CqCQ9tnKSWtIPsDiADvEZ">Sup-min 合成：</p>
+    <div class="math-scroll" data-page-node-id="EE47MWZJWWnYXViWjoRtS1">$$R\circ S=\left\{\left[\max_{V}\left[\min\left(\mu_R(u,v),\ \mu_S(v,w)\right)\right]\right],\ u\in U,\ v\in V,\ w\in W\right\}$$</div>
+    <p data-page-node-id="RLXcBZKgT5hEw3SxNRoLIk">Inf-max 合成：</p>
+    <div class="math-scroll" data-page-node-id="zBAYRwnibBwOkxBmrUjFms">$$R\bullet S=\left\{\left[\inf_{V}\left(\mu_R(u,v)\ s\ \mu_S(v,w)\right)\right],\ u\in U,\ v\in V,\ w\in W\right\}=\left\{\left[\min_{V}\left[\max\left(\mu_R(u,v),\ \mu_S(v,w)\right)\right]\right]\right\}$$</div>
+    <div class="defbox" data-page-node-id="thXAa8oesRX5jMzAzdrYF5">
+      <p class="dt" data-page-node-id="b6i0JZSAl3Aj2IEAwknCHt">模糊关系的合成</p>
+      <p data-page-node-id="l6qvVcc8fuhQzAaTqCngui">如果 $R$ 和 $S$ 分别为笛卡尔空间 $U\times V$ 和 $V\times W$ 上的模糊关系，则 $R$ 和 $S$ 的合成是定义在笛卡尔空间 $U\times W$ 上的模糊关系，并记为 $R\circ S$。其隶属度函数的计算方法有两种。</p>
+    </div>
+    <p data-page-node-id="gGYVoGf2RjKMkFXHI84645">矩阵形式（Sup-min）：</p>
+    <div class="math-scroll" data-page-node-id="kdsNnUC6XCmEOFOMTKJsnN">$$\begin{bmatrix} r_{i1} &amp; r_{i2} &amp; \cdots &amp; r_{im}\\ \vdots &amp; \vdots &amp; &amp; \vdots\end{bmatrix}_{m\times m}\circ\begin{bmatrix} s_{1k}\\ s_{2k}\\ \vdots\\ s_{mk}\end{bmatrix}_{m\times l}=\begin{bmatrix} \cdots &amp; p_{ik} &amp; \cdots\\ &amp; &amp; \end{bmatrix}_{m\times l},\qquad p_{ik}=\left(r_{i1}\wedge s_{1k}\right)\vee\left(r_{i2}\wedge s_{2k}\right)\vee\cdots\vee\left(r_{im}\wedge s_{mk}\right)$$</div>
+
+    <h4 class="minor" data-page-node-id="pQ2vkpzuXezQpZrysoAbxe">模糊关系的合成算子特性</h4>
+    <div class="card" data-page-node-id="6aHWiaDCp93Fm3bCwUYiaB">
+      <ul class="clean" data-page-node-id="aDHQYDeUVsJYvXPkBmumnp">
+        <li data-page-node-id="C9G324pWmnkQIodVBKwDok">$R\circ I=I\circ R=R$</li>
+        <li data-page-node-id="wINEWGANnzY8xCsCsTZVF5">$R\circ 0=0\circ R=0$</li>
+        <li data-page-node-id="edV7GKGAuXKkdekN7woyWj">$R^{m+1}=R^m\circ R$</li>
+        <li data-page-node-id="4hEiB2Kzf6pB0Xybmuzpu4">$R^m\circ R^n=R^{m+n}$</li>
+        <li data-page-node-id="hqwNna8gIdqQNq9bJKg6EB">$(R\cup T)\circ S=(R\circ S)\cup(T\circ S)$；$R\circ(T\cup S)=(R\circ T)\cup(R\circ S)$</li>
+        <li data-page-node-id="THPMYWCrhxEsUmyXT5Bhua">$(R\cap T)\circ S=(R\circ S)\cap(T\circ S)$；$R\circ(T\cap S)=(R\circ T)\cap(R\circ S)$</li>
+        <li data-page-node-id="x8naMzVtv7tkMh0YyYN9l8"><span class="kw" data-page-node-id="7kgIhCKhtyjLw6AlXTgE12">不满足交换律</span>：$R\circ S\ne S\circ R$</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== P76–83：2.3 模糊逻辑 ========== -->
+  <section class="slide" id="sec2-3" data-page-node-id="CtgZJMsTtILbPWPhSSY0zw">
+    <span class="slide-tag" data-page-node-id="0S84Va0M1ScEMPhHEGQlho">PPT 第 76–83 页</span>
+    <h2 class="sec-title" data-page-node-id="tXzNw91KFFk9j7WzMjsdEi">三、模糊逻辑</h2>
+
+    <p data-page-node-id="MJKLCUGFQx0FN7pAI90SCR">模糊控制的核心是模糊控制规则库，而这些规则库实质上是一些<strong data-page-node-id="lCtivFcVf8oKAO3B9dpWMe">不确定性推理规则</strong>的集合。要实现模糊控制的目标，必须研究不确定性推理。</p>
+    <div class="defbox" data-page-node-id="JCyQXRCWDz8b5h0y3yDVta">
+      <p class="dt" data-page-node-id="xmd9kUuCJRAQAROs8kYWpc">模糊逻辑推理</p>
+      <ul class="clean" data-page-node-id="ErH245mRea8FHlL6hOUaFJ">
+        <li data-page-node-id="BF0UQqPEDRD2Ba64vsd3sh">模糊逻辑是研究含有模糊概念或带有模糊性的陈述句的逻辑。</li>
+        <li data-page-node-id="AXrgcj8SSuCeShqxRAROYV">是不确定性推理的主要方法之一。</li>
+        <li data-page-node-id="aA3zisJHxkm89XStl2U0Mm">是经典数理逻辑的推广。</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="lIPD3TGMBAglMMP3Ud6yDs">二值逻辑</h3>
+    <div class="card" data-page-node-id="qkRSEKpBZ3x86Jyim1IVEU">
+      <p data-page-node-id="CJAdqhgmH9ZJhDKPWwsLVe">命题 $P$ 中的元素可以赋予一个二元真值 $T(P)$。在二元逻辑中，$T(P)$ 或者为 1（真）或者为 0（假）。设 $U$ 是所有命题构成的论域，则 $T$ 就是从这些命题（集合）中的元素 $u$ 到二元值 $(0,1)$ 的一个映射：</p>
+      <div class="math-scroll" data-page-node-id="B8TU4rrqOpVv0c5VxivXE8">$$T:\ u\in U \rightarrow (0,1)$$</div>
+      <p data-page-node-id="ltoDBDD2UFg424CU8zsyZp">把两个或是两个以上的简单命题用命题联结词联结起来就称为<strong data-page-node-id="7JZewghnOCnbLdsIDN48Dy">复合命题</strong>，常用有：</p>
+      <ul class="clean" data-page-node-id="2Hj5kyOWPg2shusBjEpZJf">
+        <li data-page-node-id="6XdfgtKfpcFzO6Xb8zPTAd"><strong data-page-node-id="9kzd0hrbFUYk5FAWd1SxeG">析取</strong> $\vee$：是"或"的意思；</li>
+        <li data-page-node-id="ChLW7ZQ3ln8EmYLBd8FmuV"><strong data-page-node-id="fnnerBS5tFYDcvGlHy2gKE">合取</strong> $\wedge$：是"与"的意思；</li>
+        <li data-page-node-id="Uazxy0GQB5k3SocTyLNMGw"><strong data-page-node-id="tgPAOUqPz6sVusew0ldaRk">否定</strong> $-$：是对原命题的否定；</li>
+        <li data-page-node-id="GCIxz4NGvdbHeazpKgWeOY"><strong data-page-node-id="63bDqVwzIqFNXDjHb2UV9w">蕴涵</strong> $\rightarrow$：表示"如果……那么……"；</li>
+        <li data-page-node-id="tqwZdvKJpUZwJFopub8dIG"><strong data-page-node-id="O2Y61wOVr6la68KLb6FgcS">等价</strong> $\leftrightarrow$：表示两个命题的真假相同，是"当且仅当"的意思。</li>
+      </ul>
+    </div>
+
+    <p data-page-node-id="zrAr9mSM38rwjFAxWNE2Xa">二值逻辑的特点是一个命题不是真命题便是假命题。但在很多实际问题中要作出这种非真即假的判断是困难的，采用<strong data-page-node-id="czwzfdFktvaCPaiVBHb1Tj">模糊命题</strong>的概念。</p>
+    <div class="card" data-page-node-id="bWmYjE62DaSFbKepn5m14u">
+      <ul class="clean" data-page-node-id="Z0tZXMyhB0ii1BECp6JURT">
+        <li data-page-node-id="RHH2Zt7MYeTl6NJ6JHaG2a">模糊命题的真值不是绝对的"真"或"假"，而是反映其以多大程度隶属于"真"。</li>
+        <li data-page-node-id="iyEoOvpxKtta0WjwB1YBMK"><span class="kw" data-page-node-id="DVyaPHuwUgD47KJUaFdTZk">真值的运算也就是隶属度函数的运算。</span></li>
+        <li data-page-node-id="4FaqldI9GJtyYPTLGCmKAX">模糊逻辑是研究模糊命题的逻辑，而模糊命题是指含有模糊概念或者是带有模糊性的陈述句。</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="Ppm1hl28w115q8JRxfQQGS">模糊命题的运算</h3>
+    <div class="card" data-page-node-id="MHFKrhdDRZIXbytAMas5gE">
+      <ul class="clean" data-page-node-id="63JLe5pxr1MO3fDdM3ON3j">
+        <li data-page-node-id="vYJZsrnvHir8jmctIFgK0f"><strong data-page-node-id="jNbF1ZAL3p6KekR53FkLLH">模糊逻辑补</strong>：用来表示对某个命题的否定，$\bar{P}=1-P$</li>
+        <li data-page-node-id="PlQNv9gK8s1ZLSUoifRwyt"><strong data-page-node-id="ASYwuZcXk660sSHagbUEIF">模糊逻辑合取</strong>：$P\wedge Q=\min(P,Q)$</li>
+        <li data-page-node-id="RzM36AxjTGRgykYAEHSCdt"><strong data-page-node-id="pk7Zgmg4LSn6BTGeRP3rQW">模糊逻辑析取</strong>：$P\vee Q=\max(P,Q)$</li>
+        <li data-page-node-id="a9mUjtvFG2Gs24hgGYBWeD"><strong data-page-node-id="YilJ43OtYs09XIy7kMnK8r">模糊逻辑蕴含</strong>：如 $P$ 是真的，则 $Q$ 也是真的，$P\rightarrow Q=(1-P+Q)\wedge 1$<br data-page-node-id="kwDWjsLp3sBLDMyuOqDtFu"><span style="font-size:14px;color:var(--ink-3)" data-page-node-id="1WtNHAkVFqpRSZCybIV0K8">（还有其它蕴含运算方式）</span></li>
+        <li data-page-node-id="sMdxtWBYCRQhfmjBrV5TJu"><strong data-page-node-id="FWwZSMRdD4xWhFFicEngvL">模糊逻辑等价</strong>：$P\leftrightarrow Q=(P\rightarrow Q)\wedge(Q\rightarrow P)$</li>
+        <li data-page-node-id="KlGHEkpDp3FJCgu4uP2g9w"><strong data-page-node-id="8CWEsfNCMCl1nAzP775rYF">模糊逻辑限界积</strong>：各元素分别相加，大于 1 的部分作为限界积，$P\odot Q=(P+Q-1)\vee 0=\max(P+Q-1,\ 0)$</li>
+        <li data-page-node-id="BpCkW1AvZLzWTdGmLqEvSW"><strong data-page-node-id="yuGo9hdriYzBzpFS335HYx">模糊逻辑限界和</strong>：各元素分别相加，比 1 小的部分作为限界和，$P\oplus Q=(P+Q)\wedge 1=\min(P+Q,\ 1)$</li>
+        <li data-page-node-id="YFEbHWajv0y3aLKtGCkKM1"><strong data-page-node-id="3CAHUXyaTF1qM3cKxhFhF6">模糊逻辑限界差</strong>：各元素分别相减部分作为限界差，$P\ominus Q=(P-Q)\vee 0$</li>
+      </ul>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="XbLGSiettiWNK7yhVDFuff">模糊逻辑运算的基本定律</h3>
+    <div class="card" data-page-node-id="9EWvr0iCqVcDB1ZXLcyeWF">
+      <ul class="clean" data-page-node-id="CceoFiq7hMtxe0XaSAr66P">
+        <li data-page-node-id="9J3wHVglYi1mQeW1DHox2k"><strong data-page-node-id="eFpAWb7m2ZDliLGYWaybNG">幂等律</strong>：$P\vee P=P$，$P\wedge P=P$</li>
+        <li data-page-node-id="CtG51Fw8jMd002tEkqTotV"><strong data-page-node-id="WUFFmdMQmVAWKWa08MKbD1">交换律</strong>：$P\vee Q=Q\vee P$，$P\wedge Q=Q\wedge P$</li>
+        <li data-page-node-id="8Jm0WrjAZig5BdMwC7J7LH"><strong data-page-node-id="PgnUy0ynqKyoSOHG0fA2IQ">结合律</strong>：$P\vee(Q\vee R)=(P\vee Q)\vee R$，$P\wedge(Q\wedge R)=(P\wedge Q)\wedge R$</li>
+        <li data-page-node-id="Ak6trJHPJ6JhiswTsjEB0q"><strong data-page-node-id="PAQ86fhK3hSscYU90n4a7Z">吸收律</strong>：$P\vee(P\wedge Q)=P$，$P\wedge(P\vee Q)=P$</li>
+        <li data-page-node-id="sYeeRjdW4NrhBi7xvhhvrz"><strong data-page-node-id="X5vbyoGPGUPvPq2FQa4o7y">分配律</strong>：$P\vee(Q\wedge R)=(P\vee Q)\wedge(P\vee R)$，$P\wedge(Q\vee R)=(P\wedge Q)\vee(P\wedge R)$</li>
+        <li data-page-node-id="ZA0TEiDKOWn1ReKjpjE13A"><strong data-page-node-id="O2Z8HAoIzs4iO4lCmmKgyc">双否律</strong>：$\bar{\bar{P}}=P$</li>
+        <li data-page-node-id="EkluBXIhCzpyJ70s1Rwp8n"><strong data-page-node-id="zpet2qzoWwoIXp4aZU6u4X">德·摩根律</strong>：$\overline{P\vee Q}=\bar{P}\wedge\bar{Q}$，$\overline{P\wedge Q}=\bar{P}\vee\bar{Q}$</li>
+        <li data-page-node-id="yeWnQrvVhpAgHDGKqRmffZ"><strong data-page-node-id="AYwwwJWiqy1YFdOL3qC6q5">常数运算法则</strong>：$1\vee P=1$，$0\vee P=P$，$0\wedge P=0$，$1\wedge P=P$</li>
+      </ul>
+      <p style="margin-top:10px" data-page-node-id="x1nYg2FT98VZFyFWf5Ti6o"><span class="kw" data-page-node-id="7M0UdU6uFUcTiG6gouX7Tv">注意：互补律在模糊逻辑中不成立。</span></p>
+    </div>
+
+    <!-- ========== P84：随堂单选题 ========== -->
+    <div class="quiz" data-page-node-id="egi7oXAeO3kVyTZtGtei2I">
+      <span class="slide-tag" data-page-node-id="uJ6HHNCGvAJvEDxsA2FniN">PPT 第 84 页</span>
+      <span class="qtag" data-page-node-id="v41gUoQkEMSqeGDvYDhU9n">随堂单选题</span><span class="qscore" data-page-node-id="PiM3hd04SMCToW9EVQoRpK">1 分</span>
+      <p data-page-node-id="Zmu64pwQizfhewHaVVySxo">在模糊逻辑（Fuzzy Logic）中，命题"小明是高个子"（设其隶属度为 0.8）的否命题（Negation）及其真值（隶属度）应表示为（　）。</p>
+      <ol class="opts" data-page-node-id="XDDNbB8GccuMkdpJa2qId0">
+        <li data-page-node-id="jHYmdFB8YWiMyiU3Ycbygj"><span class="okey" data-page-node-id="f0y9BBp6WgtrPKLvvdZ7E1">A</span>"小明是矮个子"，真值为 0.2</li>
+        <li data-page-node-id="9E5pf4BtptjR637JMfpk1u"><span class="okey" data-page-node-id="QVEEaMruHVaRfJJNCOm4YU">B</span>"小明是矮个子"，真值为 0.8</li>
+        <li class="right" data-page-node-id="6U5lxW7HrzYSsHbB6TLDbL"><span class="okey" data-page-node-id="wfDpKhjCMcmGJKloI6fmme">C</span>"小明不是高个子"，真值为 0.2　✓</li>
+        <li data-page-node-id="vsb6NkpwoE1UpqGdM96eEM"><span class="okey" data-page-node-id="8LuOTgBK3x9EG0gsGOuIxx">D</span>"小明不是高个子"，真值为 0.8</li>
+      </ol>
+      <details data-page-node-id="voCZjB5DWWcVSuJ9SHIC3u">
+        <summary data-page-node-id="PAStiZ38DNCrXXSXHeiIj0">查看答案解析（答案：C）</summary>
+        <div class="analysis" data-page-node-id="85EY8YTrmz6vVdpF71RrWy">
+          <p data-page-node-id="VIPnLtAOk4lLiLgUcKxunF"><strong data-page-node-id="nSBk4qm4EOa3VSiDF6uyrr">第一步：锁定否命题的形式</strong></p>
+          <p data-page-node-id="3H3UoQELqvIbPdin85hKc1">在数理逻辑与模糊逻辑中，命题 $P$ 的否命题（$\neg P$）是对整个命题的否定，即"并非（小明是高个子）"，也就是"小明<strong data-page-node-id="DTrO6BBpEujzgjVR8l1pLh">不是</strong>高个子"。若写成"小明是矮个子"，这属于<strong data-page-node-id="Ul8T03NEunUfB2OeHJuhzB">对立命题</strong>（或反对关系），而非严格逻辑意义上的"否定"。</p>
+          <p data-page-node-id="DzohtcetI18BVHlhck732Y"><strong data-page-node-id="V2iY38IaoeDrl4ntZhkcyB">第二步：计算否命题的真值</strong></p>
+          <p data-page-node-id="XP2WFsr0pICFTvOF8YgcC4">模糊逻辑中，否定的运算规则是对隶属度取补，即：$1-0.8=0.2$。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ========== P85–93：2.4 模糊语言逻辑 ========== -->
+  <section class="slide" id="sec2-4" data-page-node-id="NDiFbTcuRWU63blO5vI7ba">
+    <span class="slide-tag" data-page-node-id="a2i4xh5EfmiN97VNA8Z3w5">PPT 第 85–93 页</span>
+    <h2 class="sec-title" data-page-node-id="0HVfFkt8Cp0sjykOpcWkKF">三、模糊逻辑：模糊语言逻辑</h2>
+
+    <div class="card" data-page-node-id="NyW2Zu73Je5tqndF4ZlmRM">
+      <p data-page-node-id="7J8d11Frij21CKDV3d6ZuF">模糊语言逻辑是由模糊语言构成的一种模拟人思维的逻辑。针对自然语言的模糊性；涉及概念：<strong data-page-node-id="ty4zIQCYlcaxVLiZxaJJdq">模糊数</strong>、<strong data-page-node-id="BZyILHmclW3SptOKA3CXSS">语言值</strong>、<strong data-page-node-id="dmi2AlEr9hRX6eA63rpBbq">语言变量</strong>、<strong data-page-node-id="WNMyZPJohHlor3fyWMLulL">语言算子</strong>。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="IKR9XUSLvsBt8m3sg1XPTm">1、模糊数</h3>
+    <p data-page-node-id="VefBzfOT9iv0wAB0Z2qCPW">连续论域 $U$ 中的模糊数 $F$ 是一个 $U$ 上的<strong data-page-node-id="bezWoI19BNdPeaR881GvHX">正规凸模糊集</strong>。</p>
+    <div class="card" data-page-node-id="GbzjI3RoS0baVXHcAWwYx0">
+      <p data-page-node-id="F19FdRcrUgfPwKIybGIGVG"><strong data-page-node-id="hfKyvPElVSUdenZZqP2dMY">正规模糊集合</strong>：隶属度函数的最大值为 1，且论域中至少有 1 个元素 $u$ 的隶属度值为 1。用数学表达式表示就是：</p>
+      <div class="math-scroll" data-page-node-id="KlHWwDnzVpJk79XJTVg4FE">$$\max_{u\in U}\ \mu_F(u)=1$$</div>
+      <p data-page-node-id="cWuzOg4TMva38R4IpaLxoo"><strong data-page-node-id="97aXNGuOB5cVSBikZaZnYI">凸集合</strong>：在隶属度函数曲线上任意两点之间曲线上的任一点所表示的隶属度都大于或者等于两点隶属度中较小的一个。用数学语言说，就是在实数集合的任意区间 $[a,b]$ 上，对于所有的 $x\in[a,b]$，都存在：</p>
+      <div class="math-scroll" data-page-node-id="WW3rAaF2BafwbOMGlYjlkf">$$\mu_F(x)\ge \min\left(\mu_F(a),\ \mu_F(b)\right),\qquad a,\,b\in U,\ x\in[a,\,b]$$</div>
+      <p data-page-node-id="eDmWwSHmTardLzWXhlpPBB">就称 $F$ 是凸模糊集合。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="ocOUPr3KzFFu4uCesGiHXU">2、语言值</h3>
+    <div class="card" data-page-node-id="Ta4cRRPmm9O5gjYNBHRLIz">
+      <p data-page-node-id="xBGsDnG8XGHoxuGwlCmlgN">在语言系统中，那些与数值有直接联系的词，如长、短、多、少、高、低、重、轻、大、小等，或者由它们再加上语言算子（如很、非常、较、偏等）而派生出来的词组，如不太大、非常高、偏重等，都被称为<strong data-page-node-id="VzI063IPFLwRTxEew6HUwA">语言值</strong>。</p>
+      <p data-page-node-id="AelzcpCrXLMBHbON8SdbBZ">语言值一般是模糊的，可以用模糊数来表示。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="RDMvOiUvPE7ebaOu25OBqi">3、语言变量</h3>
+    <p data-page-node-id="FeohTLgx9wdaH3xF9jguDU">语言变量是用一个五元素的集合 $\left(X,\ T(X),\ U,\ G,\ M\right)$ 来表征的：</p>
+    <ul class="clean" data-page-node-id="fp68CbV5XikgwRKejWvCfy">
+      <li data-page-node-id="wdiRg6j5yCpCHDANfIYMdq">$X$：语言变量的名称（如"速度"）</li>
+      <li data-page-node-id="OqZTzrnOwmCS60hDILihgo">$T(X)$：语言值集合（如很慢、慢、较慢、中等、较快、快、很快）</li>
+      <li data-page-node-id="OxTEGZmRZQSvoXL97ygIiL">$U$：论域</li>
+      <li data-page-node-id="aGS0nJNvAjytyVo2RH0Nct">$G$：语言值规则（生成语言值的语法规则）</li>
+      <li data-page-node-id="KAIcFFQOvlrwFtZpjm287O">$M$：算法规则（给每个语言值赋予隶属度函数的算法规则）</li>
+    </ul>
+    <figure class="fig" data-page-node-id="SV0eaLu971MySeSDPkYCp4">
+      <svg viewBox="0 0 680 380" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="medJmEF7lqm2Bq1ZSE8aXH">
+        <defs data-page-node-id="CRZLnwSOIPAmEEkhvi6gyW">
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" data-page-node-id="drRdNPvpMEBnbbXDcXtAoU">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5B5648" data-page-node-id="ivVfATgeCfm0i3XHBAAeEc"/>
+          </marker>
+        </defs>
+        <!-- 顶部：速度（语言变量 X） -->
+        <circle cx="330" cy="46" r="10" fill="#FDD000" stroke="#C9A900" data-page-node-id="DDS9jeRqqk4Z9Vbe5ovgDI"/>
+        <text x="330" y="30" font-size="14.5" text-anchor="middle" fill="#2C4A1A" font-weight="700" data-page-node-id="KNYSIzJfdNyNJrjhtJ41CY">速度</text>
+        <text x="600" y="30" font-size="13" fill="#5B5648" data-page-node-id="d9zVIHDHefwRvxAMolqC7p">语言变量 X</text>
+        <!-- 扇形连线到 x1..x7 -->
+        <line x1="330" y1="54" x2="86" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="9pY1LIhdnJuRgDqhOZB41v"/>
+        <line x1="330" y1="54" x2="168" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="f6aY2M0YDgysDz8vLZfZ4d"/>
+        <line x1="330" y1="54" x2="250" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="edU640eF6G45Dl16JyFyyr"/>
+        <line x1="330" y1="54" x2="332" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="9gaFEHl7EN9MMy6RCjKc8r"/>
+        <line x1="330" y1="54" x2="414" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="HDtaGuqrRVZJ8omuG1fDuM"/>
+        <line x1="330" y1="54" x2="496" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="e7jIDg3GFBvNOzoVadovcC"/>
+        <line x1="330" y1="54" x2="578" y2="128" stroke="#8E887A" stroke-width="1" data-page-node-id="QkymibEgJU06c5TTIFUFwD"/>
+        <text x="600" y="90" font-size="13" fill="#5B5648" data-page-node-id="KAV7PBDwZxKtxScyXqrCfy">语言值规则 G</text>
+        <!-- x1..x7 标签 -->
+        <text x="80" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="ows2mnE9rsVngwkuzGJUDg">x1</text>
+        <text x="162" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="nTGAycbzTKZbFRGwLlAKD1">x2</text>
+        <text x="244" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="3bLv6mGI0JAD9LzNjJpDEX">x3</text>
+        <text x="326" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="dEiGGAyBFYcYh06jh0QtFG">x4</text>
+        <text x="408" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="HRYJXvqEeVIgE1MjyGM7l6">x5</text>
+        <text x="490" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="Fx7idixTzgaxAYEchfGdDw">x6</text>
+        <text x="572" y="124" font-size="12.5" fill="#3A6122" data-page-node-id="L6f2DCIbkhFdwKMrdJe6dt">x7</text>
+        <!-- 语言值名称 -->
+        <text x="64" y="148" font-size="12.5" fill="#26231B" data-page-node-id="sk4VOCHburvkHRX1gmquoj">很慢</text>
+        <text x="152" y="148" font-size="12.5" fill="#26231B" data-page-node-id="HnzG1re7TN7NwB8Nx855Lg">慢</text>
+        <text x="234" y="148" font-size="12.5" fill="#26231B" data-page-node-id="iogSdee21Mr16bZ22ca18I">较慢</text>
+        <text x="316" y="148" font-size="12.5" fill="#26231B" data-page-node-id="wPQuiAADeRBD0yfMKx2lyV">中等</text>
+        <text x="398" y="148" font-size="12.5" fill="#26231B" data-page-node-id="MxDE4s0U8vWP7AIeqQQBvB">较快</text>
+        <text x="484" y="148" font-size="12.5" fill="#26231B" data-page-node-id="ASbLafKp44FmUYtxMfvGrB">快</text>
+        <text x="562" y="148" font-size="12.5" fill="#26231B" data-page-node-id="1AwClgBegy51kE92h7OKxE">很快</text>
+        <text x="600" y="148" font-size="13" fill="#5B5648" data-page-node-id="gqPUCwQ9DWPsaNU3FnmrUk">语言值集合 T(X)</text>
+        <!-- 隶属度函数图 -->
+        <text x="600" y="240" font-size="13" fill="#5B5648" data-page-node-id="3m0ZPE0Ms4KofZFzywdKGv">算法规则 M</text>
+        <line x1="70" y1="330" x2="620" y2="330" stroke="#26231B" marker-end="url(#ar3)" data-page-node-id="IfAAvOItgYbLP2PitGvweh"/>
+        <line x1="70" y1="330" x2="70" y2="180" stroke="#26231B" marker-end="url(#ar3)" data-page-node-id="vn6YRYVsHEwqMuTAjot2qz"/>
+        <text x="46" y="195" font-size="12" fill="#26231B" data-page-node-id="hk2kpS01NuDTVUXMBYMIPs">1.0</text>
+        <line x1="70" y1="190" x2="620" y2="190" stroke="#D9E5C8" stroke-dasharray="4 4" data-page-node-id="fDUdxeF7WfBsrtPok0f38F"/>
+        <!-- 7 个三角形：0,30,50,70,90,105,120 -->
+        <path d="M70,190 L70,330 L155,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="2GVRCB7LSRs8CUO94r7TP3"/>
+        <path d="M70,330 L155,190 L240,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="9c86sSyOc5B6qsYm4lEdps"/>
+        <path d="M155,330 L240,190 L325,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="GXxESGoJ39M3cBmptgaj9w"/>
+        <path d="M240,330 L325,190 L410,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="wruGsBTApSm2wX7vi1qfur"/>
+        <path d="M325,330 L410,190 L495,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="YFt1ikpeAGkqfLGBdHzn9W"/>
+        <path d="M410,330 L495,190 L580,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="wqcjsJXOMXs0UqkxqwYr1q"/>
+        <path d="M495,330 L580,190 L580,330" fill="none" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="h2kNEx0PAVBSlaGQPY4pPp"/>
+        <!-- 刻度 -->
+        <text x="66" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="CryZIbmsLd4rpEx6QlDwuv">0</text>
+        <text x="148" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="lCOhr29WFTpKmxFkGeVJIJ">30</text>
+        <text x="233" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="LdBDiXrNGz7pYGfHLnLLVh">50</text>
+        <text x="318" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="08rI00JlXYJVhycTyep314">70</text>
+        <text x="403" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="RrjUMwBaHoRoDZR5XI0FCx">90</text>
+        <text x="484" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="Z9mFUfFgqYxwsflgQsMZJM">105</text>
+        <text x="566" y="350" font-size="11.5" fill="#5B5648" data-page-node-id="Eho0qXuZ8hOUw2OYkv6oQo">120</text>
+        <text x="300" y="372" font-size="12.5" fill="#5B5648" data-page-node-id="An8RIDJEq2jfW1n8pVttxb">论域 U（公里/小时）</text>
+      </svg>
+      <figcaption data-page-node-id="L8XQy4xzKTLaz467FbE2Hp">语言变量五元素之间的关系（图 2-1-10）｜重绘自 PPT 第 88 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="J8p0r53mupGHEF9s9MHdtd">4、语言算子</h3>
+    <p data-page-node-id="cHbF4BsYVsHWPwLxicM0wC">为了对模糊的自然语言形式化和定量化，进一步区分和刻划模糊值的程度，常常还借用自然语言中的修饰词，诸如"较"、"很"、"非常"、"稍微"、"大约"、"有点"等来描述模糊值。引入<strong data-page-node-id="pBkJyBzUDZqXkEORAGER7q">语言算子</strong>：</p>
+    <ul class="clean" data-page-node-id="y8k7avnzlqFCPUvGLs6IAC">
+      <li data-page-node-id="RIbSUuggi5taj6bqxWoBWB">语气算子</li>
+      <li data-page-node-id="h12ULe1jPbHSAcoiGKIiaG">模糊化算子</li>
+    </ul>
+
+    <h4 class="minor" data-page-node-id="FoArlxQKKml9VLyFMTBVOS">1）语气算子</h4>
+    <p data-page-node-id="25EBsJx8lH7otnZxwKVA8H">语气算子用来表达语言中对某一个单词或词组的确定性程度，包括<strong data-page-node-id="nwCMTJIIJkKJtHGZR94fvZ">强化算子</strong>和<strong data-page-node-id="u3EGpI9GsOZvyLQPdxMsdb">淡化算子</strong>：</p>
+    <div class="math-scroll" data-page-node-id="CH5jmudGjnNgvvAn6dylBx">$$H_\lambda(A)=A^\lambda\quad(A\text{ 为语言值})\qquad \lambda&gt;1\ \text{强化算子};\quad \lambda&lt;1\ \text{淡化算子}$$</div>
+
+    <div class="example" data-page-node-id="gWu2j3ALihAQxipPobcAMa">
+      <p class="et" data-page-node-id="cnn2u39OQ9JkdgmeeimGzy">例 2-12</p>
+      <p data-page-node-id="9deD4fKxs4CrxsAVAzJMAB">我们以"年老"这个词为例，来说明语气算子的作用。</p>
+      <div class="math-scroll" data-page-node-id="Q6rE28cTFiH6usu3MFif0v">$$\text{“年老”}(x)=\mu_{\text{年老}}(x)=\begin{cases} 0, &amp; 0\le x&lt;50 \\[4pt] \dfrac{1}{1+\left[\dfrac{1}{5}(x-50)\right]^{-2}}, &amp; x\ge 50 \end{cases}$$</div>
+      <p data-page-node-id="cBBbeWyhaTFWeVoKOxgxC3"><strong data-page-node-id="6raU1HUd0VPLeKPaUhFGNV">求</strong>：非常老、比较老、有点老的隶属度函数。</p>
+      <p data-page-node-id="dHnJitHTSmgGoqmbuwanwo"><strong data-page-node-id="UVSySsJ5EBPJJY6lLvpDnm">解</strong>：</p>
+      <div class="math-scroll" data-page-node-id="PahMNks69aUFHodCMn0FeL">$$\text{“非常老”}(x)=\mu_{\text{非常老}}(x)=\begin{cases} 0, &amp; 0\le x&lt;50 \\[4pt] \left(\dfrac{1}{1+\left[\dfrac{1}{5}(x-50)\right]^{-2}}\right)^{3}, &amp; x\ge 50 \end{cases}$$</div>
+      <div class="math-scroll" data-page-node-id="We402XgQXsRzYbKlhd5g2R">$$\text{“比较老”}(x)=\mu_{\text{比较老}}(x)=\begin{cases} 0, &amp; 0\le x&lt;50 \\[4pt] \left(\dfrac{1}{1+\left[\dfrac{1}{5}(x-50)\right]^{-2}}\right)^{0.8}, &amp; x\ge 50 \end{cases}$$</div>
+      <div class="math-scroll" data-page-node-id="1dha0EMSEKyFacoY0AbV3H">$$\text{“有点老”}(x)=\mu_{\text{有点老}}(x)=\begin{cases} 0, &amp; 0\le x&lt;50 \\[4pt] \left(\dfrac{1}{1+\left[\dfrac{1}{5}(x-50)\right]^{-2}}\right)^{0.2}, &amp; x\ge 50 \end{cases}$$</div>
+    </div>
+
+    <h4 class="minor" data-page-node-id="1oNGvtklIEKjJDZyZlukXE">2）模糊化算子</h4>
+    <p data-page-node-id="QEHUefahcovrctRGrjn3UH">如"大概"、"近似于"、"大约"等，把原来的概念模糊化。记模糊化算子为 $F$，则模糊化变换可表示为 $F(A)$，并且它们的隶属度函数关系满足：</p>
+    <div class="math-scroll" data-page-node-id="8hBnWA0LN8yKbzOcImN1NP">$$\mu_{F(A)}(x)=\bigvee_{c\in X}\left(\mu_R(x,c)\wedge\mu_A(x)\right)$$</div>
+    <p data-page-node-id="OvLUcURdvncey5o3iTXgnr">其中，$\mu_R(x,c)$ 是表示模糊程度的一个相似变换函数，通常可取正态分布曲线，即：</p>
+    <div class="math-scroll" data-page-node-id="bgiRIDyVPKTuE749tD1rtc">$$\mu_R(x,c)=\begin{cases} e^{-(x-c)^2}, &amp; |x-c|&lt;\delta \\ 0, &amp; |x-c|\ge \delta \end{cases}$$</div>
+  </section>
+
+  <!-- ========== P94–114：2.5 模糊逻辑推理 ========== -->
+  <section class="slide" id="sec2-5" data-page-node-id="EdjYVGfkrZCJB7GaCCnBV8">
+    <span class="slide-tag" data-page-node-id="Td26dN3DO5pi1XIBN3tzFa">PPT 第 94–114 页</span>
+    <h2 class="sec-title" data-page-node-id="CmBZoQAdTfFOa8MaIFvVyR">三、模糊逻辑：模糊逻辑推理</h2>
+
+    <div class="card" data-page-node-id="vKTjx2qVwNNnNYzJs0mNgO">
+      <p data-page-node-id="UQOeqC7kzaojSN4DysHIQT">模糊逻辑推理是一种<strong data-page-node-id="UQsnUazgnEtzNFuoFydPVH">不确定性推理方法</strong>。比较典型的有：</p>
+      <ul class="clean" data-page-node-id="2rg6jFeN18yuToXKHL7Ya8">
+        <li data-page-node-id="fFWq4wDFtDpFjaUpFJG6jo">扎德（Zadeh）方法</li>
+        <li data-page-node-id="XJkEyEjUQbK1mMgUOmzB5i">玛达尼（Mamdani）方法</li>
+        <li data-page-node-id="BihjmJJCvJpDYAIiiZoWtr">鲍德温（Baldwin）方法</li>
+        <li data-page-node-id="19cvSeb8U1t9q470NFAAKA">耶格（Yager）方法</li>
+        <li data-page-node-id="jVAC4Zosa04XUoW3dazlII">楚卡莫托（Tsukamoto）方法</li>
+      </ul>
+      <p data-page-node-id="3pGKix25MX7UOOF6HnfCbb"><span class="kw" data-page-node-id="edpjB0eeIEp3fySvjINTHo">最常用的是玛达尼（Mamdani）极大极小推理法。</span></p>
+    </div>
+
+    <p data-page-node-id="o58sZ3L4LkBJAhkOboj5Mn">常见的推理有：</p>
+    <ol class="num" data-page-node-id="wyAqgLhBlgBeZ3PaZYgVfd">
+      <li data-page-node-id="frROQCKIX7aGHOMQzsPm1c">近似推理（常识性推理）：广义肯定式推理、广义否定式推理</li>
+      <li data-page-node-id="oRgYQNsDMZUTFTNbAdCJEY">模糊条件推理</li>
+      <li data-page-node-id="jCduTXD8Mtu43AjUCj9I8b">多输入推理</li>
+      <li data-page-node-id="QwTEBnghri712mzaX6gd6K">多输入多规则推理</li>
+    </ol>
+
+    <h3 class="sub-title" data-page-node-id="x9ILPzbT3fDwiBAxrhFaeB">近似推理：广义肯定式推理</h3>
+    <div class="card" data-page-node-id="pjnZFBZCYHQ7Ej0DxL1cQF">
+      <p data-page-node-id="EVwy24P93CDcXX4BSbodse"><strong data-page-node-id="p9PJECLWrTAp6WjYCBvlZG">前提 1</strong>：如果 $x$ 是 $A$，则 $y$ 是 $B$</p>
+      <p data-page-node-id="GLNyIkzUMunFm7yq1rgjcM"><strong data-page-node-id="AJrbjtI4dGw2mtACDoeJBt">前提 2</strong>：如果 $x$ 是 $A'$</p>
+      <p data-page-node-id="WNWI4YPQGe68KCy5opyRcw"><strong data-page-node-id="7ghCztHsMqW0rW2x7zeKsL">结论</strong>：$y$ 是 $B'=A'\circ(A\rightarrow B)$</p>
+      <p data-page-node-id="oDqyLTHbYLLuRi0qaZ9Vnm">$A$ 到 $B$ 的模糊关系矩阵 $R=A\rightarrow B$，隶属度函数的计算：</p>
+      <div class="math-scroll" data-page-node-id="Wogef8EbQ2j7gRlmifWNBD">$$\mu_{B'}(y)=\bigvee_{x}\left\{\mu_{A'}(x)\wedge\mu_{A\rightarrow B}(x,y)\right\}$$</div>
+    </div>
+    <p data-page-node-id="cNkrZGsUTHtOdwNGP33GzJ">$\mu_{A\rightarrow B}(x,y)$ 的计算方法采用玛达尼（Mamdani）推理法，有两种算子：</p>
+    <ol class="num" data-page-node-id="TrijEQhmfB3FE6q9Lz2weJ">
+      <li data-page-node-id="HRMoWOP4AwgaDfb7FW8IuS"><strong data-page-node-id="ACcF9cJ4huyHRaArvFqgJG">模糊蕴含最小运算法</strong>：$R_{\min}\;\leftrightarrow\;\mu_{A\rightarrow B}(x,y)=\mu_A(x)\wedge\mu_B(y)$</li>
+      <li data-page-node-id="6GSIAcS8TQDjDCWp2M1e36"><strong data-page-node-id="JpQETzWshwpPO5oeAEGA5a">模糊蕴含积运算法</strong>：$R_{AP}\;\leftrightarrow\;\mu_{A\rightarrow B}(x,y)=\mu_A(x)\cdot\mu_B(y)$</li>
+    </ol>
+
+    <h3 class="sub-title" data-page-node-id="xpuUzvRAJV924wgR7WQOBI">近似推理：广义否定式推理（逆否命题的推广）</h3>
+    <div class="card" data-page-node-id="QX9mbdUuQCXN0m8Cb65mwX">
+      <p data-page-node-id="Eq5YcHzkWyOko1WD454NHp"><strong data-page-node-id="coBCG47kTDc1F13myjEdYI">前提 1</strong>：如果 $x$ 是 $A$，则 $y$ 是 $B$</p>
+      <p data-page-node-id="YyfVxnQQz0ieI3OpDz3Km2"><strong data-page-node-id="r2iSSfFFsVlaGEcuXUwMfz">前提 2</strong>：如果 $y$ 是 $B'$</p>
+      <p data-page-node-id="yYnmsY4Y1xi0n5ARSnQXW6"><strong data-page-node-id="Bbu7eCtR7uEaDH8GijTXho">结论</strong>：$x$ 是 $A'=(A\rightarrow B)\circ B'$</p>
+      <p data-page-node-id="vzMfxVzZbBwQYRtdlU6tkn">隶属度函数的计算采用<strong data-page-node-id="b5KphXv9ZJz8FOxllNNoNg">扎德（Zadeh）推理法</strong>：</p>
+      <div class="math-scroll" data-page-node-id="qsxojvKDnE9ReHNloXf7YW">$$\mu_{A\rightarrow B}(x,y)=\left[\mu_A(x)\wedge\mu_B(y)\right]\vee\left[1-\mu_A(x)\right]$$</div>
+      <div class="math-scroll" data-page-node-id="iFpCSaUEdF4DK3jaCD1J7Q">$$\mu_{A'}(x)=\bigvee_{y}\left\{\mu_{B'}(y)\wedge\mu_{A\rightarrow B}(x,y)\right\}$$</div>
+    </div>
+
+    <div class="example" data-page-node-id="B0FajS3xs1YUpE7eaFgyNJ">
+      <p class="et" data-page-node-id="LNQ7TNdOLPy1o5beNY0RU4">举例（广义肯定式推理）</p>
+      <p data-page-node-id="KK46RIEw60q34sTNdXF8Ge">考虑如下逻辑条件语句：</p>
+      <p style="text-align:center" data-page-node-id="g7wHZ5P9QuGHSBSfBPpy0a"><strong data-page-node-id="Nt3iPFJvxdESqgnEY1QxG6">如果"转角误差远远大于 15°"，那么"快速减少方向角"</strong></p>
+      <p data-page-node-id="DFx2QJ53BY4wfPk0no5DeF">其隶属度函数定义为：</p>
+      <div class="math-scroll" data-page-node-id="hKRa3u6tpdfFD9WKZ8leN4">$$A=\text{转角误差远远大于 }15^{\circ}=\frac{0}{15}+\frac{0.2}{17.5}+\frac{0.5}{20}+\frac{0.8}{22.5}+\frac{1}{25}$$</div>
+      <div class="math-scroll" data-page-node-id="oq3iEylpQqYC50zOKTDvs9">$$B=\text{快速减少方向角}=\frac{1}{-20}+\frac{0.8}{-15}+\frac{0.4}{-10}+\frac{0.1}{-5}+\frac{0}{0}$$</div>
+      <p data-page-node-id="tskpSUKCkZZOyMi6bBOmzB"><strong data-page-node-id="lDcTJKMt7AHW55jCPyqvZL">求</strong>：当 $A'=\text{转角误差大约在 }20^{\circ}$ 时，方向角应该怎样变化？</p>
+      <p data-page-node-id="hHARwWPo7mTyzmP8oc0x14"><strong data-page-node-id="0ekNdKGqAyoIwlvmxHcLXA">解</strong>：定义 $A'=\text{转角误差大约在 }20^{\circ}$ 的隶属度函数：</p>
+      <div class="math-scroll" data-page-node-id="X1EipUXbvFuYEDBnnFmxLT">$$A'=\frac{0.1}{15}+\frac{0.6}{17.5}+\frac{1}{20}+\frac{0.6}{22.5}+\frac{0.1}{25}$$</div>
+      <p data-page-node-id="6l6vVOB4xSqHRpQiqDkLzp">则已知 $\mu_A(x)=[0,\ 0.2,\ 0.5,\ 0.8,\ 1]$，$\mu_B(y)=[1,\ 0.8,\ 0.4,\ 0.1,\ 0]$，当 $\mu_{A'}(x)=[0.1,\ 0.6,\ 1,\ 0.6,\ 0.1]$ 时，求解 $B'=A'\circ(A\rightarrow B)=A'\circ R$。</p>
+      <p data-page-node-id="NrJIGuWv36fGht1a1H4Zep">由玛达尼（Mamdani）推理法计算出关系矩阵：</p>
+      <p data-page-node-id="z09o5d7E8xQeSR8jAZExmT">① 积算子 $R_{AP}$：$R_{AP}(i,j)=\mu_A(x_i)\cdot\mu_B(y_j)$</p>
+      <div class="math-scroll" data-page-node-id="5ZIoXYFVmnZMo1yXn951Kv">$$R_{AP}=\begin{bmatrix} 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0.2 &amp; 0.16 &amp; 0.08 &amp; 0.02 &amp; 0\\ 0.5 &amp; 0.4 &amp; 0.2 &amp; 0.05 &amp; 0\\ 0.8 &amp; 0.64 &amp; 0.32 &amp; 0.08 &amp; 0\\ 1 &amp; 0.8 &amp; 0.4 &amp; 0.1 &amp; 0 \end{bmatrix}$$</div>
+      <p data-page-node-id="iXDwAG2yYzsJdh9JYpQyGZ">② 最小算子 $R_{\min}$：$R_{\min}(i,j)=\mu_A(x_i)\wedge\mu_B(y_j)$</p>
+      <div class="math-scroll" data-page-node-id="nsk0Y65xGeMYKUtGSCLbPM">$$R_{\min}=\begin{bmatrix} 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\ 0.2 &amp; 0.2 &amp; 0.2 &amp; 0.1 &amp; 0\\ 0.5 &amp; 0.5 &amp; 0.4 &amp; 0.1 &amp; 0\\ 0.8 &amp; 0.8 &amp; 0.4 &amp; 0.1 &amp; 0\\ 1 &amp; 0.8 &amp; 0.4 &amp; 0.1 &amp; 0 \end{bmatrix}$$</div>
+      <p data-page-node-id="qyuie37ZQU03cXHSp2Vqcs">因此（按 $\mu_{B'}(y)=\sup_x\left\{\inf\left[\mu_{A'}(x),\ \mu_R(x,y)\right]\right\}$，即对 $R$ 每列先与 $\mu_{A'}$ 取小、再取大）：</p>
+      <div class="math-scroll" data-page-node-id="i2BXZCfZZRdKwgKw1dWiAS">$$\mu_{B'}(y)=\frac{0.6}{-20}+\frac{0.6}{-15}+\frac{0.32}{-10}+\frac{0.1}{-5}+\frac{0}{0}\quad(\text{积算子 } R_{AP})$$</div>
+      <div class="math-scroll" data-page-node-id="SB5B2nhFTc7VEgShaeXGWg">$$\mu_{B'}(y)=\frac{0.6}{-20}+\frac{0.6}{-15}+\frac{0.4}{-10}+\frac{0.1}{-5}+\frac{0}{0}\quad(\text{最小算子 } R_{\min})$$</div>
+      <div class="note" data-page-node-id="Q34HeHhXGwxwLKJMKeaWc7"><span class="nt" data-page-node-id="uCsJ9ZwQ1wGnGo57VZuGki">比较</span>代数积（$R_{AP}$）结果更平滑。</div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="MO1AJFgTG6KGYbPRUmeDy2">模糊条件推理</h3>
+    <div class="card" data-page-node-id="u9T3dxmJGGIroeW8HYoEGi">
+      <p data-page-node-id="OC1oN2aFfZyqS3p3HuXVP6"><strong data-page-node-id="RUULWeBrtOIXl9fNW5gSBu">如果 $x$ 是 $A$，则 $y$ 是 $B$，否则 $y$ 是 $C$。</strong></p>
+      <p data-page-node-id="kUYjkojQgtMc7CuwFHrkAp">其逻辑表达式为：$(A\rightarrow B)\vee(\bar{A}\rightarrow C)$</p>
+      <p data-page-node-id="hAFU7UgZ92qEX0DTfXUu0b">模糊关系 $R$：</p>
+      <div class="math-scroll" data-page-node-id="Yw5QGgBT1blgkEoiPWgKIk">$$R=(A\times B)\cup(\bar{A}\times C)$$</div>
+      <p data-page-node-id="WT1Whb8pWsfznaeWuKmJMO">隶属度函数：</p>
+      <div class="math-scroll" data-page-node-id="OprU0ArH2jpJUqDfxAf7qa">$$\mu_R(x,y)=\mu_{A\rightarrow B}\cup\mu_{\bar{A}\rightarrow C}=\left[\mu_A(x)\wedge\mu_B(y)\right]\vee\left[\left(1-\mu_A(x)\right)\wedge\mu_C(y)\right]$$</div>
+      <p data-page-node-id="t915Q0EaZhvxRD5chAb4al">推理结论：</p>
+      <div class="math-scroll" data-page-node-id="gL0cn77EhCopMtNlqJSTga">$$B'=A'\circ R=A'\circ\left[(A\times B)\cup(\bar{A}\times C)\right]$$</div>
+    </div>
+
+    <div class="example" data-page-node-id="2VDYeaRzhA2W0BlXMKulfX">
+      <p class="et" data-page-node-id="Fl3kSw9ehrkjvQZv8pwXRL">举例</p>
+      <p data-page-node-id="C8Er7CUB6pudjWlJ66CGLZ">对于一个系统，当输入 $A$ 时，输出为 $B$，否则为 $C$，且有：</p>
+      <div class="math-scroll" data-page-node-id="v0PBU4LrVD5viP4YXY28dA">$$A=\frac{1}{u_1}+\frac{0.4}{u_2}+\frac{0.1}{u_3},\qquad B=\frac{0.8}{v_1}+\frac{0.5}{v_2}+\frac{0.2}{v_3},\qquad C=\frac{0.5}{v_1}+\frac{0.6}{v_2}+\frac{0.7}{v_3}$$</div>
+      <p data-page-node-id="nlolPlxmHY1Ha947XKuRKj">已知当前输入 $A'=\dfrac{0.2}{u_1}+\dfrac{1}{u_2}+\dfrac{0.4}{u_3}$。</p>
+      <p data-page-node-id="GMPVKdUKjrTU2sUAVedX8P"><strong data-page-node-id="SQ1IwYAjrphEhnkzsp1Fat">求</strong>：输出 $D$。</p>
+      <p data-page-node-id="sE5txEOh0fUWWU3cRpSSxl"><strong data-page-node-id="bMveUsXWNDx0rtCNT8y06B">解</strong>：先求关系矩阵（$\bar{A}=\dfrac{0}{u_1}+\dfrac{0.6}{u_2}+\dfrac{0.9}{u_3}$）：</p>
+      <div class="math-scroll" data-page-node-id="v4pxgrEsn6uGLelHF6U5O4">$$A\times B=\begin{bmatrix} 0.8 &amp; 0.5 &amp; 0.2\\ 0.4 &amp; 0.4 &amp; 0.2\\ 0.1 &amp; 0.1 &amp; 0.1 \end{bmatrix},\qquad \bar{A}\times C=\begin{bmatrix} 0 &amp; 0 &amp; 0\\ 0.5 &amp; 0.6 &amp; 0.6\\ 0.5 &amp; 0.6 &amp; 0.7 \end{bmatrix}$$</div>
+      <p data-page-node-id="doy7snCJjI8x98Za3RiN3k">由玛达尼推理法得：</p>
+      <div class="math-scroll" data-page-node-id="KmXQWaEpTix3zPrhG3wEaK">$$R=(A\times B)\cup(\bar{A}\times C)=\begin{bmatrix} 0.8 &amp; 0.5 &amp; 0.2\\ 0.5 &amp; 0.6 &amp; 0.6\\ 0.5 &amp; 0.6 &amp; 0.7 \end{bmatrix}$$</div>
+      <p data-page-node-id="vVq6pFtFLox6Mrsk5VOP52">则：</p>
+      <div class="math-scroll" data-page-node-id="4MtrBEijCdCvlH1moW8EIc">$$D=A'\circ R=\begin{bmatrix} 0.2 &amp; 1 &amp; 0.4 \end{bmatrix}\circ\begin{bmatrix} 0.8 &amp; 0.5 &amp; 0.2\\ 0.5 &amp; 0.6 &amp; 0.6\\ 0.5 &amp; 0.6 &amp; 0.7 \end{bmatrix}=\begin{bmatrix} 0.5 &amp; 0.6 &amp; 0.6 \end{bmatrix}$$</div>
+      <p data-page-node-id="yFSEr079NKkTDIgzMjCRSU"><strong data-page-node-id="ybJqi2sCVu98XalSQHaDON">输出</strong>：$D=\dfrac{0.5}{v_1}+\dfrac{0.6}{v_2}+\dfrac{0.6}{v_3}$。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="eEjed8P6eMOK2LYKXeKAlA">多输入模糊推理</h3>
+    <div class="card" data-page-node-id="EvK6zdR5tICxBxtYO6mRst">
+      <p data-page-node-id="YktZXtsu8hkrbrmQypEV6E"><strong data-page-node-id="S27i7CUGGGCVKRfdfNEEvC">前提 1</strong>：如果 $A$ 且 $B$，那么 $C$</p>
+      <p data-page-node-id="12GfaeuVwVSrdgzH3LHHQk"><strong data-page-node-id="DDpCDzp4fSiZJJrCQRQBHH">前提 2</strong>：现在是 $A'$ 且 $B'$</p>
+      <p data-page-node-id="sgHXYZehSgiMM5qvXDGqWD"><strong data-page-node-id="6nO7NHHFlGS6kSkjqAVBVV">结论</strong>：</p>
+      <div class="math-scroll" data-page-node-id="1GRhrFiYIwGiMgB2hCip66">$$C'=(A'\ \text{AND}\ B')\circ\left[(A\ \text{AND}\ B)\rightarrow C\right]$$</div>
+      <p data-page-node-id="DIzK6gs7R8hViFaVgwW1pA">基于玛达尼推理，则模糊关系矩阵为：</p>
+      <div class="math-scroll" data-page-node-id="0AfSzWZAPnnIzlbljx0tYu">$$R=\left[\mu_A(x)\wedge\mu_B(y)\right]\wedge\mu_C(z)$$</div>
+      <p data-page-node-id="5MHLYnNNGg4BDIxs9q6A0r">推理结果的隶属度函数为：</p>
+      <div class="math-scroll" data-page-node-id="L6SUzcDHHks1V3JSJtQENI">$$\begin{aligned} \mu_{C'}(z)&=\bigvee_{X}\left\{\mu_{A'}(x)\wedge\left[\mu_A(x)\wedge\mu_C(z)\right]\right\}\cap\bigvee_{Y}\left\{\mu_{B'}(y)\wedge\left[\mu_B(y)\wedge\mu_C(z)\right]\right\}\\ &=\bigvee_{X}\left\{\mu_{A'}(x)\wedge\mu_A(x)\right\}\wedge\mu_C(z)\;\cap\;\bigvee_{Y}\left\{\mu_{B'}(y)\wedge\mu_B(y)\right\}\wedge\mu_C(z)\\ &=\left(\alpha_A\wedge\mu_C(z)\right)\wedge\left(\alpha_B\wedge\mu_C(z)\right)\\ &=\left(\alpha_A\wedge\alpha_B\right)\wedge\mu_C(z) \end{aligned}$$</div>
+      <div class="math-scroll" data-page-node-id="vqcw7nt4C2DsZ9uhsCEbcD">$$\alpha_A=\bigvee_{X}\left(\mu_{A'}(x)\wedge\mu_A(x)\right),\qquad \alpha_B=\bigvee_{Y}\left(\mu_{B'}(y)\wedge\mu_B(y)\right)$$</div>
+    </div>
+
+    <p data-page-node-id="Md43ptK59dE5cvK62EjDrY">玛达尼推理<strong data-page-node-id="K21Ma0xoDIRstBNsaHEbQw">削顶法</strong>中的几何意义是：分别求出 $A'$ 对 $A$、$B'$ 对 $B$ 的隶属度 $\alpha_A$、$\alpha_B$，并且取这两个之中小的一个作为总的模糊推理前件的隶属度，再以此为基准去切割推理后件的隶属度函数，便得到结论 $C'$。推理过程如下图：</p>
+    <figure class="fig" data-page-node-id="ZCIfJfFwqcUTnw3uZNXiJO"><img src="images/mamdani_clipping_p107.png" style="max-width:620px" alt="PPT 第 107 页原图" data-page-node-id="3n0S2UHOEf0tKeHdcDypwD"><figcaption data-page-node-id="AuDdcqtoZlRSiZKT9QBB1Q">玛达尼削顶法：α_A、α_B 取小后切割后件隶属度函数得 C′｜原图（PPT 第 107 页）</figcaption></figure>
+
+    <p data-page-node-id="XCdcTsneOOC0LpswRTQG93">如果语言变量是有限集合，即是离散的，则：</p>
+    <ol class="num" data-page-node-id="xnbWTvXepmHdW33YvWcG5i">
+      <li data-page-node-id="7t1G8fzWqPsbgNaxeJKQ7F">先求 $D=A\times B$，令 $d_{xy}=\mu_A(x)\wedge\mu_B(y)$ 得 $D$ 矩阵：
+        <div class="math-scroll" data-page-node-id="ks7lYhymbcOP93GLsOZzpS">$$D=\begin{bmatrix} d_{11} &amp; d_{12} &amp; \cdots &amp; d_{1m}\\ d_{21} &amp; d_{22} &amp; \cdots &amp; d_{2m}\\ \vdots &amp; \vdots &amp; &amp; \vdots\\ d_{n1} &amp; d_{n2} &amp; \cdots &amp; d_{nm} \end{bmatrix}$$</div></li>
+      <li data-page-node-id="yKNlEotkXkIGyMxLpSuPx3">将 $D$ 写成列矢量 $D_T$，即 $D_T=\left[d_{11},d_{12},\dots,d_{1m},d_{21},\dots,d_{nm}\right]^T$</li>
+      <li data-page-node-id="mI7iiy9Aan4ZR0IctK6Z4j">求出关系矩阵 $R$：$R=D_T\times C$</li>
+      <li data-page-node-id="FZQajflPTWwGwrclAo9IuW">由 $A'$、$B'$ 求出 $D'$：$D'=A'\times B'$</li>
+      <li data-page-node-id="ekQDa6b25QPQ9yBQsV1i5Z">仿照 ②，将 $D'$ 化为列矢量 $D_T'$</li>
+      <li data-page-node-id="8Tg8rK3syczHepSPKWtd7y">最后求出模糊推理输出：$C'=D_T'\circ R$</li>
+    </ol>
+
+    <div class="example" data-page-node-id="1H2OZjutMof4HJUzuJheU9">
+      <p class="et" data-page-node-id="EjEjd9sshnqRElqgnCygow">例 2-16</p>
+      <p data-page-node-id="TRa4rWg5p66qTcqBNMJSOv">假设：</p>
+      <div class="math-scroll" data-page-node-id="KEd0OYT3Ia4HpmoldMNMIk">$$A=\frac{1}{x_1}+\frac{0.5}{x_2},\qquad B=\frac{0.1}{y_1}+\frac{0.5}{y_2}+\frac{1}{y_3},\qquad C=\frac{0.2}{z_1}+\frac{1}{z_2}$$</div>
+      <p data-page-node-id="0fEPxXTdpa2DDX1qTQ3alR">现已知：</p>
+      <div class="math-scroll" data-page-node-id="4NPuDqGGzGQAMoPXSdV0dE">$$A'=\frac{0.8}{x_1}+\frac{0.1}{x_2},\qquad B'=\frac{0.5}{y_1}+\frac{0.2}{y_2}+\frac{0}{y_3}$$</div>
+      <p data-page-node-id="uVhapAqPbCdsBkHtDlHUIg"><strong data-page-node-id="dECE8uNkOugTTwMBD1dLZR">求</strong>：$C'$。</p>
+      <p data-page-node-id="faPce4t2id71qdNZ6otnDM"><strong data-page-node-id="R7YSJ9LOdKycESf1j9oHT3">解</strong>：</p>
+      <p data-page-node-id="Jleuhi3aV7k0GDL0SNNtuB">① $D=A\times B=\begin{bmatrix} 0.1 &amp; 0.5 &amp; 1\\ 0.1 &amp; 0.5 &amp; 0.5 \end{bmatrix}$</p>
+      <p data-page-node-id="4AARJ9TTGdIgwMqbP0birP">② $D_T=\begin{bmatrix} 0.1 &amp; 0.5 &amp; 1 &amp; 0.1 &amp; 0.5 &amp; 0.5 \end{bmatrix}^T$</p>
+      <p data-page-node-id="xiX086Gn9VUNrMkp5iPkLJ">③ $R=D_T\times C=\begin{bmatrix} 0.1\\ 0.5\\ 1\\ 0.1\\ 0.5\\ 0.5 \end{bmatrix}\times\begin{bmatrix} 0.2 &amp; 1 \end{bmatrix}=\begin{bmatrix} 0.1 &amp; 0.1\\ 0.2 &amp; 0.5\\ 0.2 &amp; 1\\ 0.1 &amp; 0.1\\ 0.2 &amp; 0.5\\ 0.2 &amp; 0.5 \end{bmatrix}$</p>
+      <p data-page-node-id="TTIJCE2w9b2mnRLpVDyNuT">④ $D'=A'\times B'=\begin{bmatrix} 0.8\\ 0.1 \end{bmatrix}\times\begin{bmatrix} 0.5 &amp; 0.2 &amp; 0 \end{bmatrix}=\begin{bmatrix} 0.5 &amp; 0.2 &amp; 0\\ 0.1 &amp; 0.1 &amp; 0 \end{bmatrix}$</p>
+      <p data-page-node-id="gKNt7SKnQIVR1ppZ3yOGrl">⑤ $D_T'=\begin{bmatrix} 0.5 &amp; 0.2 &amp; 0 &amp; 0.1 &amp; 0.1 &amp; 0 \end{bmatrix}$</p>
+      <p data-page-node-id="aCtDtCLZu4HOOA5Mk4VtW7">⑥ $C'=D_T'\circ R=\begin{bmatrix} 0.2 &amp; 0.2 \end{bmatrix}$</p>
+      <p data-page-node-id="9mMOJ1XOPiwmqBY96EBVPI">即：</p>
+      <div class="math-scroll" data-page-node-id="EC6wr7CD1Cnh2H2ll2zG3r">$$C'=\frac{0.2}{z_1}+\frac{0.2}{z_2}$$</div>
+      <div class="note" data-page-node-id="C9W4XLYGArs9ODAVhUmV2R"><span class="nt" data-page-node-id="T0mc3mS3iUdjlp9bO2GHf0">勘误</span>原 PPT 第 110 页中 $D'$ 首行第三列写为 1，但按 $D'=A'\times B'$（取小运算）及后续 $C'$ 的求解过程，应为 0。</div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="8nSiJpt3UDn76HI1O9ldV0">多输入多规则推理</h3>
+    <div class="card" data-page-node-id="QQEcoAgFMyjSUofCHB866p">
+      <p data-page-node-id="8QGDar7skCOUVroYOTGdW1">如果 $A_1$ 且 $B_1$，那么 $C_1$</p>
+      <p data-page-node-id="03MpXMU5wa3HOxU0uNtfwH">否则如果 $A_2$ 且 $B_2$，那么 $C_2$</p>
+      <p style="text-align:center" data-page-node-id="4CzduMieMD7HHGtKtZViEk">⋮</p>
+      <p data-page-node-id="zlsnwqhwjXkO4JzFp8ffPw">否则如果 $A_n$ 且 $B_n$，那么 $C_n$</p>
+      <p data-page-node-id="W5lizJvnb569rECce5j22T">已知 $A'$ 且 $B'$，那么 $C'=\text{?}$</p>
+      <p data-page-node-id="2Q3OPJz21SSXLEYpJnCho7">在这里，$A_n$ 和 $A'$、$B_n$ 和 $B'$、$C_n$ 和 $C'$ 分别是不同论域 $X$、$Y$、$Z$ 上的模糊集合。</p>
+      <p data-page-node-id="90BIFxmNuSR94PILiOMZj0">推理结果可表示为：</p>
+      <div class="math-scroll" data-page-node-id="XH0w5XKFcSQ5rN0zCP92Vd">$$\begin{aligned} C'&=(A'\ \text{AND}\ B')\circ\left(\left[(A_1\ \text{AND}\ B_1)\rightarrow C_1\right]\cup\dots\cup\left[(A_n\ \text{AND}\ B_n)\rightarrow C_n\right]\right)\\ &=C_1'\cup C_2'\cup C_3'\dots\cup C_n' \end{aligned}$$</div>
+      <p data-page-node-id="L2zkStCaXp2gVwIaDe3ium">其中：</p>
+      <div class="math-scroll" data-page-node-id="qvgEIwbCXgB5JGr3gZTb8T">$$C_i'=(A'\ \text{AND}\ B')\circ\left[(A_i\ \text{AND}\ B_i)\rightarrow C_i\right]$$</div>
+      <p data-page-node-id="aTdlix0ED34wlK5sMMYn5p">其隶属度函数为：</p>
+      <div class="math-scroll" data-page-node-id="AIhqGWmYhzAZaPVAViLaz4">$$\begin{aligned} \mu_{C_i'}(z)&=\bigvee_{X}\left\{\mu_{A'}(x)\wedge\left[\mu_{A_i}(x)\wedge\mu_{C_i}(z)\right]\right\}\cap\bigvee_{Y}\left\{\mu_{B'}(y)\wedge\left[\mu_{B_i}(y)\wedge\mu_{C_i}(z)\right]\right\}\\ &=\left(\alpha_{A_i}\wedge\mu_{C_i}(z)\right)\wedge\left(\alpha_{B_i}\wedge\mu_{C_i}(z)\right)\\ &=\left(\alpha_{A_i}\wedge\alpha_{B_i}\right)\wedge\mu_{C_i}(z) \end{aligned}$$</div>
+      <div class="math-scroll" data-page-node-id="qyFJqPsjmEtbovUCwxOGBc">$$\alpha_{A_i}=\bigvee_{X}\left(\mu_{A'}(x)\wedge\mu_{A_i}(x)\right),\qquad \alpha_{B_i}=\bigvee_{Y}\left(\mu_{B'}(y)\wedge\mu_{B_i}(y)\right)$$</div>
+    </div>
+
+    <figure class="fig" data-page-node-id="EyRTqVhhoozpSqhTmYmnWm"><img src="images/multi_rule_p114.png" style="max-width:560px" alt="PPT 第 114 页原图" data-page-node-id="sNhA27XGwuJCu1qC6cii60"><figcaption data-page-node-id="NRhGXgJphyKqnjvobP3eHV">多输入多规则推理：各规则分别削顶，再取并集｜原图（PPT 第 114 页）</figcaption></figure>
+  </section>
+
+  <!-- ========== P115–124：2.6 模糊关系方程的解 ========== -->
+  <section class="slide" id="sec2-6" data-page-node-id="N4mArnRLSmWNoh6I1POHTB">
+    <span class="slide-tag" data-page-node-id="2pDtgJ2Z80UmQTQzjL3hSC">PPT 第 115–124 页</span>
+    <h2 class="sec-title" data-page-node-id="3JT66IsigRkjG6QRvvpdLA">三、模糊逻辑：模糊关系方程的解</h2>
+
+    <div class="card" data-page-node-id="dS8m2annY8lyTOXA6SUMGM">
+      <p data-page-node-id="6Rh9dHc6EEGNaIjkDm5vut">模糊关系 $R$ 表示模糊系统输入与输出的映射。当论域是有限集时，模糊关系 $R$ 可以用关系矩阵 $R$ 来表示。</p>
+      <p data-page-node-id="rUfgPJY2MXhDMchLiGyetI">已知 $A$ 和 $B$，有以下关系：</p>
+      <div class="math-scroll" data-page-node-id="xjxvonhbesCgnEEDOROHY6">$$A\circ R=B$$</div>
+      <p data-page-node-id="iMXEVbFuQCeuRPHyRxNswB">求关系矩阵 $R$。$A\in F(U\times V)$、$B\in F(U\times W)$、$R\in F(V\times W)$，分别为笛卡尔空间 $U\times V$、$U\times W$、$V\times W$ 上的模糊关系矩阵，有：</p>
+      <div class="math-scroll" data-page-node-id="ovZ4dnCreVZtWctfSLx0w2">$$A=(a_{ij})_{m\times n},\qquad B=(b_{ij})_{m\times s},\qquad R=(r_{ij})_{n\times s}$$</div>
+    </div>
+
+    <p data-page-node-id="SIHHciYjpK6AZ582OxRVoR">已知 $A$、$B$ 的条件下，求 $R$：用分块矩阵的形式表示，有：</p>
+    <div class="math-scroll" data-page-node-id="MIdhfgV0loyTsftjIF5UDK">$$A\circ(R_1,\ R_2,\ \dots,\ R_s)=(B_1,\ B_2,\ \dots,\ B_s)$$</div>
+    <p data-page-node-id="TkLaGmieXskYvX7aMDokhB">其中，$R_j=(r_{1j},\,r_{2j},\,\dots,\,r_{nj})^T$，$B_j=(b_{1j},\,b_{2j},\,\dots,\,b_{mj})^T$。则原问题可化为 $s$ 个简单的模糊矩阵方程：</p>
+    <div class="math-scroll" data-page-node-id="mTPKxSNGYWQ1gG3qICpgJW">$$A\circ R_j=B_j\qquad j=1,2,\dots,s$$</div>
+
+    <p data-page-node-id="rq2DATBDLTNwbiAUzLiV8b">考察如下方程（设合成算子 $\circ$ 取 $\min$）：</p>
+    <div class="math-scroll" data-page-node-id="M8Gn4jGFjB46Ehl1OeZ6x1">$$\begin{bmatrix} a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n}\\ a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n}\\ \vdots &amp; \vdots &amp; &amp; \vdots\\ a_{m1} &amp; a_{m2} &amp; \cdots &amp; a_{mn} \end{bmatrix}\circ\begin{bmatrix} r_1\\ r_2\\ \vdots\\ r_n \end{bmatrix}=\begin{bmatrix} b_1\\ b_2\\ \vdots\\ b_m \end{bmatrix}$$</div>
+    <div class="math-scroll" data-page-node-id="dVoJKhY6wFzsZWtJ6PGfr9">$$\begin{cases} (a_{11}\wedge r_1)\vee(a_{12}\wedge r_2)\vee\dots\vee(a_{1n}\wedge r_n)=b_1\\ (a_{21}\wedge r_1)\vee(a_{22}\wedge r_2)\vee\dots\vee(a_{2n}\wedge r_n)=b_2\\ \qquad\qquad\vdots\\ (a_{m1}\wedge r_1)\vee(a_{m2}\wedge r_2)\vee\dots\vee(a_{mn}\wedge r_n)=b_m \end{cases}$$</div>
+
+    <p data-page-node-id="tTccSmUJM58mywuMeLwBw5">先讨论其中的第 $i$ 个方程的解：</p>
+    <div class="math-scroll" data-page-node-id="wRed8ky2k9YYbF8Bg1VsPv">$$(a_{i1}\wedge r_1)\vee(a_{i2}\wedge r_2)\vee\dots\vee(a_{in}\wedge r_n)=b_i,\qquad i=1,2,\dots,m$$</div>
+    <p data-page-node-id="RNwiiUsDrW9on9wAS08j7o">显然，上述方式可以分解为 $n$ 个<strong data-page-node-id="91QEH9e5e2V1J174BFm1dU">等式方程</strong>和 $n$ 个<strong data-page-node-id="ZELGXlcozpWSrWxoVvDowo">不等式方程</strong>：</p>
+    <div class="math-scroll" data-page-node-id="yHxzrujUHdubSELLCB9MB5">$$\begin{aligned} &(a_{i1}\wedge r_1)=b_i,\quad (a_{i2}\wedge r_2)=b_i,\quad \dots,\quad (a_{in}\wedge r_n)=b_i\\ &(a_{i1}\wedge r_1)\le b_i,\quad (a_{i2}\wedge r_2)\le b_i,\quad \dots,\quad (a_{in}\wedge r_n)\le b_i \end{aligned}$$</div>
+
+    <h3 class="sub-title" data-page-node-id="qUSKIrwzAlihxBCMwHvxSy">一元方程 $a\wedge r=b$ 与 $a\wedge r\le b$ 的解</h3>
+    <div class="card" data-page-node-id="wOwKjcxnfowz75DekGgPvi">
+      <p data-page-node-id="EOYBkFUp6XY4BJAYzuLCdX">$a\wedge r=b$ 的解：</p>
+      <div class="math-scroll" data-page-node-id="loBDnlf5t7FXPq6bKsZQNE">$$[r]=\begin{cases} b, &amp; \text{IF}\quad a&gt;b\\ [b,\,1], &amp; \text{IF}\quad a=b\\ \varnothing, &amp; \text{IF}\quad a&lt;b \end{cases}$$</div>
+      <p data-page-node-id="ycQzdh3WPqI1JOqdDPYsO1">$a\wedge r\le b$ 的解：</p>
+      <div class="math-scroll" data-page-node-id="nRSCj4kCZSyuRIeCTTcuxr">$$(r)=\begin{cases} [0,\,b], &amp; \text{IF}\quad a&gt;b\\ [0,\,1], &amp; \text{IF}\quad a\le b \end{cases}$$</div>
+    </div>
+
+    <p data-page-node-id="vAFReop1xiwQ4LqhMzEVJB">设第 $k$ 个等式方程成立，则存在一个解为：</p>
+    <div class="math-scroll" data-page-node-id="IgpBkFxaJXYjiSKVAFIqe9">$$W[k]=\left[(r_1),\ (r_2),\ \dots,\ [r_k],\ \dots,\ (r_n)\right]$$</div>
+    <p data-page-node-id="SjAwrA7Rv27hv3DodwTnZY">其中 $[r_k]$ 表示第 $k$ 个<strong data-page-node-id="0dkK6GkPbdvb50fFYBMRqw">等式</strong>方程的解；$(r_i)\ (i\ne k)$ 表示第 $i$ 个<strong data-page-node-id="IJ0REev162WLnAVJhJwYWO">不等式</strong>方程的解。则第 $i$ 行方程的全部解为：</p>
+    <div class="math-scroll" data-page-node-id="cGgEn9NGsR13uH8MgooMOo">$$r_i=W[1]\cup W[2]\cup\dots\cup W[n]$$</div>
+    <p data-page-node-id="uDtWeW24kxPHXzAO5BQffC">最终解为 $m$ 个全部解的交集：</p>
+    <div class="math-scroll" data-page-node-id="JB6XpF1KHPFVfRIS9ZHnnH">$$R=r_1\cap r_2\cap\dots\cap r_m$$</div>
+
+    <div class="example" data-page-node-id="glqFAAyJDqddhLLCctBLYO">
+      <p class="et" data-page-node-id="dECJbkxFfObPo8GBA1f40Z">例 2-18</p>
+      <p data-page-node-id="AO1fuQ1hHZebTGjDEzmaIm">已知模糊关系方程：</p>
+      <div class="math-scroll" data-page-node-id="4HfzKni8LGjwGqK0ZW5hSe">$$(0.5\wedge r_1)\vee(0.4\wedge r_2)\vee(0.8\wedge r_3)=0.5$$</div>
+      <p data-page-node-id="hOPjemV6HpTNO5VBBgsryE"><strong data-page-node-id="1iZEVFFzQH7VT5fPPND9aE">求</strong>：模糊关系方程解。</p>
+      <p data-page-node-id="4UnU3Ehe0Kro7VVUc65blj"><strong data-page-node-id="6ZVbuDaOO6jAGXmgTgYt9A">解</strong>：化为三个一元一次等式方程：</p>
+      <div class="math-scroll" data-page-node-id="l2TZ18rBNONWCwFv6WGwpl">$$(0.5\wedge r_1)=0.5,\qquad (0.4\wedge r_2)=0.5,\qquad (0.8\wedge r_3)=0.5$$</div>
+      <p data-page-node-id="FjtlwJNgFnekBQSFpy5Mco">和三个一元一次不等式：</p>
+      <div class="math-scroll" data-page-node-id="Y2i569M9jTjKjSIR7z7yk7">$$(0.5\wedge r_1)\le 0.5,\qquad (0.4\wedge r_2)\le 0.5,\qquad (0.8\wedge r_3)\le 0.5$$</div>
+      <p data-page-node-id="iYV1TKMkH4DdKo4ec5soBE">等式方程的解为：</p>
+      <div class="math-scroll" data-page-node-id="CM37EcmZWRJ7NFHaMDfzM9">$$[r_1]=[0.5,\,1],\qquad [r_2]=[\varnothing],\qquad [r_3]=0.5$$</div>
+      <p data-page-node-id="vPM9bijjrkD76zWstTXYpO">不等式方程的解为：</p>
+      <div class="math-scroll" data-page-node-id="IcAryDEph0UwdZiYchfDtI">$$(r_1)=[0,\,1],\qquad (r_2)=[0,\,1],\qquad (r_3)=[0,\,0.5]$$</div>
+      <p data-page-node-id="tzSaCMgpJP21sHj1KlldR6">因此，此模糊方程的部分解分别为：</p>
+      <div class="math-scroll" data-page-node-id="TxawJ37Bw0m4AQKoM7VC3Z">$$\begin{aligned} W_1&=\left([r_1],\,(r_2),\,(r_3)\right)=\left([0.5,1],\ [0,1],\ [0,0.5]\right)\\ W_2&=\left((r_1),\,[r_2],\,(r_3)\right)=\left([0,1],\ [\varnothing],\ [0,0.5]\right)=[\varnothing]\\ W_3&=\left((r_1),\,(r_2),\,[r_3]\right)=\left([0,1],\ [0,1],\ 0.5\right) \end{aligned}$$</div>
+      <p data-page-node-id="omKkz18YZwc4sBHu6E78fD">所以：</p>
+      <div class="math-scroll" data-page-node-id="fQzvVC5Hxtr033WdkdonkX">$$R=W_1\cup W_3=\left([0.5,1],\ [0,1],\ [0,0.5]\right)\cup\left([0,1],\ [0,1],\ 0.5\right)$$</div>
+    </div>
+  </section>
+
+  <!-- ========== P125：总结 ========== -->
+  <section class="slide" id="summary" data-page-node-id="OISjSPjqM8bXSLGuGGynVM">
+    <span class="slide-tag" data-page-node-id="kyEjeCQhUHy1bob3iJZhrW">PPT 第 125 页</span>
+    <h2 class="sec-title" data-page-node-id="YCHzTE5AqMv7TZi2v8f5hk">总结</h2>
+    <div class="card" data-page-node-id="J65cHS2cd6DOvh3nJIYSFR">
+      <h4 class="minor" data-page-node-id="uQDUPiMWYJ9ghthvJ8s7bo">模糊集合论基础</h4>
+      <ul class="clean" data-page-node-id="ycdJ4M3DpWS0Nro8eTSW1Y">
+        <li data-page-node-id="gBHMt0DCXCqE79V9383jv3">模糊集合的定义、运算、性质</li>
+        <li data-page-node-id="CLwsRQLuBIRgtt2dqB1QO3">隶属度函数的定义、建立</li>
+        <li data-page-node-id="rCNEbooAkoOBfPADEgoGJi">模糊关系的定义、合成</li>
+      </ul>
+      <h4 class="minor" data-page-node-id="oHPMH8ypVzC07y5q3lMX7C">模糊逻辑理论基础</h4>
+      <ul class="clean" data-page-node-id="YrFbRv9v4xr7BDMj8T0nHQ">
+        <li data-page-node-id="HnCDMmWVMQ5IZSWRI3C70L">模糊逻辑及其基本运算</li>
+        <li data-page-node-id="CahJEHHtkzAVF981YVvE8l">模糊语言逻辑</li>
+        <li data-page-node-id="5wjBzoaWwY5KSjsgMf8Yxx">模糊逻辑推理</li>
+        <li data-page-node-id="lhhphrHSDi2go8mQJm3nsy">模糊关系方程的解</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== P126：课后作业 ========== -->
+  <section class="slide" data-page-node-id="BnpAL2zBrlqkCEeEzhfdsr">
+    <span class="slide-tag" data-page-node-id="5vjCeJg22MCJYZvJSB7l09">PPT 第 126 页</span>
+    <h2 class="sec-title" data-page-node-id="N51Imh8DGjUjb7IeQxof42">课后作业</h2>
+    <div class="example" data-page-node-id="5vB8QBokucP6yl2e7EiWRp">
+      <p class="et" data-page-node-id="E3Ifab1xI6Ig4E2W6oyHCf">作业内容</p>
+      <ul class="clean" data-page-node-id="V2VWOu8mD5RasdE87IBm8e">
+        <li data-page-node-id="jzSsk9pNjMWxMnGFzhN9xA">习题 <strong data-page-node-id="YKryR5BOZJhrXVvAvf1M2E">2-1</strong></li>
+        <li data-page-node-id="TJwaaNHOA2uJYoZ5VcGqJy">习题 <strong data-page-node-id="5FTsZi3MiKFhf8qraCBAJ4">2-5、2-6</strong></li>
+      </ul>
+      <p style="margin-top:12px" data-page-node-id="bQcuc8hazUEcLMJYxrNqjo"><strong data-page-node-id="jcKui08VsxSbcDfzPosbVC">时间</strong>：第三章讲完一起交，截止日期 <span class="kw" data-page-node-id="NVymRyNTpLTj8yUhvAPojz">9 月 29 日</span></p>
+      <p data-page-node-id="ANIhFOloqPzHUmHeRDVG3L"><strong data-page-node-id="0nLTIDDl3drmOEXAYlAtGq">提交途径</strong>：雨课堂</p>
+      <p data-page-node-id="lRQsXhxWJ22OIAVUoc6ry5"><strong data-page-node-id="lHVxvKgBWnckDSek3lCl5n">提交形式</strong>：可以直接在 Word 中写，也可以写完拍照（字迹清晰可辨认）。</p>
+    </div>
+  </section>
+
+  <footer class="foot" data-page-node-id="AZ06hsaK95epBAvColpW1Q">
+    智能控制概论 · 第一讲「绪论和模糊控制的理论基础」讲义 · 由 PPT 转换生成（全 126 页）<br data-page-node-id="mes0T62pZit65hMZadjzly">
+    公式由 MathJax 渲染，示意图均按原课件重绘；东南大学自动化学院 · 2026 年 9 月
+  </footer>
+
+</div>
+</body>
+</html>
