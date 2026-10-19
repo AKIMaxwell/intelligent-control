@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="SGln3XpAjDeMf2luoxRhng">
+<head data-page-node-id="bd1ZQ5XEwZn8V5l0GEkKo8">
+<meta charset="UTF-8" data-page-node-id="Zu1uXDRRK3Gk5aADCE8OcZ">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="kYFTGFOqxGzVRCjXgcER2p">
+<title>智能控制概论 · 第三讲 模糊控制系统实验（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:6px 8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data td.rowh, table.data th.rowh{
+    background:var(--green-light);font-weight:700;color:var(--green-deep);
+  }
+  table.data td.hl{background:var(--yellow);font-weight:700;color:var(--green-deep);}
+  table.rules-tbl th.corner{background:var(--green-deep);}
+  table.rules-tbl td{font-weight:600;}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  .step{
+    display:flex;gap:14px;align-items:flex-start;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:14px;padding:18px 22px;margin:14px 0;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+  }
+  .step .sno{
+    flex:none;width:34px;height:34px;border-radius:50%;
+    background:var(--green);color:#fff;font-weight:800;font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;margin-top:2px;
+  }
+  .step .sbody{flex:1;min-width:0;}
+  .step .stitle{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-dark);font-size:16.5px;
+  }
+  code.cmd{
+    font-family:Consolas,"Courier New",monospace;
+    background:#F3F5EE;border:1px solid var(--green-line);
+    border-radius:6px;padding:1px 8px;font-size:14.5px;color:var(--green-deep);
+  }
+  .rules{
+    font-family:Consolas,"Courier New",monospace;
+    font-size:13.5px;line-height:1.9;
+    background:#FBFCF7;border:1px solid var(--green-line);
+    border-radius:10px;padding:12px 18px;margin:10px 0;
+    overflow-x:auto;white-space:pre;
+  }
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,header.cover,.step{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+</style>
+</head>
+<body data-page-node-id="OSmfrXyjyybT23gRGj6psJ">
+
+<nav class="topbar" data-page-node-id="UMPq9BzU6F2ieVVsGxwdpg">
+  <div class="topbar-inner" data-page-node-id="H3uXZlPd2HFBBtAOFmouA8">
+    <span class="brand" data-page-node-id="nEABhN6WAPN3lFEFWrfCEV">智能控制概论 · 第三讲</span>
+    <div class="links" data-page-node-id="wbNfJtdytxhWfotyPY9bpU">
+      <a href="#cover" data-page-node-id="bkRapw2EE1WJdtHN76bWeH">封面</a>
+      <a href="#compose" data-page-node-id="xrle7KcCdTovEOAAUA2199">系统组成</a>
+      <a href="#design" data-page-node-id="YzYVpCJQaI5flVDHI6YzAD">控制器设计</a>
+      <a href="#steps" data-page-node-id="U4AJBoMW7INxS3U2vOSVvG">实验步骤</a>
+      <a href="#task" data-page-node-id="wJCzB9TgP0K5FhBMncLFcj">实验任务书</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page" data-page-node-id="V43Mb7jDu3QfEiFNx7YQsu">
+
+  <!-- ========== P1：封面 ========== -->
+  <section class="slide" id="cover" data-page-node-id="DDwhpIJEPVD3rdOyxHaEOK">
+    <span class="slide-tag" data-page-node-id="uuY8uKlDg5UUUmfFUrEh08">PPT 第 1 页</span>
+    <header class="cover" data-page-node-id="0Ji3GwrZBBeK4pbnasjPAV">
+      <div class="kicker" data-page-node-id="jVz87oUYNooGIff5msOFzs">东南大学自动化学院</div>
+      <h1 data-page-node-id="XMdvdkZMnFrQz0kwUWvGQv">智能控制概论</h1>
+      <div class="en" data-page-node-id="AOLjMYyZEXBsgxtnCR3wUW">Introduction to Intelligent Control</div>
+      <div class="lecture" data-page-node-id="8F1RDzRVB2gtMftR9MvemO">第三讲&nbsp;&nbsp;模糊控制系统实验</div>
+      <div class="meta" data-page-node-id="qCO7OuUbp1gkFupGEGqF3N">
+        主讲人：刘雪庆<br data-page-node-id="F4Y5MVhGfneYXXPTNCnBgq">
+        2026 年 9 月
+      </div>
+    </header>
+  </section>
+
+  <!-- ========== P2：实验一 标题页 ========== -->
+  <section class="slide" data-page-node-id="SGvNV6wR4IC0JFzQqCHkWL">
+    <span class="slide-tag" data-page-node-id="MUDR1fd3gMvY2DSYLXYJBm">PPT 第 2 页</span>
+    <div class="chapter" data-num="1" data-page-node-id="FHnEAmWbmmjkxms35VjniI">
+      <div class="ch-kicker" data-page-node-id="U49q2rtwrF2HbS5Zvk06kH">EXPERIMENT 1</div>
+      <h1 data-page-node-id="BRKoiz65FRf0czfQtISnGb">实验一&nbsp;&nbsp;模糊控制系统实验</h1>
+    </div>
+  </section>
+
+  <!-- ========== P3：实验准备 ========== -->
+  <section class="slide" data-page-node-id="G26yqvXJULppOwe5UHHq4Z">
+    <span class="slide-tag" data-page-node-id="7mGerxtW8HqwmIiBnqaDfd">PPT 第 3 页</span>
+    <h2 class="sec-title" data-page-node-id="rv6kIoiyOVBJ1XovyyHm70">实验准备</h2>
+    <ul class="clean" data-page-node-id="vELJnqpTFafdgByC7nMDAS">
+      <li data-page-node-id="bwwomGmLoUEjgjwPPbfVzO"><span class="tag" data-page-node-id="s7rCUS533O6lsWvSBdcMvn">设备</span>自带电脑；</li>
+      <li data-page-node-id="SlKlQ8EOWMfDuKKoZqkaxf"><span class="tag" data-page-node-id="AuwFxoVz0YRE853LBihcsJ">软件</span>预装 MATLAB；</li>
+      <li data-page-node-id="LlwuMFIgYrp6JYAm7NWhsg"><span class="tag" data-page-node-id="9KVXPUsyF4jvUAcECFo1vW">工具箱</span>预装 Fuzzy Logic Toolbox。</li>
+    </ul>
+  </section>
+
+  <!-- ========== P4：被控对象 ========== -->
+  <section class="slide" data-page-node-id="cgn09V7aPEZVcIGaZTgjAq">
+    <span class="slide-tag" data-page-node-id="fEZa5TMiCf3hr4y99BkJ9d">PPT 第 4 页</span>
+    <h2 class="sec-title" data-page-node-id="fGH1lmDqeWpLycgSQVSjrb">被控对象</h2>
+    <div class="example" data-page-node-id="cuf1O2jy6NukuKFgCFpqKS">
+      <p class="et" data-page-node-id="h5PDNKjOMWCgfYhL1me3Pq">实验对象</p>
+      <p data-page-node-id="pLNsKSEaL0sBpBd1UR8pM9">已知一个二阶系统的传递函数为</p>
+      <div class="math-scroll" data-page-node-id="Wc17l7lGhEPkWHqiaV2MKg">$$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</div>
+      <p data-page-node-id="B6W96kGdDYd3I5GtHcZRUc">设计模糊控制器，使其具有良好的动态控制性能。</p>
+    </div>
+    <div class="note" data-page-node-id="t3YMtmcmPtrAnNFZg0S5xU"><span class="nt" data-page-node-id="jJYlp5AQZR0TPae3e4gyHO">提示</span>系统含 $0.2\,\text{s}$ 纯滞后环节 $e^{-0.2s}$，仿真模型中由 Transport Delay 模块实现。</div>
+  </section>
+
+  <!-- ========== P5：一、模糊控制系统的组成 ========== -->
+  <section class="slide" id="compose" data-page-node-id="bi9uDt4KtM0FMziDRjxtX9">
+    <span class="slide-tag" data-page-node-id="GqGeUoWRv4JpPXUzoamrla">PPT 第 5 页</span>
+    <h2 class="sec-title" data-page-node-id="AUZfThwMpGSZ0y7BsSJGM7">一、模糊控制系统的组成</h2>
+    <p data-page-node-id="a4XpaTv5dH3nDuPnuhFN9C">模糊控制系统通常由<span class="kw" data-page-node-id="AvW3LczsGuBw6OWLYyrebt">模糊控制器、输入输出接口、执行机构、被控对象和测量装置</span>等五个部分组成。</p>
+
+    <figure class="fig" data-page-node-id="3Rj2VAVx9CXbzRLoH40yBS">
+      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="IsW2dsQGxFr52SVnNFWDOy">
+        <defs data-page-node-id="2J8Ba5zHcxLwh3t7yRZdTb">
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="XHA2uwulk7fwf9PH4KxC5Y">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="JTkO1fMHM0hVXFDRBH79Ps"/>
+          </marker>
+        </defs>
+        <!-- FLC 虚线框 -->
+        <rect x="120" y="30" width="420" height="200" rx="12" fill="none" stroke="#4C7D2C" stroke-width="1.5" stroke-dasharray="7 5" data-page-node-id="s1g9T3PshXB0V1HpC0EELH"/>
+        <text x="522" y="48" font-size="13" fill="#3A6122" font-weight="600" data-page-node-id="T4s7wUSUkMuLmGcQDxVE2d">FLC</text>
+        <!-- 知识库 -->
+        <rect x="255" y="44" width="150" height="34" rx="8" fill="#FDD000" stroke="#C9A900" data-page-node-id="tOgGf9a9CANJTiWpC3MuzV"/>
+        <text x="330" y="66" font-size="14" text-anchor="middle" fill="#574500" font-weight="700" data-page-node-id="N5dq0J7RkqKM5lhEB9jSzb">知识库</text>
+        <line x1="200" y1="78" x2="200" y2="96" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="F0eCfbrr2jBBMXmG8HgMMS"/>
+        <line x1="330" y1="78" x2="330" y2="138" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="bT4r7AGPVcLFFLL75rPxch"/>
+        <line x1="460" y1="78" x2="460" y2="96" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="nWmxtCgPN4T0kgTJytkRzZ"/>
+        <path d="M255,61 L200,61 L200,78" fill="none" stroke="#3A6122" data-page-node-id="MQFRnGYzLVkcFPZp7M9o3q"/>
+        <path d="M405,61 L460,61 L460,78" fill="none" stroke="#3A6122" data-page-node-id="OQpaLtLi8MVQiSN41AhVik"/>
+        <!-- 主链路 -->
+        <text x="18" y="120" font-size="13.5" fill="#2C4A1A" data-page-node-id="wq47HDm6Iw03XJsShTE556">给定</text>
+        <circle cx="80" cy="114" r="13" fill="#fff" stroke="#3A6122" stroke-width="1.5" data-page-node-id="dRd2mwaLzOHAXslEywZRC2"/>
+        <text x="80" y="119" font-size="15" text-anchor="middle" fill="#2C4A1A" data-page-node-id="GzxOJWPhXwi2CQEyyAiAxL">−</text>
+        <line x1="52" y1="114" x2="65" y2="114" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="KSDAGCAGf62kPO0eYxzmfO"/>
+        <rect x="140" y="96" width="120" height="36" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="KKbG9dmTS9usntFFOK5WZl"/>
+        <text x="200" y="119" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="xdqC93xpuaMHj2KZYx1IUv">Fuzzy 化接口</text>
+        <line x1="93" y1="114" x2="138" y2="114" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="Kzx0TlDJyOugh4nu5EAVvj"/>
+        <rect x="265" y="142" width="130" height="36" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="PlfaZ4XaSnM1YTvINvxazx"/>
+        <text x="330" y="165" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="DIDVJwUEMMdmMHTkXVXe92">推理决策</text>
+        <path d="M200,132 L200,160 L263,160" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="HZHuuc7PGgC3EOoLmomptX"/>
+        <rect x="400" y="96" width="120" height="36" rx="8" fill="#F0F5E9" stroke="#4C7D2C" data-page-node-id="tV2KbVwUy71SthZ1SKXGPG"/>
+        <text x="460" y="119" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="EE2VPwFVzDoY2LXvXWAqfh">精确化接口</text>
+        <path d="M395,160 L460,160 L460,134" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="CEUMn20gnvIQcCkBPEdWeD"/>
+        <!-- 被控对象 -->
+        <rect x="265" y="240" width="130" height="36" rx="8" fill="#fff" stroke="#3A6122" stroke-width="1.5" data-page-node-id="oCCNElsH9vgclh5oKzgkB8"/>
+        <text x="330" y="263" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="6YTVT1TnIgAqJBbplI6C7N">被控对象</text>
+        <path d="M520,114 L590,114 L590,258 L397,258" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="6msJvfOWsnFeAsjRCLxIbU"/>
+        <!-- 反馈 -->
+        <path d="M265,258 L40,258 L40,114 L65,114" fill="none" stroke="#3A6122" marker-end="url(#ar)" data-page-node-id="XTMODMllIlyatUEgfpdDTu"/>
+        <text x="60" y="248" font-size="12.5" fill="#5B5648" data-page-node-id="wvQEyJ8s5cgeH8e0wT08jh">测量装置（输出反馈）</text>
+      </svg>
+      <figcaption data-page-node-id="p0PbTuwJowduUVO4Gp0ch6">模糊控制系统组成框图（FLC = 模糊控制器）｜重绘自 PPT 第 5 页</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P6：二、设计原则 ========== -->
+  <section class="slide" id="design" data-page-node-id="ZQoS1O2KXl4FxZXwAEC0e6">
+    <span class="slide-tag" data-page-node-id="xMIbkBMiKtsK7qjFzViFsg">PPT 第 6 页</span>
+    <h2 class="sec-title" data-page-node-id="IBryXxWFZzSF2YmZtG3kRF">二、模糊控制器的设计：原则</h2>
+    <p data-page-node-id="DF0urD72kNgSByLVWC8wTj">模糊控制器的设计原则：</p>
+    <ol class="num" data-page-node-id="aXjfB2oVEbrb0Avm1oHj3M">
+      <li data-page-node-id="A9LaQrWEW0MLjp7ekqu7GX">定义输入、输出变量</li>
+      <li data-page-node-id="ct5GsIJ1CZpmtFZo8EYLk0">定义所有变量的模糊化条件</li>
+      <li data-page-node-id="QyMLTY4rbeUn0tXx8e2ZKc">设计控制规则库</li>
+      <li data-page-node-id="ektDfqU5ENLbrUn4Xjz8Y6">设计模糊推理结构</li>
+      <li data-page-node-id="s42DPajvrEjcAfiQAdlDbh">选择精确化策略的方法</li>
+    </ol>
+  </section>
+
+  <!-- ========== P7：第 1 步 定义输入、输出变量 ========== -->
+  <section class="slide" data-page-node-id="lxR1ze4ViSjmNVJ9R9YDMP">
+    <span class="slide-tag" data-page-node-id="jdLRqPo5mAzE918hIHGsTH">PPT 第 7 页</span>
+    <h3 class="sub-title" data-page-node-id="ZFAcS90cpDWj0B05BulXoj">1. 定义输入、输出变量</h3>
+    <div class="card" data-page-node-id="kpcuz1v0q7ZLaUFPCpScsc">
+      <p data-page-node-id="3UYsVNLN54YMuObLuogLjW"><strong data-page-node-id="HTMTsccnt3pqJE4XfDtMR8">系统</strong>：单输入单输出（SISO），被控对象仍为
+      $$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</p>
+      <p data-page-node-id="HjfaO7WYpJXy8EZl30KkiU"><strong data-page-node-id="dNA3QdCWGyX9RMng4gKNCX">模糊控制器</strong>：</p>
+      <ul class="clean" data-page-node-id="Nu72ydhVG0fNslsLwZb5FO">
+        <li data-page-node-id="9W40a2Y3yoG95cZfg6FM8Z">二维输入——输入误差为 $e$，误差变化率为 $de$</li>
+        <li data-page-node-id="IBpIF5PLnBd0DLgLm1TH6t">一维输出——控制量为 $u$</li>
+      </ul>
+      <p data-page-node-id="YyF66rzDAAg4nBOglIztES"><strong data-page-node-id="e1E9G2lCwVL2enLOpEF1QK">语言变量</strong>：</p>
+      <ul class="clean" data-page-node-id="tyfT1cwVZDx3h3vHSaxZFB">
+        <li data-page-node-id="Pob7gTxiLfIFIEBuHpe4zn">输入——输入误差为 $E$，误差变化率为 $DE$</li>
+        <li data-page-node-id="JjeayORo63kLH04H5NjP8z">输出——控制量为 $U$</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========== P8：第 2 步 模糊化条件 ========== -->
+  <section class="slide" data-page-node-id="xqPvsWfAQEHMvLybiMsUL3">
+    <span class="slide-tag" data-page-node-id="kqdouVMGCAa4PDCejRlCjA">PPT 第 8 页</span>
+    <h3 class="sub-title" data-page-node-id="S3NZwS3dvW0Ybd9719CHXN">2. 定义所有变量的模糊化条件</h3>
+    <p data-page-node-id="vUznlu6lE5u8xaBXBtHqCX"><strong data-page-node-id="bFjHMbNwmwiMXEd0DE57jF">论域</strong>：输入误差 $e$、误差变化率 $de$、控制量 $u$——均为 <span class="kw" data-page-node-id="HCumj0onJswghPNR0Cpbr2">$[-6,6]$</span>。</p>
+
+    <table class="data" data-page-node-id="dPsX1GlGzFmKWq6t0GylYh">
+      <caption data-page-node-id="PiYd6aGNspYDTxtuYJXGme">语言值集合与隶属度函数（$E$、$DE$、$U$ 三个变量相同）</caption>
+      <tr data-page-node-id="eoyWn2RXxfBnOiVG0v8pEE">
+        <th data-page-node-id="XtgkfagjZUGTCGCB8XTXq4">语言值集合</th><th data-page-node-id="h8YAtR9uuaUrAlaGv2Z9jA">NB</th><th data-page-node-id="VoeFptCcXxTFrY7EShA8X3">NM</th><th data-page-node-id="uzQFJrhtiUUBQODHDVrteG">NS</th><th data-page-node-id="DT3GpMizsaOx6Eb076hQQB">ZE</th><th data-page-node-id="Wzg4pIenBCl2iV0Ie0UVkN">PS</th><th data-page-node-id="wNCJ9YiaffTnNX7lkdBfMH">PM</th><th data-page-node-id="GgLKBXDSqRhmVDxvCNnfaY">PB</th>
+      </tr>
+      <tr data-page-node-id="m6rLL2iYwm9h3Q7FoBbyJU">
+        <td class="rowh" data-page-node-id="0xgnBTobA7KgjFpCiAn2UQ">含义</td><td data-page-node-id="jOzuM4VOyGoCbAXa7OdHSf">负大</td><td data-page-node-id="Tr6eD7I9JITEKML9Ph7bJ6">负中</td><td data-page-node-id="BhwCeJO7p2F9GmA3rG1v64">负小</td><td data-page-node-id="2L4AGEzb4KRFY1HBFzHvyG">零</td><td data-page-node-id="UwotwQWEDVBrg5vhrrVbYv">正小</td><td data-page-node-id="aimW8e8B1nxhWywHGWFsUx">正中</td><td data-page-node-id="vvMpaXrbBaAtFYUaM6xBd6">正大</td>
+      </tr>
+      <tr data-page-node-id="aVDBFK8I2CdPF7CNxuwpDu">
+        <td class="rowh" data-page-node-id="euDbYssYPnB3PYOeSKkIEF">隶属度函数</td><td colspan="7" data-page-node-id="oZDiZfykC6prFxXnXJ9qAc">三角形函数或正态形函数</td>
+      </tr>
+      <tr data-page-node-id="xnXNN4TypoHzgRDfefXkJt">
+        <td class="rowh" data-page-node-id="gmpeZWc32VyBHuq5zS4QyU">函数中心</td><td data-page-node-id="29gayVxOzHRiZLKyzzeMuQ">−6</td><td data-page-node-id="BW9HY6q2f1gdfjf1bJpnMR">−4</td><td data-page-node-id="dRm7HipZSKjYsu72IJje0q">−2</td><td data-page-node-id="ORLaGyYjlr2uCjXdNLJfnc">0</td><td data-page-node-id="gzT3GdvHyfQ4MNAfjD68Ca">2</td><td data-page-node-id="YoVJEJl38nDG0tuYN8x8Lx">4</td><td data-page-node-id="29VwDHRsPggbXiGnhMenpM">6</td>
+      </tr>
+    </table>
+
+    <figure class="fig" data-page-node-id="YvwEt3dXl2aRNI2xjQgZl3">
+      <svg viewBox="0 0 680 470" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="ECsKopcU7j0YvL8XKNzPAl">
+        <defs data-page-node-id="WAOmVeUgYNUBMYfoqVIbmy">
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="Pfou4H58HMCpZpAss4DfxQ">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5B5648" data-page-node-id="15JEKM6D4lgwnqUylb2arr"/>
+          </marker>
+        </defs>
+        <!-- 上部：语言变量树 -->
+        <text x="250" y="34" font-size="16" text-anchor="middle" fill="#26231B" font-weight="700" data-page-node-id="Z38d862cXM5LYIsAIqSFuC">速度</text>
+        <text x="560" y="34" font-size="14" fill="#5B5648" data-page-node-id="DrUD9YGnerNBFJ1ExslheX">语言变量 x</text>
+        <g stroke="#8E887A" stroke-width="1.2" data-page-node-id="MnnFs2O5QxElsRpv8o7MMr">
+          <line x1="250" y1="44" x2="55" y2="168" data-page-node-id="65tzcGg5fAMPw2AlUDFFXj"/>
+          <line x1="250" y1="44" x2="138" y2="168" data-page-node-id="7lFyuHMgnkYxBw5IJ1ypGH"/>
+          <line x1="250" y1="44" x2="222" y2="168" data-page-node-id="NfgWRWmAnr5eGEIIfUGoap"/>
+          <line x1="250" y1="44" x2="305" y2="168" data-page-node-id="7gRvK9UwFsi0h5KPrapO7m"/>
+          <line x1="250" y1="44" x2="388" y2="168" data-page-node-id="swH1AStK9iPe4OmQSV7ZAs"/>
+          <line x1="250" y1="44" x2="472" y2="168" data-page-node-id="nvxpEFCbnlLnP8BLfVyK9H"/>
+          <line x1="250" y1="44" x2="555" y2="168" data-page-node-id="2okqdLm9aWXCmGVWfjszlF"/>
+        </g>
+        <text x="560" y="120" font-size="14" fill="#5B5648" data-page-node-id="rF1qEstptVWeeQ1s1qiFZB">语言值规则 G</text>
+        <g font-size="14" fill="#26231B" font-style="italic" data-page-node-id="eR0XG4fsCmtinlire9uauN">
+          <text x="48" y="188" data-page-node-id="TODOSoUn1hwE29apCqzgiR">x</text><text x="56" y="193" font-size="10" data-page-node-id="LnL9lmSyFMRCeu4Abv7MjI">1</text>
+          <text x="131" y="188" data-page-node-id="obxw5NRM7DOtRIb5p2iwRt">x</text><text x="139" y="193" font-size="10" data-page-node-id="nPLXnsrzJGPmYPYbaEo95M">2</text>
+          <text x="215" y="188" data-page-node-id="bvS8KC7rGAv56tke17SGNo">x</text><text x="223" y="193" font-size="10" data-page-node-id="zFqNRvQ1bJWaaMxKcStSLf">3</text>
+          <text x="298" y="188" data-page-node-id="yxrYSuxLsmGaqQqwTHjl5L">x</text><text x="306" y="193" font-size="10" data-page-node-id="Gk1tNiQ489kHfnaOSfNam1">4</text>
+          <text x="381" y="188" data-page-node-id="X8DtAb20RdF5LtbhYMKDXm">x</text><text x="389" y="193" font-size="10" data-page-node-id="u1HCiuSigSwa3hG9JGgI04">5</text>
+          <text x="465" y="188" data-page-node-id="711pHx7Fx8VkqWUefJVHRA">x</text><text x="473" y="193" font-size="10" data-page-node-id="j2Prsl6DyW4w22YK9PERnV">6</text>
+          <text x="548" y="188" data-page-node-id="ctgBrsSKlNRn4rpkDBy7J5">x</text><text x="556" y="193" font-size="10" data-page-node-id="yTsZ5Wk52hi5xBSeaJLhqb">7</text>
+        </g>
+        <text x="560" y="240" font-size="14" fill="#5B5648" data-page-node-id="paOzAHVGJ9rSHqyOqwOOVX">语言值集合 T(x)</text>
+        <!-- 下部：隶属度函数 -->
+        <!-- 坐标轴：x 从 0(像素60) 到 120(像素620)，1 km/h = 4.6667 px；y: 0=430, 1.0=250 -->
+        <g stroke="#26231B" stroke-width="1.5" data-page-node-id="ImF0xkSJCXlf1pHHwi1idS">
+          <line x1="60" y1="430" x2="650" y2="430" marker-end="url(#ar2)" data-page-node-id="2PEU4z7onTC9YhDjs6wXec"/>
+          <line x1="60" y1="430" x2="60" y2="235" marker-end="url(#ar2)" data-page-node-id="eOC1OiVubfB2J9hMCfQQdo"/>
+        </g>
+        <text x="30" y="258" font-size="13" fill="#26231B" data-page-node-id="47aJJAeduRF7SD1HLgmykF">1.0</text>
+        <text x="16" y="340" font-size="13" fill="#26231B" font-style="italic" data-page-node-id="2LCwixEyutKhWamHwfJ0EB">μ(x)</text>
+        <text x="52" y="452" font-size="13" fill="#26231B" data-page-node-id="Twws1ELtS80knHKCl5HNCl">0</text>
+        <!-- 刻度 30,50,70,90,105,120 -->
+        <g font-size="12.5" fill="#26231B" text-anchor="middle" data-page-node-id="EAHtIQ0yZuOPixae6nHuSO">
+          <text x="200" y="452" data-page-node-id="BQSwaVZjpcO6HlyfCdxC33">30</text>
+          <text x="293" y="452" data-page-node-id="iZ85SA2SgCVRbpnxRLfHDX">50</text>
+          <text x="387" y="452" data-page-node-id="FW7IGhYCurOo5f69wMkYsM">70</text>
+          <text x="480" y="452" data-page-node-id="3GdYcBhG7430sywlCdlL3r">90</text>
+          <text x="550" y="452" data-page-node-id="mwAk19fBPc0pvmXGRuGrvH">105</text>
+          <text x="620" y="452" data-page-node-id="js6TC0KQHipxHoUrvLSrCN">120</text>
+        </g>
+        <text x="330" y="478" font-size="14" text-anchor="middle" fill="#26231B" data-page-node-id="jCTIFwBbkgLlas33bZymOg">论域 U/(km/h)</text>
+        <!-- 隶属度曲线（三角形/肩形） -->
+        <g fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="Rm580ZTx1GCDOjgZbErDNw">
+          <!-- 很慢: (60,250)->(200,430) 肩形 -->
+          <polyline points="60,250 200,430" data-page-node-id="n0CSAz6gHHDYufRz54emAr"/>
+          <!-- 慢: (60,430)->(200,250)->(293,430) -->
+          <polyline points="60,430 200,250 293,430" data-page-node-id="X66ZfV7UGGsXxggydmESTZ"/>
+          <!-- 较慢: (200,430)->(293,250)->(387,430) -->
+          <polyline points="200,430 293,250 387,430" data-page-node-id="XHdjKyjDq02iDgue9rijtP"/>
+          <!-- 中等: (293,430)->(387,250)->(480,430) -->
+          <polyline points="293,430 387,250 480,430" data-page-node-id="cRqVicpH24HU67rQLG945H"/>
+          <!-- 较快: (387,430)->(480,250)->(550,430) -->
+          <polyline points="387,430 480,250 550,430" data-page-node-id="wZqemDRWu079bDNd8cPors"/>
+          <!-- 快: (480,430)->(550,250)->(620,430) -->
+          <polyline points="480,430 550,250 620,430" data-page-node-id="7fkW7cLyYRLPMguMp51ucY"/>
+          <!-- 很快: (550,430)->(620,250) 肩形 -->
+          <polyline points="550,430 620,250" data-page-node-id="vlS5lg3qpytxOSielH1gOx"/>
+        </g>
+        <!-- 语言值标签 -->
+        <g font-size="13.5" fill="#2C4A1A" text-anchor="middle" font-weight="600" data-page-node-id="2rM2Kj4MZX4qxk1eT3ajWF">
+          <text x="82" y="228" data-page-node-id="i6WYPBJRLFJ2lrTOYohDET">很慢</text>
+          <text x="200" y="228" data-page-node-id="XRKjCi6ukR2UBL62u1RJ4K">慢</text>
+          <text x="293" y="228" data-page-node-id="y46BG4TG9FqOqBKrbBKjpM">较慢</text>
+          <text x="387" y="228" data-page-node-id="0Ln6mv3kEn9PlE2dJOoR4v">中等</text>
+          <text x="480" y="228" data-page-node-id="Y2jpHnJFlWCojpouqo2HTK">较快</text>
+          <text x="550" y="228" data-page-node-id="3LRKZhHUuPVyh6eUIPBXmf">快</text>
+          <text x="610" y="228" data-page-node-id="cJFgYKJgBjhU50Xy4lbhez">很快</text>
+        </g>
+        <text x="560" y="345" font-size="14" fill="#5B5648" data-page-node-id="u2rrmBghFYsxUsFPXskJar">算法规则 M</text>
+      </svg>
+      <figcaption data-page-node-id="EaCKFkwP3Zoa2rDdPykHsv">语言变量元素之间的关系（以“速度”为例：语言变量 → 语言值集合 → 论域上的隶属度分布）｜重绘自 PPT 第 8 页（教材图 2-11）</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P9：第 3 步 控制规则库 ========== -->
+  <section class="slide" data-page-node-id="tL4xR25gOA5mfurXt1CvHU">
+    <span class="slide-tag" data-page-node-id="Lw1ADmfeLpysKkQT17uFCr">PPT 第 9 页</span>
+    <h3 class="sub-title" data-page-node-id="YG783kN5OsWzpFvaF1iheB">3. 设计控制规则库</h3>
+    <p data-page-node-id="OM4M4D9C7wnTJs52k8bOQx">控制规则形如 <code class="cmd" data-page-node-id="9oKyBdSPF3Rm9zj6r9NlkB">If (E is NB) and (DE is NB) then (U is PB)</code>，共 $7\times 7=49$ 条，汇总为模糊控制规则表：</p>
+
+    <table class="data rules-tbl" data-page-node-id="hzFCExf3AmgofudoMmnNcV">
+      <caption data-page-node-id="5iKVM60tHl0tHn0E4mA43r">模糊控制规则表（输出 $U$；行 = $E$，列 = $DE$）</caption>
+      <tr data-page-node-id="XEp7zMFAqV4BegX9hjw0eA">
+        <th class="corner" data-page-node-id="SNDtrFBT9QZ9w2UNMWcIUi">$E$ \ $DE$</th><th data-page-node-id="cy8vSWxVxk7NwzB8dRi8jW">NB</th><th data-page-node-id="7MGbrJCnFRaVsZpqDerwDL">NM</th><th data-page-node-id="bsnBJHqkH9P0aKCgp9jRL3">NS</th><th data-page-node-id="Oolqo5Uta1ABavSYdGSjfc">ZE</th><th data-page-node-id="9kfTlsUW2APgsIqXYb0NLJ">PS</th><th data-page-node-id="XanGxn4g3y4MFSc6Ct40qf">PM</th><th data-page-node-id="uFCCjBYOcR2SgL0gj0AhRz">PB</th>
+      </tr>
+      <tr data-page-node-id="KOb2H0zlOZdg1KaQiONAOn"><td class="rowh" data-page-node-id="QjgTxcAFPDZensOYGKyI69">NB</td><td data-page-node-id="XT4cQS0oiTxE66DidbhPM9">PB</td><td data-page-node-id="9TOaSjjntQWy3EgXREvBW7">PB</td><td data-page-node-id="3Yf5dlXczc8t2RZOtg7CsP">PB</td><td data-page-node-id="AXw0PG8TPN7yykxhcYoBON">PB</td><td data-page-node-id="CnE1HDaYWgoX2WIHYMEpML">PM</td><td data-page-node-id="kHCtwLsKbi598oh8i46BDD">PS</td><td data-page-node-id="lRofOCMDsKuOngmy5RBvEn">ZE</td></tr>
+      <tr data-page-node-id="waiEW2XQ7yLmxQBs0WnwXS"><td class="rowh" data-page-node-id="qd75WhzwrsobF9hRjHN5jg">NM</td><td data-page-node-id="dwYaEmkKcRCk0m2z2mvGMa">PB</td><td data-page-node-id="yL1jw28Z8LpuDYehL3Quaa">PB</td><td data-page-node-id="D6OWn2KqAMMPIfrD64L6AU">PM</td><td data-page-node-id="YXX1mzG0LkzjTBriPDGKMC">PM</td><td data-page-node-id="OVJrqc2iiNIgylHepsATE2">PS</td><td data-page-node-id="geXoPbbYv6QG4g4mkzeIju">ZE</td><td data-page-node-id="OyvpY59UTklQjoZkQZwC3c">ZE</td></tr>
+      <tr data-page-node-id="dgjopjQzYX2UbYQSYTS4Bm"><td class="rowh" data-page-node-id="yB1ek0FKZIHCQ0R8HE4580">NS</td><td data-page-node-id="835GBE9rggwcohnNkVpZu8">PB</td><td data-page-node-id="bML73SsoC2iGJou8w8rkRt">PM</td><td data-page-node-id="jmYAPHsBYLdmWCcgX89an1">PM</td><td data-page-node-id="AniFct1S0a9BvKriDCxVwr">PS</td><td data-page-node-id="AaKkNCHXUwkYcOXLaaWwqJ">ZE</td><td data-page-node-id="eLWlBTBDYJmgdINlSE5aGm">ZE</td><td data-page-node-id="I2tysTFyk3RvAnTI0BPxSV">NS</td></tr>
+      <tr data-page-node-id="RNhR0hmnb9zjdzAChMIm5i"><td class="rowh" data-page-node-id="8lt8p1nma19OAXLDm2xgV6">ZE</td><td data-page-node-id="UsHiCD6kvsqVFyQ5ItAM4L">PB</td><td data-page-node-id="DmLlax2EuoNBMERECWEDBz">PM</td><td data-page-node-id="jXYXEM9BUuNzqlCDHEfrBb">PS</td><td data-page-node-id="JD5vXTiI0RVfSr9jWnGqTC">ZE</td><td data-page-node-id="wNK4G2IO7zthzrikrEuPWI">NS</td><td data-page-node-id="xsWzOpQhIymeR42775bMwM">NM</td><td data-page-node-id="10ZKqf7V0oJPHk9o2XUCf1">NB</td></tr>
+      <tr data-page-node-id="Y4DSGjaqAzDQO3ddOd8Hje"><td class="rowh" data-page-node-id="8Tscjz42UibxnrxI2e8aPj">PS</td><td data-page-node-id="TundTtuPD9U2InyMVTqQFW">PS</td><td data-page-node-id="TCGs3LTEFRAJAcVhUgZO9a">ZE</td><td data-page-node-id="xHNrTQ4Hgyy33XFn4ynOe2">ZE</td><td data-page-node-id="Dv8pEEQlDiikh6VKUl8O26">NS</td><td data-page-node-id="h1KEj9GwEg9YxSBkSlNuq9">NM</td><td data-page-node-id="36QcQztFFDsN2HPLoFpj9l">NM</td><td data-page-node-id="Gyz8ElthsuDnRB657tFXfl">NB</td></tr>
+      <tr data-page-node-id="jLCZwx1y0FWAOjkENdKXhV"><td class="rowh" data-page-node-id="L2978evSFoPEmIKj6jHgVj">PM</td><td data-page-node-id="kiR7usuEKaetEbdNSP6dnt">ZE</td><td data-page-node-id="Yzmrf4dOXrXpEMqMULGxes">ZE</td><td data-page-node-id="BdfYXHMf5KtCSghCkyDrJH">NS</td><td data-page-node-id="nC1HvaRuqjDeD8b76A9z9s">NM</td><td data-page-node-id="vZudcvf9CRPhPUeLxVFPNN">NM</td><td data-page-node-id="gls2JoLPFG8c6px47HkSJG">NB</td><td data-page-node-id="7ihXqhBjP6FD1ahAPZtkZQ">NB</td></tr>
+      <tr data-page-node-id="3eDHKtdkAmc4IxE8TBbxXs"><td class="rowh" data-page-node-id="vKWq6Eaktlac68TvUMymOr">PB</td><td data-page-node-id="WvhfTq6yNfxyUjDypaVKa0">ZE</td><td data-page-node-id="9Y6f3IN7FpKpS0O0MvWpnX">NS</td><td data-page-node-id="gos2b95RK3DDBt3blQVq2h">NM</td><td data-page-node-id="dswPhmarrngwEKjF1p1Cy2">NB</td><td data-page-node-id="x9ecIFPCgmk26uw0qTvw76">NB</td><td data-page-node-id="SzOP044mg1BWmnkWobQuAq">NB</td><td data-page-node-id="yJGhAnpL7oXEZ2O9hAnWOA">NB</td></tr>
+    </table>
+    <div class="note" data-page-node-id="SpNoHbiKVlBDkLMJtLDsWq"><span class="nt" data-page-node-id="X7uiuC5qxCmsMaiRmFDYWH">说明</span>原 PPT 规则表图中“零”档记作 ZO，与 ZE（Zero）同义；本讲义统一记为 ZE，与 MATLAB 编辑器中的名称一致。规则表按 PPT 原图转写（重绘自 PPT 第 9 页）。</div>
+  </section>
+
+  <!-- ========== P10：第 4、5 步 推理结构与精确化 ========== -->
+  <section class="slide" data-page-node-id="URt8lDJ4DXQVDuHTDjxpvr">
+    <span class="slide-tag" data-page-node-id="GIdrDPFZDmIpIEiwEduiVg">PPT 第 10 页</span>
+    <h3 class="sub-title" data-page-node-id="cwGcE7NVsTpGLB3CK1TqbV">4. 设计模糊推理结构 &nbsp;/&nbsp; 5. 选择精确化策略</h3>
+    <ul class="clean" data-page-node-id="v8dElanQoM0HJmhcBhkyB3">
+      <li data-page-node-id="zEBK9ZkX2BS7TM7v25LyP7"><span class="tag" data-page-node-id="4xQfuB7MDiKnTtjVGApSdU">推理结构</span><strong data-page-node-id="FpOIPTC7dlH6RWYRV9Qpxf">Mamdani 推理</strong>规则</li>
+      <li data-page-node-id="tb7M4h350e3slk4WtjMXAE"><span class="tag" data-page-node-id="K3cjerELHuYMG5OOxbO5FC">精确化策略</span><strong data-page-node-id="QQYvcLA2pCEgRkxFBtYg3T">重心法</strong>（centroid）</li>
+    </ul>
+  </section>
+
+  <!-- ========== P11–19：三、实验步骤 ========== -->
+  <section class="slide" id="steps" data-page-node-id="huqztkAaQzDEBi6lvt0Si8">
+    <span class="slide-tag" data-page-node-id="iHHw9wz9vAMit1oreAjiTN">PPT 第 11–19 页</span>
+    <h2 class="sec-title" data-page-node-id="ZcBsEnyFTztsO77ymopbCR">三、MATLAB 实验步骤</h2>
+
+    <h3 class="sub-title" data-page-node-id="5W5UsFhzu1T8xu704KyePh">第 0 步：打开模糊系统编辑器</h3>
+    <div class="step" data-page-node-id="npRt66gmp9qwXXMZsbPyD4">
+      <div class="sno" data-page-node-id="OkA69tLhtGHjMSKRFFrfi3">0</div>
+      <div class="sbody" data-page-node-id="1IaWqfF65EtQNhimkweNTy">
+        <p class="stitle" data-page-node-id="DnOtofft8f1UJVtMenUkkg">启动 Fuzzy Logic Designer</p>
+        <p data-page-node-id="SmUdAgWW87rFYtpsCj5HpC">在 MATLAB 命令行窗口输入 <code class="cmd" data-page-node-id="G0yXwsxWqKfUULSfx7rprr">&gt;&gt; fuzzy</code>，回车后打开模糊系统编辑器（Fuzzy Logic Designer），默认生成一个单输入单输出的 Mamdani 系统（Untitled）。</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="BbgUMDptkNsU1Kpfg4BKba">
+      <img src="images/s011_9.png" alt="Fuzzy Logic Designer 初始界面" data-page-node-id="8gtca75RE1ZcF8TsRaHax6">
+      <figcaption data-page-node-id="VtTmU7sG7CvlDdCoxk0yGS">模糊系统编辑器初始界面｜原图（PPT 第 11 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="AIoalEkDEWFv0ZDqTUJTuG">第 1 步：确定控制器类型和结构</h3>
+    <div class="step" data-page-node-id="pDoiRmUqWwADwV6wHXnUCb">
+      <div class="sno" data-page-node-id="j3fDEv4uA8G1EcIwOX59f4">1</div>
+      <div class="sbody" data-page-node-id="DURsdzrOXjpAGufFIymKD8">
+        <p class="stitle" data-page-node-id="JwX69eN5jBYqFyQH1SkJz4">双输入单输出 Mamdani 结构</p>
+        <p data-page-node-id="G2dMoDDK9C3ma22D2uOFNZ">通过 <strong data-page-node-id="LoF4yk44CeO3feGT8EmlGJ">Edit → Add Variable → Input</strong> 增加一个输入，构成 <span class="kw" data-page-node-id="avw2z4yI6tB0LDGhh21w5B">两输入（E、DE）单输出（U）</span>结构；FIS 类型选 <strong data-page-node-id="tMvXBfxtuyfblb5WCGExjj">mamdani</strong>。推理与精确化参数取默认值：</p>
+        <ul class="clean" data-page-node-id="nhPcSHGOqsXkJzvHmDBsgG">
+          <li data-page-node-id="sxcJwUcPjs7kZUJRy8Gfjf">And method：<strong data-page-node-id="H20RJLhsFyICwYrBBdoCZp">min</strong>；Or method：<strong data-page-node-id="nbngf2fpKLPKtBz5V8SnBR">max</strong></li>
+          <li data-page-node-id="UHFDTBYGiLIAyPFWMaE0tT">Implication：<strong data-page-node-id="xRuIrGlqUVhAiqTBHOmV66">min</strong>；Aggregation：<strong data-page-node-id="2HhKO0lXrSCxySutgQYjFF">max</strong></li>
+          <li data-page-node-id="5GLwD9H28sKmCIBGEllaly">Defuzzification：<strong data-page-node-id="MgtpT0UL2n3ls4MIxHL2G3">centroid</strong>（重心法）</li>
+        </ul>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="vjuw24qLXUI9gqCd02ebMb">
+      <img src="images/s012_2.png" alt="确定控制器类型和结构" data-page-node-id="90esxAnTwrKQfhxWD3ExkB">
+      <figcaption data-page-node-id="ShWO3TM1tHQs4tCs5jxDue">确定控制器类型和结构（E、DE → U，Mamdani）｜原图（PPT 第 12 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="SGb8jas963BsApsHJkx1uC">第 2 步：编辑输入和输出变量的隶属函数</h3>
+    <div class="step" data-page-node-id="QFPq5CfGoLd5WAsV6GjwpP">
+      <div class="sno" data-page-node-id="qyidPyAevHayLndMK6YiI9">2</div>
+      <div class="sbody" data-page-node-id="FWrsI5AgS2BDVeOZRLRFP0">
+        <p class="stitle" data-page-node-id="mfQjVOEHnRauSdfNDOIgxI">E / DE / U 三个变量均设 7 个高斯隶属函数</p>
+        <p data-page-node-id="tutmq9hKqW0YteS2jaBcbD">双击变量图标进入 Membership Function Editor。将变量名分别改为 <code class="cmd" data-page-node-id="RxSMYDWciKzkzxcEChcIOn">E</code>、<code class="cmd" data-page-node-id="rVg02DKThrAunK7oGjuBcv">DE</code>、<code class="cmd" data-page-node-id="8gSLEPSAUGJreYY87EJKfl">U</code>，Range 与 Display Range 均设为 <code class="cmd" data-page-node-id="ZMI8a0tx5evTRnc86buDGF">[-6 6]</code>；每个变量设置 <span class="kw" data-page-node-id="q50OqQ1jLe6ZINMytYvg01">NB、NM、NS、ZE、PS、PM、PB</span> 共 7 个隶属函数，类型取 <strong data-page-node-id="VC45lhDxK1gDE1yz6gBuUE">gaussmf</strong>（正态形），中心依次为 $-6,-4,-2,0,2,4,6$。例如输入 $E$ 的 NB 曲线参数为 <code class="cmd" data-page-node-id="u8HCRzuPRnmLuvwHeaGq4D">[0.8493 -6]</code>（$\sigma$、中心），输出 $U$ 的 NB 曲线参数为 <code class="cmd" data-page-node-id="3YNAxXROfLcVCjjsc0uKaU">[0.8494 -6]</code>。</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="UCk2WXxStMQXCHCzvndT9z">
+      <img src="images/s013_3.png" alt="输入 E 的隶属函数编辑" data-page-node-id="gAKZqpoXUCyiGJ5nxsfCAQ">
+      <figcaption data-page-node-id="DkxMTLFFRCt84A9F98trT3">输入变量 E 的隶属函数（gaussmf，NB 参数 [0.8493 −6]）｜原图（PPT 第 13 页）</figcaption>
+    </figure>
+    <figure class="fig" data-page-node-id="nl2UKJACwDmMt7gmpUMCxY">
+      <img src="images/s014_2.png" alt="输入 DE 的隶属函数编辑" data-page-node-id="iwWpn9LtVYan5JX7XB8F8p">
+      <figcaption data-page-node-id="NhrL403QeSG6r3MRNOeQKb">输入变量 DE 的隶属函数编辑｜原图（PPT 第 14 页）</figcaption>
+    </figure>
+    <figure class="fig" data-page-node-id="yGZEgxGjguIjbDzepyLPeN">
+      <img src="images/s015_2.png" alt="输出 U 的隶属函数编辑" data-page-node-id="yHqTNBnkcvI4n6kdX8HNUx">
+      <figcaption data-page-node-id="g1fvGXraAIolKC3RLo8aIx">输出变量 U 的隶属函数（gaussmf，NB 参数 [0.8494 −6]）｜原图（PPT 第 15 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="wCFG3lTe5iSbMVarvh19za">第 3 步：编辑模糊控制规则</h3>
+    <div class="step" data-page-node-id="JodnSqMq8EgiF7tLp8pJVW">
+      <div class="sno" data-page-node-id="AC2vL5TkfBptCHWfFt0FoR">3</div>
+      <div class="sbody" data-page-node-id="SHHTUeVG7KGAgjQIiAtSTs">
+        <p class="stitle" data-page-node-id="tHZsPFoEZfSQFs0H0KCKpK">按规则表录入 49 条规则</p>
+        <p data-page-node-id="TrwwdCxSczkWf6AgFMNCFC">打开 Rule Editor，按上面的模糊控制规则表逐条录入，连接词选 <strong data-page-node-id="TElHitF6IOnsEORlvBiVsv">and</strong>，权重取 1。前几条规定为：</p>
+        <div class="rules" data-page-node-id="1DTNkC4xNAa3ULEUU4bQBF">1. If (E is NB) and (DE is NB) then (U is PB) (1)
+2. If (E is NB) and (DE is NM) then (U is PB) (1)
+3. If (E is NB) and (DE is NS) then (U is PB) (1)
+4. If (E is NB) and (DE is ZE) then (U is PB) (1)
+5. If (E is NB) and (DE is PS) then (U is PM) (1)
+6. If (E is NB) and (DE is PM) then (U is PS) (1)
+7. If (E is NB) and (DE is PB) then (U is ZE) (1)
+……（共 49 条）</div>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="1ttAckPvbWhQlgYXiuKglO">
+      <img src="images/s016_3.png" alt="规则编辑器" data-page-node-id="Fh1oUlr6umAyzQle6QN69s">
+      <figcaption data-page-node-id="XQZ0qGCDUErsFp8kXoKD5w">Rule Editor 中录入模糊控制规则｜原图（PPT 第 16 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="5Oi9cxwh5JpVjACdTiQnlm">第 4 步：保存到 FC.fis</h3>
+    <div class="step" data-page-node-id="ekSdTLByEa7McQkeSLoFsA">
+      <div class="sno" data-page-node-id="GWXS0SZSGVhNw5liXJMmXV">4</div>
+      <div class="sbody" data-page-node-id="nYOHEcCPjKpsjXjcRZ4jXo">
+        <p class="stitle" data-page-node-id="fNypJobK1DlirbhmgPL9hV">导出并检查推理结果</p>
+        <p data-page-node-id="HptoOgvpShSHNRZe0Dd8xm">通过 <strong data-page-node-id="02SZF4CRn3SVtshEdUX9va">File → Export → To File</strong> 将模糊系统保存为 <code class="cmd" data-page-node-id="k4ET2VYrphtWw7Cl7Uk5QY">FC.fis</code>。可利用 <strong data-page-node-id="dCdcIxKemvTEOslCLZtoYk">View → Rules</strong>（规则观察器）和 <strong data-page-node-id="rwkU3rVBUvLLvPoobv8MEY">View → Surface</strong>（曲面观察器）检查输入输出映射：规则观察器可拖动输入线逐点查看推理过程，曲面观察器给出 $U=f(E,DE)$ 的控制曲面。</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="wtOBkrM9aJ5r5JoYwfoXAv">
+      <img src="images/s017_2.png" alt="规则观察器" data-page-node-id="4OpZwk9C3z5adfNuuJFZfc">
+      <figcaption data-page-node-id="HcHgTkWkH9QCAvn0WFo92y">Rule Viewer：逐点观察模糊推理｜原图（PPT 第 17 页）</figcaption>
+    </figure>
+    <figure class="fig" data-page-node-id="DEAXt7ez6X5jZStdqwAvi0">
+      <img src="images/s017_4.png" alt="曲面观察器" data-page-node-id="eia0ci2zWQ5Be0SFqqzCzW">
+      <figcaption data-page-node-id="GlYTfOlft7QawsXDEb8sGn">Surface Viewer：模糊控制曲面 $U=f(E,DE)$｜原图（PPT 第 17 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="jQnpKkKyWgl2oLjzjIC6Kf">第 5 步：搭建 Simulink</h3>
+    <div class="step" data-page-node-id="kvSAYxiub3EqbfVhiCurmF">
+      <div class="sno" data-page-node-id="EDqfaRAii9D8e4BGW3ESeF">5</div>
+      <div class="sbody" data-page-node-id="EnoMMbHPhNyDBCQEbjJtT3">
+        <p class="stitle" data-page-node-id="h92HSMB6ZAplFodXilUkCF">搭建闭环仿真模型并加载模糊控制器</p>
+        <p data-page-node-id="9aNl800EkS6HmGVPIpllEC">在 Simulink 中搭建单位负反馈闭环：阶跃给定 → 求和点 → <strong data-page-node-id="Wp1UwwLpmls6PMxkh2pt15">Fuzzy Logic Controller</strong> 模块 → 被控对象 $\dfrac{20}{8s^{2}+4s+1}$（Transfer Fcn）与纯滞后 $e^{-0.2s}$（Transport Delay）→ 示波器（Scope）与 To Workspace。</p>
+        <p data-page-node-id="4ABB5WERLQiIeu6ROy2OUl"><strong data-page-node-id="aSU08tm47Yp34AQlvbwhx9">加载模糊控制器</strong>：先将 <code class="cmd" data-page-node-id="lAXvFDFEuMxG4xJ5uU5OSW">FC.fis</code> 读入工作区（如 <code class="cmd" data-page-node-id="O9Qzt2GZ5oSvQLbA9XrMiY">FC = readfis('FC.fis')</code>），再在 Fuzzy Logic Controller 模块参数中填入 <code class="cmd" data-page-node-id="aEEAPRiqxlpdGMcTZc3K9O">FC</code>。</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="m35XbvnN4XXUOpOAKsYklZ">
+      <img src="images/s018_3.png" alt="Simulink 模糊控制系统模型" data-page-node-id="w2m05g6a49LrEVVB6zM3kU">
+      <figcaption data-page-node-id="HZIeHy5ltV9e1wLMy0PLOh">模糊控制系统的 Simulink 模型（含量化因子、Fuzzy Logic Controller、被控对象与纯滞后）｜原图（PPT 第 18 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="EUFsOJq5EF1J6802OWiowA">第 6 步：仿真设置</h3>
+    <div class="step" data-page-node-id="BT7sDxA0krmkI9jZEgQbDG">
+      <div class="sno" data-page-node-id="g85G9b8BymihSL90XLoUig">6</div>
+      <div class="sbody" data-page-node-id="C7gycrgrbUnP7DXCB7mJfq">
+        <p class="stitle" data-page-node-id="TSyJmPvsph4fuvHEARGXB3">求解器与信号设置</p>
+        <ul class="clean" data-page-node-id="wLFf1WppGlVZyAHJuYKa4W">
+          <li data-page-node-id="nfBR3QrsjBhpzMDG5IZqfO">仿真时间：<strong data-page-node-id="lZoxDXUrjZYxkZCeA3oBNt">5 s</strong></li>
+          <li data-page-node-id="YSwxNqCXoiGyM2j5cnFHWI">仿真步长：按求解器设置（定步长）</li>
+          <li data-page-node-id="D5ZbythObsZO0FznHDEp7J">布尔逻辑信号：<strong data-page-node-id="Jh7QjLNh5BXaDzHy2Hrdtq">OFF</strong></li>
+          <li data-page-node-id="UFnhAHub8Qjj7RDYPp7stB">零点穿越：<strong data-page-node-id="o8FhAUMogUCW6JNESTVTH6">OFF</strong></li>
+        </ul>
+        <p data-page-node-id="OgIqwiCHk7XcEObNsFC1Ug">运行仿真，在示波器中观察系统阶跃响应曲线。</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="5o9b8j7alBbhCzGDkPIIq3">
+      <img src="images/s019_4.png" alt="仿真响应曲线" data-page-node-id="YoRTsF9c1DhhxD5PxQLB3S">
+      <figcaption data-page-node-id="ZD9HhBnvt2F8fDzoIrUAaL">仿真得到的系统阶跃响应（Scope）｜原图（PPT 第 19 页）</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P20：实验任务书 ========== -->
+  <section class="slide" id="task" data-page-node-id="SKMKxMVaAMc0r781rTzln8">
+    <span class="slide-tag" data-page-node-id="1VdEz82LY37WXHtz1rHeGT">PPT 第 20 页</span>
+    <h2 class="sec-title" data-page-node-id="CwL1UJjuxxP6d2smFJc4IW">实验任务书</h2>
+    <div class="example" data-page-node-id="gblHQrySOmRQ2RR07fKx4t">
+      <p class="et" data-page-node-id="3u4rceSAG3yBVjIsDDGXVE">已知一个二阶系统的传递函数为</p>
+      <div class="math-scroll" data-page-node-id="qlbm8iMw6HzrLqx0Yha0us">$$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</div>
+      <ol class="num" data-page-node-id="8YY4i5GEgSuhAnL7b3m1Jm">
+        <li data-page-node-id="Gc4FlWPXY3v4gHY2BtabGm">设计常规 PID 控制器；<strong data-page-node-id="UhD9gRu7WGGoEPcbxRclgc">（20%）</strong></li>
+        <li data-page-node-id="aVPN1VSolXvKDUtEAAx3pa">设计模糊控制器；<strong data-page-node-id="7SaSrra4shYitPtU08hijU">（40%）</strong></li>
+        <li data-page-node-id="hqkBjTsMMaWha3MFX5ADad">比较两种控制器的效果，说明两种控制器有什么区别和联系；<strong data-page-node-id="Ks6PAdEaiL6FkUwkP61Tlx">（40%）</strong></li>
+        <li data-page-node-id="TwLuCoh6ENpgCFrTukYgNu"><strong data-page-node-id="dNu6HVPdmc6lvaze3w0aSE">*选做</strong>：当改变论域的比例因子时，系统响应会有什么变化？可否使用模糊规则对该比例因子进行自整定？<strong data-page-node-id="G3uYAkBHnuDfCv6kUDNyFH">（+10%）</strong></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== P21：实验要求 ========== -->
+  <section class="slide" data-page-node-id="SPb5JFyCegvZyaepzvO0Zs">
+    <span class="slide-tag" data-page-node-id="aFUldETyRlNAFNyuStuLjQ">PPT 第 21 页</span>
+    <h2 class="sec-title" data-page-node-id="WDpI99rZxiUN5IVzKENToH">实验要求</h2>
+    <ul class="clean" data-page-node-id="2asctty9TrOA2ohrLaur5u">
+      <li data-page-node-id="yfKVuVmXFI4bl3qMc5fMRA"><span class="tag" data-page-node-id="rb4s8rsGfik11rUFkPnwAM">报告</span>报告结构完整（含实验目的、原理、步骤、数据、结论）。</li>
+      <li data-page-node-id="nBG8b7XtjG4x7m0U31PlyQ"><span class="tag" data-page-node-id="V2QNS139yQM8JnG1tzE9CA">图表</span>图表清晰，编号规范（如“图 1　PID 控制系统 Simulink 模型”）。</li>
+      <li data-page-node-id="0o0ukDa6PKINjEw6dwoFIJ"><span class="tag" data-page-node-id="rzLnCoCosaWV3uHus43G9V">截止</span>提交时间：<strong data-page-node-id="Uf9jgBUPFia8ZZHvD2dbBc">10 月 13 日 09:50</strong>。</li>
+      <li data-page-node-id="z5EJkZUePpJpbExHAShwIg"><span class="tag" data-page-node-id="zj97L2bQgeX6inMU9AdKwv">途径</span>提交途径：<strong data-page-node-id="YyP1YWHkDrbul1Fgwz7bWR">雨课堂</strong>。</li>
+    </ul>
+  </section>
+
+  <footer class="foot" data-page-node-id="TK2vVArEj1Bu6M6z5TUTA0">
+    东南大学自动化学院 · 智能控制概论 · 第三讲 模糊控制系统实验（讲义）<br data-page-node-id="NJ1FLjFaAz0WGEqkOdwKG1">
+    对应 PPT 第 1–21 页 · 主讲人：刘雪庆 · 2026 年 9 月
+  </footer>
+
+</div>
+</body>
+</html>

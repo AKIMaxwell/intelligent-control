@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="TaOCuh0G4OAeLNmAdaEiol">
+<head data-page-node-id="3AI89FHrZW6QCq72i5Kz7L">
+<meta charset="UTF-8" data-page-node-id="rF3iRzdGQFiy6uBsBeg8tc">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3yaUHI3fwTziBMMDMw1UUp">
+<title>智能控制概论 · 第五讲 神经网络控制论（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td.lft{text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data td.rowh, table.data th.rowh{
+    background:var(--green-light);font-weight:700;color:var(--green-deep);
+  }
+  table.data td.hl{background:var(--yellow);font-weight:700;color:var(--green-deep);}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  .chapter .ch-sub{
+    margin-top:10px;font-size:16px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .mini{
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 18px;
+  }
+  .mini .mt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-dark);font-size:15px;margin-bottom:6px;
+  }
+  .mini p{font-size:14.5px;line-height:1.75;margin:4px 0;}
+  .timeline{
+    position:relative;margin:18px 0 8px;padding-left:26px;
+    border-left:3px solid var(--green-line);
+  }
+  .tl-item{position:relative;padding:10px 0 10px 18px;}
+  .tl-item::before{
+    content:"";position:absolute;left:-35px;top:18px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--yellow);box-shadow:0 0 0 3px var(--green-light),0 0 0 4.5px var(--green);
+  }
+  .tl-item .yr{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:800;color:var(--green-dark);font-size:15.5px;
+  }
+  .tl-item .ti{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--ink);font-size:15px;margin-left:8px;
+  }
+  .tl-item p{font-size:14.5px;color:var(--ink-2);margin:2px 0;}
+  .tl-item.cold::before{background:#C9C4B4;box-shadow:0 0 0 3px #F1EFE7,0 0 0 4.5px #B7B2A0;}
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,header.cover,.mini{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+</style></head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">智能控制概论 · 第五讲（参考课件）</span>
+    <div class="links">
+      <a href="#cover">封面</a>
+      <a href="#intro">引言</a>
+      <a href="#ident">神经网络辨识</a>
+      <a href="#learn">学习机制</a>
+      <a href="#design">控制器设计</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ========== P1：章节页 ========== -->
+  <section class="slide" id="cover">
+    <span class="slide-tag">PPT 第 1 页</span>
+    <div class="chapter" data-num="5">
+      <div class="ch-kicker">CHAPTER 5</div>
+      <h1>第五章&nbsp;&nbsp;神经网络控制论</h1>
+      <div class="ch-sub">智能控制概论 · 参考课件（第三版）</div>
+    </div>
+  </section>
+
+  <!-- ========== P2：目录 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 2 页</span>
+    <h2 class="sec-title">本章内容</h2>
+    <ol class="toc">
+      <li>引言——神经网络控制的优越性与典型结构</li>
+      <li>非线性动态系统的神经网络辨识</li>
+      <li>神经网络控制的学习机制</li>
+      <li>神经网络控制器的设计</li>
+    </ol>
+  </section>
+
+  <!-- ========== P3–15：一、引言 ========== -->
+  <section class="slide" id="intro">
+    <span class="slide-tag">PPT 第 3–15 页</span>
+    <h2 class="sec-title">一、引言</h2>
+
+    <h3 class="sub-title">1. 神经网络控制的优越性（P3）</h3>
+    <p>由于神经网络本质上是一个<span class="kw">大规模并行分布处理的非线性动力学系统</span>，并在更高层次上体现出一些人脑的智能行为，为智能控制提供了新途径。神经网络控制的优越性体现在：</p>
+    <ul class="clean">
+      <li>神经网络可以处理那些<strong>难以用模型或规则描述</strong>的过程或系统。</li>
+      <li>神经网络采用并行分布式信息处理，具有很强的<strong>容错性</strong>。</li>
+      <li>神经网络是本质的<strong>非线性系统</strong>。</li>
+      <li>神经网络具有很强的<strong>信息综合能力</strong>。</li>
+      <li>神经网络的<strong>硬件实现</strong>愈趋方便。</li>
+    </ul>
+
+    <h3 class="sub-title">2. 神经网络控制器的分类（P4–5）</h3>
+    <p>根据神经网络在控制系统中的作用不同，可分为两大类：</p>
+    <ol class="num">
+      <li><strong>神经控制</strong>——以神经网络为基础而形成的独立智能控制系统；</li>
+      <li><strong>混合神经网络控制</strong>——利用神经网络学习和优化能力来改善传统的控制方法。</li>
+    </ol>
+    <p><strong>典型分类（六种控制结构）</strong>：导师指导下的控制器 · 逆控制器 · 自适应网络控制器 · 前馈控制结构 · 自适应评价网络 · 混合控制系统。</p>
+
+    <h3 class="sub-title">3. 六种典型控制结构（P6–11）</h3>
+
+    <h4 class="minor">（1）导师指导下的控制器（P6）</h4>
+    <p>神经网络控制结构的学习样本<span class="kw">直接取自于专家的控制经验</span>。一旦神经网络的训练达到了能够充分描述人的控制行为时，则网络训练结束。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p06.png" alt="图3-2-1 导师指导下的神经控制结构图">
+      <figcaption>图 3-2-1　导师指导下的神经控制结构图｜重绘版 PPT 第 6 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（2）逆控制器（P7）</h4>
+    <p>如果一个动力学系统可以用一个<strong>逆动力学函数</strong>来表示，则采用简单的控制结构和方式是可能的。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p07.png" alt="图3-2-2 逆控制器的结构图">
+      <figcaption>图 3-2-2　逆控制器的结构图｜重绘版 PPT 第 7 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（3）模型参考自适应网络控制器（P8）</h4>
+    <p>利用神经网络将线性系统经典的<strong>自适应控制设计理论和思想方法</strong>直接引到非线性系统自适应控制系统中来是可能的。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p08.png" alt="图3-2-3 自适应网络控制结构图">
+      <figcaption>图 3-2-3　自适应网络控制结构图（$e_i$：辨识误差，$e_c$：控制误差）｜重绘版 PPT 第 8 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（4）神经内模控制结构（P9）</h4>
+    <p>系统的实际输出与模型 $M$ 的输出信号差用于反馈的目的。这个反馈信号通过前向通道上的控制子系统 $G$ 预处理。通常 $G$ 是一个<strong>滤波器</strong>，用于提高系统的鲁棒性。系统模型 $M$ 和控制器 $C$ 可以由神经网络来实现。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p09.png" alt="神经内模控制结构">
+      <figcaption>神经内模控制结构（$G$：滤波器；$M$、$C$ 均由神经网络实现）｜重绘版 PPT 第 9 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（5）前馈控制结构（P10）</h4>
+    <p>通常单纯的求逆控制结构不能很好地起到<strong>抗干扰能力</strong>，因此结合反馈控制的思想组成<span class="kw">前馈补偿器</span>的网络控制结构。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p10.png" alt="前馈控制结构">
+      <figcaption>前馈控制结构（神经网络作前馈补偿器）｜重绘版 PPT 第 10 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（6）自适应评价网络（P11）</h4>
+    <p>自适应评价网络是由 <strong>Barto、Sutton 和 Anderson 在 1983 年</strong>提出来的。整个学习系统由一个<strong>相关的搜索单元</strong>和一个<strong>自适应评价单元</strong>组成：相关搜索单元是<strong>作用网络</strong>，自适应评价单元为<strong>评价网络</strong>。它<span class="kw">不需要控制系统数学模型</span>，只是通过对某一指标准则 $J$ 的处理和分析得到奖励或惩罚信号。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p11.png" alt="自适应评价网络结构">
+      <figcaption>自适应评价网络：评价网产生评价信号 $J$，作用网产生控制作用 $u(t)$｜重绘版 PPT 第 11 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">4. 神经网络的逼近能力（P12–15）</h3>
+    <p>首先要搞清楚到底<strong>什么样的被控系统可以用神经网络来描述</strong>。对于众多的神经网络类型来说，要得到一个统一的神经网络逼近理论是不现实的，况且还有很多神经网络结构的逼近性问题至今尚未得到证明。但多层前向传播神经网络能够相当好地逼近许多实际问题中的非线性函数。</p>
+    <p>含有两个隐含层的前向传播神经网络，且神经元激励函数为单调的 S 型函数，则此神经网络能够得到合适的逼近精度。对于在紧凑集中的任何平方可积函数，可以通过有限个隐含神经元组成的二层前向传播神经网络来逼近，并能达到任意逼近精度。考虑具有单个隐含层的前向传播神经网络，其输出属于集合：</p>
+    <div class="math-scroll">$$\Sigma(\Psi)=\Bigl\{f:R^{n}\rightarrow R:\ f(x)=\sum_{j} v_j\,\Psi(\tilde{x}^{T}w_j);\ \ x\in R^{n},\ v_j\in R,\ w_j\in R^{n+1},\ j=1,2,\dots,q\Bigr\}$$</div>
+    <p>其中：$x$ 表示 $n$ 维输入矢量，$\tilde{x}=(1,x^{T})^{T}$；$v_j$ 表示隐含层第 $j$ 个神经元到输出层的权值；$w_j$ 表示输入矢量到隐含层第 $j$ 个神经元的权值矢量（$j=1,2,\dots,q$，$q$ 为隐含层神经元个数）；$\Psi(\cdot)$ 为隐含层神经元特性。</p>
+    <div class="defbox">
+      <p class="dt">定义 5-1（S 型函数）</p>
+      <p>如果函数 $\Psi(\cdot):R\rightarrow[0,1]$ 是非递减函数，且满足</p>
+      <div class="math-scroll">$$\lim_{\lambda\rightarrow+\infty}\Psi(\lambda)=1,\qquad \lim_{\lambda\rightarrow-\infty}\Psi(\lambda)=0$$</div>
+      <p>则称函数 $\Psi(\cdot)$ 为 S 型函数。</p>
+    </div>
+    <div class="defbox">
+      <p class="dt">定义 5-2（距离函数 $\rho$）</p>
+      <p>给定的函数空间 $S$，设 $f,g,h\in S$。则距离函数 $\rho$ 满足以下条件：</p>
+      <p>① 正定性：$\rho(f,g)\geq 0$，且仅当 $f=g$ 时等号成立；② 对称性：$\rho(f,g)=\rho(g,f)$；③ 三角不等式关系：$\rho(f,g)\leq\rho(f,h)+\rho(h,g)$。</p>
+    </div>
+    <div class="defbox">
+      <p class="dt">定义 5-3（$\rho$-稠密）</p>
+      <p>一个度量空间 $(X,\rho)$ 中的子集 $S$ 称为是在子集 $T$ 上的 $\rho$-稠密，只有当对于任意一个给定的 $\varepsilon>0$，对所有的 $t\in T$，存在一个 $s\in S$，有 $\rho(s,t)<\varepsilon$。</p>
+    </div>
+    <div class="example">
+      <p class="et">定理 5-1</p>
+      <p>若神经元的激励函数 $\Psi(\cdot)$ 是 S 型连续函数，那么 $\Sigma(\Psi)$ 在 $C(U)$ 中是 $\rho$-稠密。</p>
+      <p>这个定理说明：只要是有限空间中的连续函数 $g(x)$，总存在具有上述神经元特性 $\Psi(\cdot)$ 的三层网络 $\Sigma(\Psi)$，使得其输出函数 $f(x)$ 能够以任意精度逼近 $g(x)$。</p>
+    </div>
+    <p>对于非连续函数是否也有类似的神经网络来逼近它呢？如果能够实现这样的逼近，则非连续函数 $g(x)$ 应该满足什么样的条件？<strong>Hornik 等人在 1989 年</strong>发表论文中阐明了多层前向传播神经网络可以逼近任意连续函数或分段连续函数。</p>
+  </section>
+
+  <!-- ========== P17–42：二、神经网络辨识 ========== -->
+  <section class="slide" id="ident">
+    <span class="slide-tag">PPT 第 17–42 页</span>
+    <h2 class="sec-title">二、非线性动态系统的神经网络辨识</h2>
+
+    <h3 class="sub-title">1. 什么是系统辨识？（P17）</h3>
+    <p>系统建模是神经网络的最早应用。L. A. Zadeh 曾经下过这样的定义：</p>
+    <div class="defbox">
+      <p class="dt">辨识的定义（Zadeh）</p>
+      <p>“辨识是在输入和输出数据的基础上，从一组给定的模型中，确定一个与所测系统等价的模型”。</p>
+    </div>
+    <p>使用非线性系统的输入输出数据来训练神经网络可认为是<strong>非线性函数的逼近问题</strong>。多层前向传播网络能够逼近任意 $L_2$ 非线性函数。</p>
+
+    <h3 class="sub-title">2. 系统辨识的三要素（P18–21）</h3>
+    <ul class="clean">
+      <li><span class="tag">① 模型的选择</span>神经网络用于系统辨识的实质就是选择适当的神经网络模型来逼近实际系统，即 $\hat{S}_M$ 为神经网络模型类，$\hat{P}\in\hat{S}_M$ 为一神经网络。考虑到多层前向传播网络具备良好的学习算法，本章选择多层前向传播网络为模型类 $\hat{S}_M$，$\hat{P}$ 为一能充分逼近实际系统而又不过分复杂的多层网络。</li>
+      <li><span class="tag">② 输入信号的选择</span>从时域上看，要求系统的动态过程在辨识时间内必须被输入信号<strong>持续激励</strong>，即输入信号必须充分激励系统的所有模态；从频域来看，要求输入信号的频谱必须足以<strong>覆盖系统的频谱</strong>。</li>
+      <li><span class="tag">③ 误差准则的选择</span>误差准则是用来衡量模型接近实际系统的标准，它通常表示为一个误差的泛函：
+      $$E(W)=\sum_{k} f\bigl[e(k)\bigr],\qquad f\bigl[e(k)\bigr]=e^{2}(k)$$</li>
+    </ul>
+
+    <h3 class="sub-title">3. 神经网络辨识的五个特点（P22）</h3>
+    <p>一旦三大要素确定以后，神经网络的辨识就归结为一个<strong>最优化问题</strong>。神经网络辨识具有以下五个特点：</p>
+    <ol class="num">
+      <li>不要求建立实际系统的辨识格式。</li>
+      <li>可以对本质非线性系统进行辨识，而且辨识是通过在网络外部拟合系统的输入/输出，网络内部隐含着系统的特性。因此这种辨识是由神经网络本身实现的，是<strong>非算法式</strong>的。</li>
+      <li>辨识的收敛速度不依赖于待辨识系统的维数，只与神经网络本身及其所采用的学习算法有关；传统的辨识方法随模型参数维数的增大而变得很复杂。</li>
+      <li>由于神经网络具有大量的连接，这些连接之间的权值在辨识中对应于模型参数，通过调节这些权值使网络输出逼近系统输出。</li>
+      <li>神经网络作为实际系统的辨识模型，实际上也是系统的一个物理实现，<strong>可以用于在线控制</strong>。</li>
+    </ol>
+
+    <h3 class="sub-title">4. 神经网络辨识模型的结构（P23–26）</h3>
+    <p>两类结构：<strong>前向建模法 · 逆模型法</strong>。</p>
+
+    <h4 class="minor">（1）前向建模法（P24）</h4>
+    <p>利用神经网络来逼近非线性系统的前向动力学模型：</p>
+    <div class="math-scroll">$$y_N(k+1)=\tilde{f}\bigl(y(k),\dots,y(k-n+1),u(k),\dots,u(k-m+1)\bigr)$$</div>
+    <figure class="fig">
+      <img src="images/l5_fig_p24.png" alt="前向建模法">
+      <figcaption>前向建模法：TDL 抽头延迟线提供历史输入输出，$e=y-y_N$ 经学习规则调整网络｜重绘版 PPT 第 24 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（2）逆模型法·直接法（P25）</h4>
+    <p>逆向建模最直接的方法是：<span class="kw">将系统输出作为网络的输入</span>，网络输出与其期望输出即系统的输入进行比较得到误差，作为此神经网络训练的信号。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p25.png" alt="逆模型法（直接法）">
+      <figcaption>逆模型法（直接法）：以系统输出 $y$ 为网络输入，$e=u-y_N$ 训练逆模型｜重绘版 PPT 第 25 页</figcaption>
+    </figure>
+
+    <h4 class="minor">（3）逆模型法存在的问题与实用逆模型法（P26）</h4>
+    <ul class="clean">
+      <li>学习过程<strong>不一定是目标最优</strong>的，可以采用下图所示的实用逆模型法；</li>
+      <li>一旦非线性系统对应关系<strong>不是一对一</strong>的，那么不准确的逆模型可能会被建立。</li>
+    </ul>
+    <figure class="fig">
+      <img src="images/l5_fig_p26.png" alt="实用逆模型法">
+      <figcaption>实用逆模型法：经前向神经网络回传误差训练逆模型网络｜重绘版 PPT 第 26 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">5. 非线性系统前向建模的两种结构（P27）</h3>
+    <div class="grid2">
+      <div class="mini">
+        <p class="mt">并行结构</p>
+        <p>$$\hat{y}(k+1)=N\bigl[\hat{y}(k),\hat{y}(k-1),\dots,\hat{y}(k-n+1),u(k),\dots\bigr]$$</p>
+        <p>网络输出反馈回网络输入。</p>
+      </div>
+      <div class="mini">
+        <p class="mt">串行结构（收敛性较好）</p>
+        <p>$$\hat{y}(k+1)=N\bigl[y(k),y(k-1),\dots,y(k-n+1),u(k),\dots\bigr]$$</p>
+        <p>用系统实际输出作网络输入。</p>
+      </div>
+    </div>
+
+    <h3 class="sub-title">6. 状态空间形式与辨识算子（P28–29）</h3>
+    <p>对于非线性系统：</p>
+    <div class="math-scroll">$$X(k+1)=\Phi\bigl[X(k),U(k)\bigr],\qquad Y(k+1)=\Psi\bigl[X(k+1)\bigr]$$</div>
+    <p>其中 $X(k)$、$U(k)$、$Y(k)$ 分别为 $n$ 维、$p$ 维、$m$ 维状态矢量序列。神经网络系统辨识的基本思想是<span class="kw">利用神经网络的非线性映射特性来逼近动态系统的非线性函数 $\Phi$ 和 $\Psi$</span>。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p28.png" alt="状态空间系统的神经网络辨识结构">
+      <figcaption>状态空间系统的神经网络辨识结构（$e_p(k)=y_p(k)-y_N(k)$）｜重绘版 PPT 第 28 页</figcaption>
+    </figure>
+    <p>设系统的输入空间为 $\Omega_u$，输出空间为 $\Omega_g$，实际系统可以表示为一个从输入空间到输出空间的算子 $P:\Omega_u\rightarrow\Omega_g$；给定一个模型类 $S_M$，设 $P\in S_M$，则辨识的目的就是确定一个 $S_M$ 的子集类 $\hat{S}_M\subseteq S_M$，使其中存在 $\hat{P}\in\hat{S}_M$，且 $P$ 在给定的准则下，$\hat{P}$ 为 $P$ 的一个最佳逼近：</p>
+    <div class="math-scroll">$$\bigl\|y_N-y_p\bigr\|=\bigl\|\hat{P}(u)-P(u)\bigr\|\leq\varepsilon\qquad \forall\,u\in\Omega_u$$</div>
+
+    <h3 class="sub-title">7. 四种辨识模型（P30）</h3>
+    <p>讨论非线性动态系统的神经网络辨识的四种辨识模型，其中 $f$、$g$ 分别为非线性函数，$[u(k),y(k)]$ 表示在 $k$ 时刻的输入-输出对：</p>
+    <table class="data">
+      <tr><th style="width:12%">模型</th><th>方程</th></tr>
+      <tr><td class="rowh">Ⅰ</td><td class="lft">$y(k+1)=\sum\limits_{i=0}^{n-1}\alpha_i\,y(k-i)+g\bigl[u(k),u(k-1),\dots,u(k-m+1)\bigr]$</td></tr>
+      <tr><td class="rowh">Ⅱ</td><td class="lft">$y(k+1)=f\bigl[y(k),y(k-1),\dots,y(k-n+1)\bigr]+\sum\limits_{i=0}^{m-1}\beta_i\,u(k-i)$</td></tr>
+      <tr><td class="rowh">Ⅲ</td><td class="lft">$y(k+1)=f\bigl[y(k),y(k-1),\dots,y(k-n+1)\bigr]+g\bigl[u(k),u(k-1),\dots,u(k-m+1)\bigr]$</td></tr>
+      <tr><td class="rowh">Ⅳ</td><td class="lft">$y(k+1)=f\bigl[y(k),y(k-1),\dots,y(k-n+1),u(k),u(k-1),\dots,u(k-m+1)\bigr]$</td></tr>
+    </table>
+
+    <h3 class="sub-title">8. 假定条件（P31）</h3>
+    <ol class="num">
+      <li>线性部分的阶次 $n$、$m$ 已知；</li>
+      <li>系统是<strong>稳定</strong>的，即对于所有给定的有界输入其输出响应必定也是有界的。反映在模型Ⅰ上要求线性部分的特征多项式
+      $$z^{n}-\alpha_0 z^{n-1}-\dots-\alpha_{n-1}=0$$
+      的根应全部位于<strong>单位圆内</strong>。</li>
+      <li>系统是<strong>最小相位系统</strong>，反映在模型Ⅱ上要求
+      $$\beta_0 z^{m}+\beta_1 z^{m-1}+\dots+\beta_{m-1}=0$$
+      的零点全部位于<strong>单位圆内</strong>。</li>
+      <li>$\{u(k-i),\ i=0,1,\dots\}$ 与 $\{y(k-j),\ j=0,1,\dots\}$ 可以量测。</li>
+    </ol>
+
+    <h3 class="sub-title">9. 神经网络的辨识途径（P32）</h3>
+    <ul class="clean">
+      <li><span class="tag">参数已知</span>线性部分的参数已知——可归结为<strong>带时滞的多层感知网络模型的学习问题</strong>，只是导师学习信号有所不同。</li>
+      <li><span class="tag">参数未知</span>线性部分的参数未知——可归结为带时滞的多层感知网络模型的学习<strong>和线性系统的参数估计问题</strong>。</li>
+    </ul>
+  </section>
+
+  <!-- ========== P33–42：辨识（续） ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 33–42 页</span>
+    <h3 class="sub-title">10. 模型Ⅰ、Ⅱ：线性部分已知的训练结构（P33）</h3>
+    <p>对于模型Ⅰ、Ⅱ：如果线性部分已知，系统实际输出与模型输出（神经网络输出与线性部分输出之和）的差可以用 <strong>BP 算法</strong>来训练神经网络模型。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p33.png" alt="线性部分已知时模型Ⅰ、Ⅱ的训练结构">
+      <figcaption>线性部分已知时模型Ⅰ、Ⅱ的训练结构｜重绘版 PPT 第 33 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">11. 线性部分未知：改进的 BP 迭代学习算法（P34–36）</h3>
+    <p>对于模型Ⅰ、Ⅱ，如果线性部分未知，采用<strong>改进的 BP 迭代学习算法</strong>。设线性部分的未知参数用矢量 $\alpha$ 表示，非线性部分的神经网络模型参数用 $W$ 阵表示。针对模型Ⅰ：</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p34.png" alt="模型Ⅰ的分解训练结构">
+      <figcaption>模型Ⅰ的分解训练结构：$y1(k+1)$（神经网络输出）$+y2(k+1)$（线性部分输出）与系统输出比较得 $e(k+1)$｜重绘版 PPT 第 34 页</figcaption>
+    </figure>
+    <p><strong>改进的 BP 迭代学习算法</strong>（针对模型Ⅰ，RLS + BP）：</p>
+    <div class="math-scroll">$$\hat{\alpha}(l+1)=\hat{\alpha}(l)+K(l+1)\bigl[Z(l+1)-\varphi^{T}(l+1)\hat{\alpha}(l)\bigr]$$</div>
+    <div class="math-scroll">$$K(l+1)=P(l)\varphi(l+1)\bigl[\lambda+\varphi^{T}(l+1)P(l)\varphi(l+1)\bigr]^{-1}$$</div>
+    <div class="math-scroll">$$P(l+1)=\bigl[I-K(l+1)\varphi^{T}(l+1)\bigr]P(l)$$</div>
+    <div class="math-scroll">$$w_{pj}(l+1)=w_{pj}(l)+\eta\,\delta_{pj}o_{pj}+\mu\,\Delta w_{pj}(l)$$</div>
+    <div class="math-scroll">$$\delta_{pj}=\begin{cases}(t_{pj}-o_{pj})\,f'(Net_{pj}) & \text{Output Layer}\\[3pt] \bigl(\sum_{k}\delta_{pk}w_{kj}\bigr)f'(Net_{pj}) & \text{Hidden Layer}\end{cases}$$</div>
+    <div class="math-scroll">$$\varphi^{T}(l+1)=\bigl[y(l),y(l-1),\dots,y(l-n+1)\bigr]$$</div>
+    <div class="note"><span class="nt">交替近似</span>由于线性模型和非线性模型的期望输出 $Z(l+1)$ 和 $t_{pj}$ 在这里都是未知的，已知的只是两个模型的输出之和，而它们的期望值应该是系统在当前时刻 $k+1$ 的实际输出矢量 $y(k+1)$ 值。因此在实际对如上算法进行计算时，可交替使用 $y(k+1)-y2(k+1)$ 和 $y(k+1)-y1(k+1)$ 去近似地代替 $Z(k+1)$ 和 $t_{pj}$。在初始条件完全未知的情况下可以取：
+    $$\hat{\alpha}(0)=0;\qquad P(0)=\rho I$$
+    其中 $\rho$ 为比较大的数。</div>
+
+    <h3 class="sub-title">12. 举例 5-1（P37–39）</h3>
+    <div class="example">
+      <p class="et">例 5-1</p>
+      <p>考虑以下模型：</p>
+      <div class="math-scroll">$$y(k+1)=a\cdot y(k)+b\cdot y(k-1)+g(u)$$</div>
+      <p>其中 $a=0.3,\ b=0.6$，$g(u)=u^{3}+0.3u^{2}-0.4u$。试辨识该系统。</p>
+    </div>
+    <p><strong>解</strong>：线性部分采用<strong>递推最小二乘学习法</strong>；非线性部分采用前向传播多层神经网络来逼近。选择神经网络结构为 $\Pi_{1,8,4,1}$，$\eta=0.2$，$\beta=0$。初值取 $\hat{\alpha}(0)=[a\ b]^{T}$ 的零估计，$P(0)=10\,I$（$\rho$ 取较大值）。</p>
+    <p>为了验证辨识效果，采用校验输入信号：</p>
+    <div class="math-scroll">$$u(k)=\sin\frac{2\pi k}{100},\qquad k=0,1,2,\dots,100$$</div>
+    <figure class="fig">
+      <img src="images/l5_fig_p39.png" alt="例5-1辨识结果">
+      <figcaption>例 5-1 辨识结果：左图为均方误差（Mean Square Error）随训练次数的收敛曲线，右图为校验输入下系统输出与神经网络模型输出的逼近曲线（$k=0\sim100$）｜原图（PPT 第 39 页）</figcaption>
+    </figure>
+
+    <h3 class="sub-title">13. 模型Ⅲ：两个神经网络分别逼近（P40–42）</h3>
+    <p>对于模型Ⅲ，可以用一个 NN 来逼近，也可以用<strong>两个 NN</strong> 来逼近。下面考虑第二种情况：</p>
+    <ul class="clean">
+      <li>$N_f$ 网络用来逼近可分离的非线性函数之一 $f(\cdot)$；</li>
+      <li>$N_g$ 网络用来逼近可分离的非线性函数之二 $g(\cdot)$。</li>
+    </ul>
+    <p>模型Ⅲ方程：</p>
+    <div class="math-scroll">$$y(k+1)=f\bigl[y(k),\dots,y(k-n+1)\bigr]+g\bigl[u(k),\dots,u(k-m+1)\bigr]$$</div>
+    <figure class="fig">
+      <img src="images/l5_fig_p40.png" alt="模型Ⅲ的双网络辨识结构">
+      <figcaption>模型Ⅲ的双网络辨识结构：$y_N(k+1)=y_f(k+1)+y_g(k+1)$，$e=y-y_N$ 分别回传训练 $N_f$、$N_g$｜重绘版 PPT 第 40 页</figcaption>
+    </figure>
+    <p>选指标函数：</p>
+    <div class="math-scroll">$$E=\sum_{p}E_p=\frac{1}{2}\sum_{p}\Bigl[t_{pj}-\bigl(o_{pj}^{1}+o_{pj}^{2}\bigr)\Bigr]^{2}$$</div>
+    <p>根据 BP 算法的推导思路可得<strong>广义误差</strong>：</p>
+    <div class="math-scroll">$$\delta_{pj}^{1(L)}=\Bigl(t_{pj}-\bigl(o_{pj}^{1(L)}+o_{pj}^{2(L)}\bigr)\Bigr)f_1'\bigl(Net_{pj}^{1(L)}\bigr),\qquad
+\delta_{pj}^{2(L)}=\Bigl(t_{pj}-\bigl(o_{pj}^{1(L)}+o_{pj}^{2(L)}\bigr)\Bigr)f_2'\bigl(Net_{pj}^{2(L)}\bigr)$$</div>
+    <div class="math-scroll">$$\delta_{pj}^{1(r)}=f_1'\bigl(Net_{pj}^{1(r)}\bigr)\sum_{k}\delta_{pk}^{1(r+1)}w_{kj}^{1(r+1)},\qquad
+\delta_{pj}^{2(r)}=f_2'\bigl(Net_{pj}^{2(r)}\bigr)\sum_{k}\delta_{pk}^{2(r+1)}w_{kj}^{2(r+1)}$$</div>
+    <p>神经网络系数更新公式为：</p>
+    <div class="math-scroll">$$\Delta w_{pj}^{(1)}=\eta_p\,\delta_{pj}^{(1)}o_{pj}^{(1)},\qquad \Delta w_{pj}^{(2)}=\eta_p\,\delta_{pj}^{(2)}o_{pj}^{(2)}$$</div>
+    <div class="note"><span class="nt">交替修正</span>在整个算法的计算过程中，交替使用网络的实际输出值 $o_{pj1}(L)$ 和 $o_{pj2}(L)$，使得广义误差信号可以不断地进行计算和修正，直至最终收敛。</div>
+  </section>
+
+  <!-- ========== P44–51：三、学习机制 ========== -->
+  <section class="slide" id="learn">
+    <span class="slide-tag">PPT 第 44–51 页</span>
+    <h2 class="sec-title">三、神经网络控制的学习机制</h2>
+
+    <h3 class="sub-title">1. 神经元控制器的学习目标（P44）</h3>
+    <div class="defbox">
+      <p class="dt">学习目标</p>
+      <p>神经元控制器的目的在于如何设计一个有效的神经元网络去<strong>代替传统控制器的作用</strong>，使得系统的输出跟随系统的期望输出。为了达到这个目的，神经网络的学习方法就是寻找一种有效的途径进行网络连接权阵或网络结构的修改，从而使得网络控制器输出的控制信号能够保证系统输出跟随系统的期望输出。</p>
+    </div>
+    <p><strong>学习机制分类</strong>（P45）：监督式学习（有导师指导下的控制网络学习）——<strong>离线学习法 · 在线学习法 · 反馈误差学习法 · 多网络学习法</strong>；增强式学习（通过某一评价函数指定下的学习）。</p>
+
+    <h3 class="sub-title">2. 离线学习法（P46）</h3>
+    <p>适合<strong>静态环境</strong>。网络离线训练中选择的性能指标为 $u-u_c$ 的平方误差极小——<span class="kw">这一指标并不能保证系统的最终性能 $y_d-y$ 的平方误差极小</span>。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p46.png" alt="离线学习法">
+      <figcaption>离线学习法：以 $u-u_c$ 平方误差极小为指标训练网络逆模型｜重绘版 PPT 第 46 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">3. 在线学习法（P47–48）</h3>
+    <p>找出一个最优控制量 $u$ 使得系统输出 $y$ 趋于期望输出 $y_d$。<span class="kw">权阵的调整应该使得 $y_d-y$ 的误差减少最快</span>。适合<strong>模型已知的动态环境</strong>。</p>
+    <p><strong>学习算法</strong>：采用最速下降法，假设系统的 <strong>Jacobian 矩阵已知</strong>：</p>
+    <div class="math-scroll">$$w_{ji}(k+1)=w_{ji}(k)-\eta\frac{\partial E_p}{\partial w_{ji}}
+=w_{ji}(k)+\eta\bigl(y_d(k)-y(k)\bigr)\cdot\frac{\partial y(k)}{\partial w_{ji}}
+=w_{ji}(k)+\eta\bigl(y_d(k)-y(k)\bigr)\cdot\frac{\partial y(k)}{\partial u(k)}\cdot\frac{\partial u(k)}{\partial w_{ji}}$$</div>
+
+    <h3 class="sub-title">4. 反馈误差学习法（P49）</h3>
+    <p>适用于<strong>非线性系统线性绝对占优</strong>条件下的网络学习。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p49.png" alt="反馈误差学习法">
+      <figcaption>反馈误差学习法：固定增益控制器提供反馈误差信号训练 $N_c$｜重绘版 PPT 第 49 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">5. 多神经网络学习法（P50）</h3>
+    <figure class="fig">
+      <img src="images/l5_fig_p50a.png" alt="多神经网络学习法（一）">
+      <figcaption>多神经网络学习法（一）：辨识器 $N_i$ 提供 $y_m$，$e=y-y_m$ 回传训练控制器 $N_c$｜重绘版 PPT 第 50 页</figcaption>
+    </figure>
+    <figure class="fig">
+      <img src="images/l5_fig_p50b.png" alt="多神经网络学习法（二）">
+      <figcaption>多神经网络学习法（二）：逆模型辨识器 $N_i$ 给出期望控制 $u_d$，$e=u-u_d$ 训练控制器｜重绘版 PPT 第 50 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">6. 增强式学习（P51）</h3>
+    <ul class="clean">
+      <li>当某些被控系统的<strong>导师信号无法得到</strong>时，期望输出就没有了。增强型学习就是利用<strong>当前控制是否成功</strong>来决定下一次控制该如何走的学习方式。</li>
+      <li>修正的办法是：对某一成功的行为进行<strong>鼓励</strong>，而对不成功的行为进行<strong>惩罚</strong>。</li>
+      <li>用神经网络来实现时，则可在<strong>权值空间</strong>进行调整。</li>
+    </ul>
+  </section>
+
+  <!-- ========== P53–66：四、控制器设计 ========== -->
+  <section class="slide" id="design">
+    <span class="slide-tag">PPT 第 53–66 页</span>
+    <h2 class="sec-title">四、神经网络控制器的设计</h2>
+
+    <p>神经网络控制的设计方法有四种：<strong>直接逆模型控制法 · 直接网络控制法 · 多网络自学习控制法 · 单一神经元控制</strong>。</p>
+
+    <h3 class="sub-title">1. 直接逆模型控制法（P54–56）</h3>
+    <p>最直观的一种神经网络控制器实现方法。基本思想：<span class="kw">假设被控系统可逆</span>，通过离线建模得到系统的逆模型网络，然后用这一逆网络模型去直接控制被控对象。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p54.png" alt="图3-2-27 直接逆控制的训练结构">
+      <figcaption>图 3-2-27　直接逆控制的训练结构示意图（$u_N(k)$ 与 $u(k)$ 的偏差调整网络）｜重绘版 PPT 第 54 页</figcaption>
+    </figure>
+    <p>考虑如下单输入单输出系统：</p>
+    <div class="math-scroll">$$y(k+1)=f\bigl(y(k-1),\dots,y(k-n+1),u(k),\dots,u(k-m)\bigr)$$</div>
+    <p>$y$：系统的输出变量；$u$：系统的输入变量；$n$：系统的阶数；$m$：输入信号滞后阶；$f(\cdot)$：任意的线性或非线性函数。</p>
+    <p>如果已知系统阶次 $n$、$m$，并假设<strong>系统可逆</strong>，则存在函数 $g(\cdot)$，有：</p>
+    <div class="math-scroll">$$u(k)=g\bigl(y(k+1),\dots,y(k-n+1),u(k-1),\dots,u(k-m)\bigr)$$</div>
+    <p>若能用一个多层前向传播神经网络来实现，则网络的输入输出关系为：</p>
+    <div class="math-scroll">$$u_N=\Pi(X)$$</div>
+    <p>式中：$u_N$ 为神经网络的输出，它表示训练完成后神经网络产生的控制作用；$\Pi$ 为神经网络的输入输出关系式，它用来逼近被控系统的逆模型函数 $g(\cdot)$；$X$ 为神经网络的输入矢量：</p>
+    <div class="math-scroll">$$X=\bigl[y(k+1),y(k),\dots,y(k-n+1),u(k-1),\dots,u(k-m)\bigr]^{T}$$</div>
+    <p>将神经网络输入矢量 $X$ 中的 $y(k+1)$ 用<strong>期望系统输出值 $y_d(k+1)$ 去代替</strong>，就可以通过神经网络 $\Pi$ 产生期望的控制量 $u$。即：</p>
+    <div class="math-scroll">$$X=\bigl[y_d(k+1),y(k),\dots,y(k-n+1),u(k-1),\dots,u(k-m)\bigr]^{T}$$</div>
+    <figure class="fig">
+      <img src="images/l5_fig_p56.png" alt="图3-2-28 直接网络逆模型控制的结构">
+      <figcaption>图 3-2-28　直接网络逆模型控制的结构示意图（$y_d(k+1)$ 代替 $y(k+1)$ 作网络输入）｜重绘版 PPT 第 54 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">2. 直接网络控制法（P57–62）</h3>
+    <p>直接逆模型控制法由于<strong>缺乏学习机制</strong>，且在控制器的设计中又没有考虑到系统本身的输入输出状态，因此一旦系统运行的环境、参数发生变化时，这类控制器就无法适应了。直接网络控制法是<span class="kw">在神经网络的输入端引入了系统的状态信号，并将学习机制实时在线地用于网络控制器的调整和改善</span>。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p57.png" alt="直接网络控制法结构">
+      <figcaption>直接网络控制法结构：网络输入含系统状态 $u(k-1),y(k),\dots$ 与 $y_d(k+1)$，$e=y_d-y$ 在线调整｜重绘版 PPT 第 57、60 页</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="et">例（P58–62）</p>
+      <p>考虑被控系统：</p>
+      <div class="math-scroll">$$y(k+1)=\frac{y(k)y(k-1)y(k-2)u(k-1)\bigl[y(k-2)-1\bigr]+u(k)}{1+y^{2}(k-1)+y^{2}(k-2)}$$</div>
+      <p>假设动力学逆模型成立，即有 $u(k)=g\bigl[y(k+1),y(k),y(k-1),y(k-1),u(k-1)\bigr]$。试用直接网络控制法控制。</p>
+      <p><strong>解</strong>：构造神经网络结构为 $\Pi_{5,25,12,1}$。期望输出为：</p>
+      <div class="math-scroll">$$y_d(k)=\sin\frac{2\pi k}{100}+0.2\sin\frac{6\pi k}{100}$$</div>
+      <p>注意：这里我们用 $y_d(k+1)$ 代替 $y(k+1)$，而 $y(k),\dots$ 仍然用<strong>系统实际输出</strong>，而不是期望输出。控制结构图同上图。</p>
+      <p>选目标函数：</p>
+      <div class="math-scroll">$$E=\sum_{p}E_p=\frac{1}{2}\sum\bigl(y_d(k)-y(k)\bigr)^{2}$$</div>
+      <p>假设：输出单元层的神经元为<strong>线性单元</strong>、其余层的神经元为 <strong>Sigmoid 激励元</strong>。则学习算法为：</p>
+      <div class="math-scroll">$$w_{ij}(k+1)=w_{ij}(k)+\eta\,\delta_{pj}o_{pi}$$</div>
+      <p><strong>输出层</strong>：</p>
+      <div class="math-scroll">$$\delta_{pj}=\bigl(y_d(k)-y(k)\bigr)\frac{dy(k)}{du(k)}
+=\bigl(y_d(k)-y(k)\bigr)\frac{1}{1+y^{2}(k-2)+y^{2}(k-3)}$$</div>
+      <p><strong>隐含层</strong>：</p>
+      <div class="math-scroll">$$\delta_{pj}=o_{pj}\bigl(1-o_{pj}\bigr)\sum_{l}\delta_{pl}w_{lj}$$</div>
+      <p>取 $\eta=0.05$，学习 <strong>100 次</strong>。学习结果（系统输出对期望输出的跟踪曲线）如下：</p>
+      <figure class="fig">
+        <img src="images/l5_fig_p62.jpg" alt="直接网络控制法学习结果：输出跟踪曲线">
+        <figcaption>直接网络控制法学习结果：$\eta=0.05$、学习 100 次后，系统输出 $y$ 对期望输出 $y_d$ 的跟踪曲线（$k=0\sim1$ 归一化区间，两线几乎重合）｜重绘版 PPT 第 62 页</figcaption>
+      </figure>
+    </div>
+
+    <h3 class="sub-title">3. Jacobian 矩阵难以得到时的近似方法（P63）</h3>
+    <ul class="clean">
+      <li><span class="tag">摄动法</span>用 $\dfrac{\Delta y_i}{\Delta u_i}$ 代替 $\dfrac{\partial y_i}{\partial u_i}$；</li>
+      <li><span class="tag">符号函数法</span>采用符号函数 $\mathrm{sgn}\!\left(\dfrac{y_i}{u_i}\right)$ 代替 $\dfrac{\partial y_i}{\partial u_i}$；</li>
+      <li><span class="tag">前向神经网络模型法</span>采用另一神经网络模型来仿真系统的动力学模型，用 $\dfrac{\partial \hat{y}_i}{\partial u_i}$ 代替 $\dfrac{\partial y_i}{\partial u_i}$；</li>
+      <li><span class="tag">多网络自学习控制法</span>见下。</li>
+    </ul>
+
+    <h3 class="sub-title">4. 多网络自学习控制法（P64）</h3>
+    <p>基本思想：<span class="kw">利用逆动力学模型和系统的期望输出 $y_d(k+1)$ 去构造一个期望的控制量 $u_d(k)$</span>，从而解决了神经控制器 $N_c$ 在系统模型未知情况下的学习问题。</p>
+    <figure class="fig">
+      <img src="images/l5_fig_p64.png" alt="多网络自学习控制结构">
+      <figcaption>多网络自学习控制结构：辨识器 $N_i$（逆动力学模型）与 $y_d(k+1)$ 构造期望控制 $u_d(k)$，训练 $N_c$｜重绘版 PPT 第 64 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">5. 单一神经元控制（P65–66）</h3>
+    <p>适用于<strong>单输入单输出系统</strong>。权值更新：</p>
+    <div class="math-scroll">$$w_i(t+1)=\gamma\,w_i(t)+\eta\,p_i(t)$$</div>
+    <figure class="fig">
+      <img src="images/l5_fig_p65.png" alt="单一神经元控制结构">
+      <figcaption>单一神经元控制结构：输入状态 $x_i(t)$ 加权求和，经比例系数 $K$ 产生控制信号 $s(t)$；$p_i(t)$ 为学习信号｜重绘版 PPT 第 65 页</figcaption>
+    </figure>
+    <p>如设定值 $r(t)$、对象输出测量值 $y(t)$ 等，<strong>转换部件</strong>的输出为神经元学习所需的状态，如设定值 $r(t)$、误差 $e(t)$、误差变化 $\Delta e(t)$ 等；控制信号 $u(t)$ 由神经元通过<strong>关联搜索</strong>来产生。根据以上模型，采用联想式学习方法，可以得出<strong>规范化神经元非模型控制方法</strong>：</p>
+    <div class="math-scroll">$$u(t)=\frac{K\displaystyle\sum_{i=1}^{n}w_i(t)\,x_i(t)}{\displaystyle\sum_{i=1}^{n}w_i(t)}$$</div>
+    <div class="math-scroll">$$w_i(t+1)=w_i(t)+\eta\,\bigl[r(t)-y(t)\bigr]\,u(t)\,x_i(t)$$</div>
+    <p>式中 $x_i(t)\ (i=1,2,\dots,n)$ 为神经元的输入状态；$K$ 为神经元的比例系数；$\eta$ 为神经元的学习速率。</p>
+  </section>
+
+  <footer class="foot">
+    东南大学自动化学院 · 智能控制概论 · 第五讲 神经网络控制论（讲义）<br>
+    对应 PPT 第 1–66 页（参考课件·第三版） · 主讲人：刘雪庆 · 2026 年 10 月
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="TaOCuh0G4OAeLNmAdaEiol">
+<head data-page-node-id="3AI89FHrZW6QCq72i5Kz7L">
+<meta charset="UTF-8" data-page-node-id="rF3iRzdGQFiy6uBsBeg8tc">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3yaUHI3fwTziBMMDMw1UUp">
+<title>智能控制概论 · 第四讲 人工神经元模型（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td.lft{text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data td.rowh, table.data th.rowh{
+    background:var(--green-light);font-weight:700;color:var(--green-deep);
+  }
+  table.data td.hl{background:var(--yellow);font-weight:700;color:var(--green-deep);}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  .chapter .ch-sub{
+    margin-top:10px;font-size:16px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .mini{
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 18px;
+  }
+  .mini .mt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-dark);font-size:15px;margin-bottom:6px;
+  }
+  .mini p{font-size:14.5px;line-height:1.75;margin:4px 0;}
+  .timeline{
+    position:relative;margin:18px 0 8px;padding-left:26px;
+    border-left:3px solid var(--green-line);
+  }
+  .tl-item{position:relative;padding:10px 0 10px 18px;}
+  .tl-item::before{
+    content:"";position:absolute;left:-35px;top:18px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--yellow);box-shadow:0 0 0 3px var(--green-light),0 0 0 4.5px var(--green);
+  }
+  .tl-item .yr{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:800;color:var(--green-dark);font-size:15.5px;
+  }
+  .tl-item .ti{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--ink);font-size:15px;margin-left:8px;
+  }
+  .tl-item p{font-size:14.5px;color:var(--ink-2);margin:2px 0;}
+  .tl-item.cold::before{background:#C9C4B4;box-shadow:0 0 0 3px #F1EFE7,0 0 0 4.5px #B7B2A0;}
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,header.cover,.mini{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+</style>
+</head>
+<body data-page-node-id="XyjONyigY1IIuuQcgxpxVx">
+
+<nav class="topbar" data-page-node-id="msQRoSk6iV5RD3Ci28vBKg">
+  <div class="topbar-inner" data-page-node-id="lJJMzFNWI3zeJFTN17NRUg">
+    <span class="brand" data-page-node-id="65TNUE2Q6h9tRZCLnENITz">智能控制概论 · 第四讲</span>
+    <div class="links" data-page-node-id="eiVAbpUGluwOYqIXVXRNEK">
+      <a href="#cover" data-page-node-id="Od6CpZ6lpuFuFg3IWDYGf3">封面</a>
+      <a href="#intro" data-page-node-id="cjr7UGpbB8Fd5dOiKdg6I4">前言</a>
+      <a href="#feedforward" data-page-node-id="naIdF2Eum3FEmJcmoP8v9t">前馈神经网络</a>
+      <a href="#rbf" data-page-node-id="vOMoQ2wMgPV7zM5a2YqPL2">RBF 网络</a>
+      <a href="#dynamic" data-page-node-id="SgYw7D5ZlknhInzPvgVuvR">动态神经网络</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page" data-page-node-id="Fc39E16EqyTJ6GkLh6jiOf">
+
+  <!-- ========== P1：封面 ========== -->
+  <section class="slide" id="cover" data-page-node-id="m2DoLGv5ruLgLMTBYxIPHB">
+    <span class="slide-tag" data-page-node-id="39kb4tCVb5bub1fhdiQ6rY">PPT 第 1 页</span>
+    <header class="cover" data-page-node-id="pR0FZCF1YrKtfWZwuydqFe">
+      <div class="kicker" data-page-node-id="Guabqhf1s2Kau1d8C800Lo">东南大学自动化学院</div>
+      <h1 data-page-node-id="AR4dBzEiytWss5ta0W43z8">智能控制概论</h1>
+      <div class="en" data-page-node-id="YhVUckUp19GVLYsQKRR52K">Introduction to Intelligent Control</div>
+      <div class="lecture" data-page-node-id="n7FOAtSBRUteanpUsSgez5">第四讲&nbsp;&nbsp;人工神经元模型</div>
+      <div class="meta" data-page-node-id="WgeFOl8L8ZYrvSJWtJgn80">
+        主讲人：刘雪庆<br data-page-node-id="kGEkm7THyypfQq3ZZ7O4jm">
+        2026 年 10 月
+      </div>
+    </header>
+  </section>
+
+  <!-- ========== P2：第四章 章节页 ========== -->
+  <section class="slide" data-page-node-id="k7rlmmpReagkJFrTpRFPJE">
+    <span class="slide-tag" data-page-node-id="kMSqGRaceARe0svtx5ZFAI">PPT 第 2 页</span>
+    <div class="chapter" data-num="4" data-page-node-id="qnIwBwEY880P3E2mqy0dbt">
+      <div class="ch-kicker" data-page-node-id="X7EA609gnUCugYvZ1a6UAq">CHAPTER 4 · 智能控制的“神经网络基石”</div>
+      <h1 data-page-node-id="swzmnLdjMWRkOWzn7Eqgka">第四章&nbsp;&nbsp;人工神经元模型</h1>
+      <div class="ch-sub" data-page-node-id="yLwKgiP3BPR2S26TZnBf4K">从生物启发到数据驱动</div>
+    </div>
+  </section>
+
+  <!-- ========== P3：本章导航 ========== -->
+  <section class="slide" data-page-node-id="DxwVuBDhlka6OCq6o6tcZd">
+    <span class="slide-tag" data-page-node-id="oMTHQJzPJ790RJIgKZp7sy">PPT 第 3 页</span>
+    <h2 class="sec-title" data-page-node-id="OxZqAqUFo2fOfzFKMro7uo">本章内容</h2>
+    <ol class="toc" data-page-node-id="6JGThS7sAPAU5As6gdYjV2">
+      <li data-page-node-id="jUhGGNLcO8k8c4zspHKHcg">前言——为什么需要神经元</li>
+      <li data-page-node-id="TByDSvhSWpRIOOmg0exEHV">前馈神经网络——BP 与 RBF</li>
+      <li data-page-node-id="BGKn1V2iMuSuY6taxRkddJ">动态神经网络——Hopfield 与模糊神经网络</li>
+    </ol>
+  </section>
+
+  <!-- ========== P4–20：一、前言 ========== -->
+  <section class="slide" id="intro" data-page-node-id="A0a4asNyDPrVmwzoEcJHsL">
+    <span class="slide-tag" data-page-node-id="Oo7r2kMPQV7cpI1ijISNv2">PPT 第 4–20 页</span>
+    <h2 class="sec-title" data-page-node-id="j5qFBhVgNzgzs16VDdCtrH">一、前言：为什么需要神经元？</h2>
+    <p data-page-node-id="vI4d0NaTcloENz9vP63sdd">本节按五个环节展开：<strong data-page-node-id="hH51g4NnynTbtFzFaRnsB9">为什么需要神经元 → 智能控制的技术谱系 → 神经网络研究四大维度 → 80 年沉浮录 → 神经元与控制系统接口</strong>。核心问题：<span class="kw" data-page-node-id="vvxLoGVVuMPGBycSNqB5Th">为什么神经网络能解决经典控制解决不了的问题？</span></p>
+
+    <h3 class="sub-title" data-page-node-id="K57kE2StoTKYW8IgXK9OB2">1. 动机与挑战——经典控制遇到了什么麻烦？（P5）</h3>
+    <div class="grid2" data-page-node-id="CzcrJ0eYvD6HGfLdYTdflz">
+      <div class="mini" data-page-node-id="AG2vIGcCK0A9CMuZExCUla">
+        <p class="mt" data-page-node-id="GdtgXes7cmfu4GwufVUjcB">痛点 · 难以精确建模</p>
+        <p data-page-node-id="DoFpT9S02vEyfddiNpEDmK">现代工程系统（飞行器姿态、化工反应釜、城市交通流）呈现高度复杂的动态特性：<strong data-page-node-id="CoDOC9TVg14gkuti3vLllp">强非线性、强耦合、多变量时变</strong>。</p>
+        <p data-page-node-id="Gy5PJApwhHgRhFOwrQY8AO">传统控制（PID、状态反馈）高度依赖物理机理建模；当模型失配时，控制性能急剧下降。</p>
+      </div>
+      <div class="mini" data-page-node-id="NKCJqaDksEBlRWQLJmRH4U">
+        <p class="mt" data-page-node-id="Ap3RcP2gxueZEuI1l9to7e">出路 · 数据驱动逼近</p>
+        <p data-page-node-id="A9KZryzaw00AkLs4RZWVj7">人工神经网络<span class="kw" data-page-node-id="eWlw6EXLpI6cqwqMs5hdz4">无需预先知道系统内部结构</span>，仅凭输入–输出数据即可逼近任意非线性函数。</p>
+      </div>
+    </div>
+    <div class="defbox" data-page-node-id="F5lRL2zjg0CtJhIEFiyK3V">
+      <p class="dt" data-page-node-id="QfzaHMnQzT5y0zvFcyWCcH">万能逼近定理（Universal Approximation Theorem）</p>
+      <p data-page-node-id="YN5StJnFiT08MZrW3v2wrr">含足够神经元的单隐层前馈网络，可以任意精度逼近任意连续非线性函数（Cybenko, 1989）。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="jvGQaQ8cqpQEqjAU7uoBjD">2. 技术定位——智能控制的“三大支柱”（P6）</h3>
+    <p data-page-node-id="4fLK2yDTynp7WlmMVaJZ6e">人类智能的三种模拟途径：<strong data-page-node-id="IjjGlB7XEvwccCNdoJOaG6">语言推理 · 脑结构学习 · 自然进化</strong>。</p>
+    <div class="grid3" data-page-node-id="ykDo0tYzuTpzbeBWnLtwYc">
+      <div class="mini" data-page-node-id="2dZDx5IGfU9HyjU959qz5p">
+        <p class="mt" data-page-node-id="zsAdJ7TEGWqWjDKS4ASuYe">支柱一 · 模糊逻辑</p>
+        <p data-page-node-id="OlfkLtOaFEmhpLvqEsIAOE">模仿人类的语言描述与推理——用“若…则…”规则表达专家经验与模糊常识。</p>
+        <p data-page-node-id="YWDTtg0ioDtOVsEyhBHlJQ">IF … THEN … RULES</p>
+      </div>
+      <div class="mini" style="border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow);" data-page-node-id="ZeITQJSfcib4mcVT9QI5DW">
+        <p class="mt" data-page-node-id="6WsyRwWA3aYk9HbDP5zjWj">支柱二 · 人工神经网络（本章核心）</p>
+        <p data-page-node-id="x7cvHcNQgB0SVT75uTvnYw">模仿人脑细胞的分布式并行结构与自学习能力——从数据中自动提取规律。</p>
+        <p data-page-node-id="FXTLNzmNzRoLaIsaT6SrTj">PARALLEL · SELF-LEARNING</p>
+      </div>
+      <div class="mini" data-page-node-id="do1KV0kSKdB7pdxbbfUeZy">
+        <p class="mt" data-page-node-id="zIYEaEkpYzU50yMs2jkWI8">支柱三 · 进化计算 / 强化学习</p>
+        <p data-page-node-id="D97W2nV4xg4BgXLq4NIMZe">模仿自然界的试错与优胜劣汰，在与环境交互中演化出最优策略。</p>
+      </div>
+    </div>
+    <div class="note" data-page-node-id="eCEuAAJpzajCVb9C98HmHe"><span class="nt" data-page-node-id="W6sZPZhB4EtGiFV3Z81thC">结论</span>现代热点：深度强化学习 = 支柱二 × 支柱三。神经网络是贯通 <strong data-page-node-id="Kj7mL2KC9IqzV8NFc0nOwo">感知 → 建模 → 决策 → 控制</strong> 全链条的核心使能器。</div>
+
+    <h3 class="sub-title" data-page-node-id="cABRz08bYXctA7uiMCAWWs">3. 人工神经网络研究什么？——四大核心维度（P7）</h3>
+    <p data-page-node-id="FrXX9jKGslYD5iit8cNqWv">神经网络是一个庞大的工具家族。理解它的分类，比死记硬背公式更重要——从<strong data-page-node-id="IvykOfK8tg97IpANzS5kdS">模型、结构、架构、算法</strong>四个层面拆解。</p>
+    <table class="data" data-page-node-id="O4JHGRt4MNRBIwF9CUaSNH">
+      <tr data-page-node-id="Gx7wkUrWjU6RTGjuPjWMbf"><th style="width:16%" data-page-node-id="XTLHYDtKpFjqLWark0uFhU">维度</th><th style="width:20%" data-page-node-id="IsZBgLyNOwEMNvZyZvdSU6">名称</th><th data-page-node-id="j419jCPGjW4Hl5hanrtyEi">内容</th></tr>
+      <tr data-page-node-id="ufwKmDfYMShPX7P3lskBZz"><td class="rowh" data-page-node-id="edOkrCkHmKCuLqHVCRt17x">维度一</td><td data-page-node-id="dqobsxDNwESXhkxKkwgrBo">神经元模型</td><td class="lft" data-page-node-id="ze6FNiWXeyVHQZUetISoes">经典：线性 / 非线性处理单元——MP 模型、感知机单元；现代引申：深度残差单元（ResNet Block）、门控单元（LSTM Gate）</td></tr>
+      <tr data-page-node-id="xCeaqgplE9EFjioFqFlb0V"><td class="rowh" data-page-node-id="mj8jgFE1xLpWWiFPCAqEVW">维度二</td><td data-page-node-id="RD9zvo1Eybe8mskRXHhR2O">网络结构</td><td class="lft" data-page-node-id="H6YgpONUxLG0vKJMuPegmq">按连接方式分类——前向网络（Feedforward）、反馈网络（Hopfield）、自组织网络（SOM / ART），经典控制中最关心的拓扑结构</td></tr>
+      <tr data-page-node-id="zqvMsZ8dLHIc9GuIfJ1j6f"><td class="rowh" data-page-node-id="ysCbjWX3sK7rjd2CktQCsZ">维度三</td><td data-page-node-id="gFKZ1iGrg74ep8JMCk9HOH">现代深度架构</td><td class="lft" data-page-node-id="HBjozyta31pe0VdKAJtyRn">深层堆叠与专用架构（CNN、ResNet、Transformer 等）</td></tr>
+      <tr data-page-node-id="m35Z98DRWj47TdMQVLuScB"><td class="rowh" data-page-node-id="KrQQEpN1BU8UjmcmAPvuHp">维度四</td><td data-page-node-id="IhcFxskc3mUauTqeFxzuxB">学习范式</td><td class="lft" data-page-node-id="bDi6c6v5aqYoJisqNcBBik">有监督 / 无监督 / 强化学习及其训练算法</td></tr>
+    </table>
+
+    <h3 class="sub-title" data-page-node-id="471l3Rky475iQEKNUkCAYE">4. 历史回眸——80 年沉浮录（P8–9）</h3>
+    <h4 class="minor" data-page-node-id="ytnN5gCFpePmkaWj1qhoyE">上篇 · 1943–1986 前深度学习时代：三起两落</h4>
+    <div class="timeline" data-page-node-id="6EFQFiBu13Kz2u7qJIaJaG">
+      <div class="tl-item" data-page-node-id="gCQ8yvnWhDk5Gar1hDUAj3"><span class="yr" data-page-node-id="eNG1zZK1lX2vJLcQFpYmJb">1943</span><span class="ti" data-page-node-id="y95NBcRtZP1Cb2x9zrAmnS">奠基 · M-P 形式神经元模型</span><p data-page-node-id="wTQqDW8gc7eQdFuoHfCxhS">McCulloch &amp; Pitts：神经科学数学化的开端。</p></div>
+      <div class="tl-item" data-page-node-id="nL00pLjFnHQPUjpZKUe35c"><span class="yr" data-page-node-id="QGBMQUW0PMhRAsZOXBwdFs">1949</span><span class="ti" data-page-node-id="rzhht7Z9LmM7rreGre4iPA">突触可塑性 · Hebb 学习规则</span><p data-page-node-id="FiBvb9029Or54ClrCXhcG8">“一起放电的神经元，连在一起”。</p></div>
+      <div class="tl-item" data-page-node-id="H9sDTYM6ebXLvyGHSRzzyK"><span class="yr" data-page-node-id="Gw9bTFirqizoW82P8Cjzp0">1957</span><span class="ti" data-page-node-id="D6MdBpbnBaJOghwOGtFgzW">首台实现 · 感知机 Perceptron</span><p data-page-node-id="K23KLR3mikRCs9GCxd1D58">Rosenblatt：第一台可学习的神经机器。</p></div>
+      <div class="tl-item cold" data-page-node-id="8NWceWTxp5S89RRnhv6BmV"><span class="yr" data-page-node-id="snVNeOhsbt9ZnYPvMKOIc9">1969</span><span class="ti" data-page-node-id="FLlePSWDRApS3QObhOzTZW">第一次寒冬 · XOR 困境</span><p data-page-node-id="4OtcMgyIeA6jj2aQdh7ICP">单层感知机无法解决线性不可分问题。</p></div>
+      <div class="tl-item" data-page-node-id="e4xWVCAXpkDNcMKfbGNf3Z"><span class="yr" data-page-node-id="ndgvtBWgREWoBRwW5FCdDi">1982</span><span class="ti" data-page-node-id="qJABbDOwlF2mDvhFI0nSRB">物理学介入 · Hopfield 能量函数</span><p data-page-node-id="ZLTgjAFnNiJPcx0NjiOfnW">给出反馈网络稳定性的判据。</p></div>
+      <div class="tl-item" data-page-node-id="PYixmwcDkoCRAZzL3VyKKO"><span class="yr" data-page-node-id="iDnq5efIDoBEyzxE6FSqEE">1986</span><span class="ti" data-page-node-id="i4OErODJwD0N1FH6nlPOfl">拯救者出现 · BP 反向传播算法</span><p data-page-node-id="0sIfkYVDXGbwWzQrjOSrmY">Rumelhart、Hinton 等：多层感知机训练突破，研究再度复兴。</p></div>
+      <div class="tl-item cold" data-page-node-id="U0Hlfm3aHAbfQzPVhwizaZ"><span class="yr" data-page-node-id="NZxeyQGFCWuZk4NvmaX7IJ">1990s</span><span class="ti" data-page-node-id="npvfx6E6YFh2mxEyS7hyBV">第二次寒冬</span><p data-page-node-id="OEZUKIeuZ4zDzzOtiZlUPt">训练不稳定、局部极小值问题无解，研究再度低迷。</p></div>
+    </div>
+    <h4 class="minor" data-page-node-id="nsJZxYKNgFp5QD37dTx5mu">下篇 · 1998–2024 深度学习与大模型时代</h4>
+    <div class="timeline" data-page-node-id="blVgWxrTmVnsE3MaKyD4ON">
+      <div class="tl-item" data-page-node-id="4SEjaAnKop38oL5HYohqOU"><span class="yr" data-page-node-id="tQm2cQygovm8q7UXMt7bxR">1998</span><span class="ti" data-page-node-id="VA8Eso3KDspI52APGOvKgS">首次商用 · LeNet-5 卷积神经网络</span><p data-page-node-id="mWPSJB7fNg5bhPVmf0khaK">LeCun：CNN 用于支票字符识别，首次大规模商用。</p></div>
+      <div class="tl-item" data-page-node-id="zl0AU7eJM1yaiHqpn0gl5x"><span class="yr" data-page-node-id="5gjALGGGzsmVSC9WnFSuGG">2006</span><span class="ti" data-page-node-id="ybOWAHWK0YCvHzHOUo5Hne">深度学习命名 · 深度信念网络 DBN</span><p data-page-node-id="Q2EWp7kCCBWsvDPiMOcRSq">Hinton：逐层预训练破解深层网络训练难题。</p></div>
+      <div class="tl-item" data-page-node-id="M5nfo424jIeOGTbmiJbwwZ"><span class="yr" data-page-node-id="IEtgO2PbzDeQQecEKGi5UC">2012</span><span class="ti" data-page-node-id="Bw3KeBCL9uTmveq7sEEiDy">算力引爆智能 · AlexNet 夺冠 ImageNet</span><p data-page-node-id="H2naRpT8bkaBFiYdRHvxqc">以碾压性优势夺得图像识别冠军，开启深度学习浪潮。</p></div>
+      <div class="tl-item" data-page-node-id="CiLfxjS5aEGtjOQTsTYPAg"><span class="yr" data-page-node-id="YrLh2WRweAPtb4X4cDKrf1">2017</span><span class="ti" data-page-node-id="tShscEHbT2A25IfcVsgWQB">架构革命 · Transformer 提出</span><p data-page-node-id="GsNeZYT4WYRZnArnBzULBF">自注意力机制取代 RNN，成为大语言模型（LLM）的基石。</p></div>
+      <div class="tl-item" data-page-node-id="sQaRHR31jHg5oyLRjouwLE"><span class="yr" data-page-node-id="9nLZYhYKOrK6PWtzUOHGXj">2024</span><span class="ti" data-page-node-id="ZJqCk5o98oETLb11jdLXhd">诺贝尔物理学奖</span><p data-page-node-id="8xNN6S9tp8UdCY1ap5MEYN">John J. Hopfield · Geoffrey E. Hinton：表彰其在机器学习领域的基础性贡献——这标志着神经网络获得科学界最高认可。</p></div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="qXQB5FDbIFPhAKQ1E8U3Wm">5. 神经网络与自动化控制学科之间（P10）</h3>
+    <div class="timeline" data-page-node-id="YQMeLf3C6OA5wKP6vsObMh">
+      <div class="tl-item" data-page-node-id="ZusjoskKVB0bDtAOj1v7xT"><span class="yr" data-page-node-id="GArqXxBSKBiPjxAWneYqnE">50–60 年代</span><span class="ti" data-page-node-id="GzejE8Yb2JcD6gn4zfRBvS">自适应控制</span><p data-page-node-id="Q5CanU8cF9UhCxqRFCXQki">1959 年，Bernard Widrow 提出 Adaline（自适应线性神经元）。</p></div>
+      <div class="tl-item cold" data-page-node-id="1xqcV6HUYQATRCo2jtHcbx"><span class="yr" data-page-node-id="7FXQ7AZ1OYqgkBZiNCQmtZ">1969</span><span class="ti" data-page-node-id="tt3NsQ0OEeMSwHTY8Ayz0E">第一次寒冬 · XOR 困境</span><p data-page-node-id="1qVck0wN7Nf9P1S2ghrBvS">这意味着它连最简单的非线性被控对象都搞不定。</p></div>
+      <div class="tl-item" data-page-node-id="RV6jCmogKuaEobwCnJbHvE"><span class="yr" data-page-node-id="WXMyCEOPoEhr1QZHXL999S">80–90 年代</span><span class="ti" data-page-node-id="2qKuFH050phvfciuGicr9M">系统辨识</span><p data-page-node-id="ANHDmSvTUFBJPqYf2TwCfk">正向建模、逆向控制、神经优化控制。</p></div>
+      <div class="tl-item cold" data-page-node-id="YLTKn1qCEX2CqXFUV6zvny"><span class="yr" data-page-node-id="sGTQ4OkGkCNWJeuaDPnJr9">90 年代中期</span><span class="ti" data-page-node-id="UBA2FT0q2edy31RsY4FHxZ">“黑箱”与“安全性”</span><p data-page-node-id="Yja2Q9fiswEnWQ6nWXMJiQ">神经网络训练不稳定、局部极小值问题无解；控制的核心诉求永远是稳定性、实时性和可靠性，神经网络缺少“稳定性证明”。</p></div>
+      <div class="tl-item" data-page-node-id="iJnfgm1nVaRUgCXPz6BBlm"><span class="yr" data-page-node-id="rfc6ghNL3oJH6r0gWqyVKF">2006 年至今</span><span class="ti" data-page-node-id="eYvaqnwKM3WAUwuJrqiyNy">控制的“端到端”</span><p data-page-node-id="kQtpRbJCqh8YccflToL3sV">攻坚传统控制无法触及的高维复杂环境。</p></div>
+      <div class="tl-item" data-page-node-id="ORXLD5t6LBYTo4vPTFs8O2"><span class="yr" data-page-node-id="PKqa8L9nSAAXDtydL7vLNJ">未来</span><span class="ti" data-page-node-id="RQrIuPjKfKEHkiy8F0WxYI">应用场景</span><p data-page-node-id="eSUFrOdcaDLBcLcvMQZxu9">深度融合感知、决策与控制。</p></div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="e8GQnHNTbwAL81FO7gpFD8">6. 引言小结——三个核心认知（P11）</h3>
+    <ol class="num" data-page-node-id="G4AzwHnIJ2byR1EEQjA4Vv">
+      <li data-page-node-id="l43w4zJwd8Y5Dxv8dlzufj"><strong data-page-node-id="uFTC6XdteBNdZD6I8vL0wI">角色变迁</strong>：神经网络不再仅是“非线性函数逼近器”，而是集感知、认知、决策于一体的智能控制核心引擎。</li>
+      <li data-page-node-id="uHze5wEE5FwbpGjlTrVmaO"><strong data-page-node-id="tkZD3ESiE8BRm2S8KMlHuH">工程启示</strong>：为控制领域“不可建模”提供直接的数据驱动路径——系统辨识与神经自适应控制。</li>
+      <li data-page-node-id="FKOwGHRVI4oadPpLynXEBm"><strong data-page-node-id="tN2Anz8zpQvgEOzBL9XQp8">学习预告</strong>：下一环节从“生物神经元”抽象为“数学公式”，推导前向传播与 BP 算法。</li>
+    </ol>
+    <div class="note" data-page-node-id="bpHW8B8Ag8LiZnP81hDCJi"><span class="nt" data-page-node-id="qs458fqc6Mjv5BvncrSukt">寄语</span>每一个数学符号背后，都是几代科学家试图模拟大脑的宏大尝试。</div>
+
+    <h3 class="sub-title" data-page-node-id="rqcNyfnupboq02aHbnyvJu">7. 生物神经元的数学抽象——M-P 模型（P12）</h3>
+    <p data-page-node-id="xMABh3zn2eBEYvXN5yUlUB">人工神经元是对生物神经元的<strong data-page-node-id="Uag9AJmmtYraa0fSCv7Vt0">功能模拟</strong>：<span class="kw" data-page-node-id="rKiRnG3OD8r7fbuAuUFRCT">多输入、单输出的非线性信息处理单元</span>。</p>
+    <figure class="fig" data-page-node-id="ExOCZP0LOQqxahOLdMWvyO">
+      <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="9xua12WU9AT8BNJnql7GUw">
+        <defs data-page-node-id="k8cpSQYx9ePINPchxqzVjw">
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="fLgj6Bm5Gq9l8Md8D3TxZ8">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="efSDOuL4Uc0W6oIAho16JQ"/>
+          </marker>
+        </defs>
+        <g font-size="15" fill="#26231B" data-page-node-id="lZ0APVuE8jnJej462jCWMF">
+          <text x="30" y="66" data-page-node-id="sTKftdvb77mkm6NoOQUjUp">x</text><text x="38" y="70" font-size="11" data-page-node-id="0fLfWH7AcWwA9gfatNXamQ">1</text>
+          <text x="30" y="126" data-page-node-id="foS8C2QooXFLW0q63Tu1kj">x</text><text x="38" y="130" font-size="11" data-page-node-id="1QNFeFmXmjVQjTlO1Dm3WR">2</text>
+          <text x="36" y="176" data-page-node-id="UJb5rGcSG2OouKvuJ2FYKB">⋮</text>
+          <text x="30" y="216" data-page-node-id="ot5vUGM18BLAqM9JRxP226">x</text><text x="38" y="220" font-size="11" data-page-node-id="K7EmOTGoUDV4THCotFG3d3">n</text>
+        </g>
+        <g stroke="#3A6122" stroke-width="1.4" fill="none" data-page-node-id="iFqSOHBTvsnKbVOe5076W4">
+          <line x1="58" y1="60" x2="238" y2="115" marker-end="url(#arA)" data-page-node-id="rFBoTKZIBEjO5V0P8HeWJ8"/>
+          <line x1="58" y1="120" x2="238" y2="125" marker-end="url(#arA)" data-page-node-id="PSlf7CXBR8hcPHb6i3Smhs"/>
+          <line x1="58" y1="210" x2="238" y2="135" marker-end="url(#arA)" data-page-node-id="HkyhVaEy5FJBLLXD84pf5q"/>
+        </g>
+        <g font-size="13.5" fill="#5B5648" data-page-node-id="2L1TphuWqv0Yftzjtw0hwf">
+          <text x="130" y="78" data-page-node-id="vRpHStDNVBaiDKGxrn8jCY">w</text><text x="138" y="82" font-size="10" data-page-node-id="CFVBGRtg5xa6lLD90fmNHy">1</text>
+          <text x="130" y="110" data-page-node-id="yqXjGDDCbXMwtOIIFZyavC">w</text><text x="138" y="114" font-size="10" data-page-node-id="YPfDBrmBe83lHiivz9NqOh">2</text>
+          <text x="130" y="180" data-page-node-id="R3ufzlzp05gRXDuqoBvnhK">w</text><text x="138" y="184" font-size="10" data-page-node-id="4tNRkUTiXnf7sIQ3DKDqY4">n</text>
+        </g>
+        <circle cx="290" cy="125" r="52" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="2" data-page-node-id="YkP7b0fr6Rru7xwOc9Mu4L"/>
+        <text x="290" y="120" font-size="22" text-anchor="middle" fill="#2C4A1A" data-page-node-id="UjKXx4y5AQyJu8dMMHff5H">Σ</text>
+        <text x="290" y="144" font-size="12.5" text-anchor="middle" fill="#5B5648" data-page-node-id="qriuA7AG7nVjmpeOqtKSyp">Net</text>
+        <rect x="380" y="95" width="90" height="60" rx="10" fill="#FDD000" stroke="#C9A900" data-page-node-id="evfowI12HkOCc6tRPxs5PC"/>
+        <text x="425" y="131" font-size="16" text-anchor="middle" fill="#574500" font-weight="700" data-page-node-id="08WZhvQ3HfIIbHx4P5veCE">f(·)</text>
+        <line x1="342" y1="125" x2="378" y2="125" stroke="#3A6122" stroke-width="1.4" marker-end="url(#arA)" data-page-node-id="Pfosc8T6E8mou2m0TObWEh"/>
+        <line x1="470" y1="125" x2="560" y2="125" stroke="#3A6122" stroke-width="1.4" marker-end="url(#arA)" data-page-node-id="73kwZMl6ow6qHq1KIDWNZR"/>
+        <text x="575" y="131" font-size="16" fill="#26231B" data-page-node-id="DdVKG26ghwaRa2oYgsdGXM">y</text>
+        <line x1="290" y1="30" x2="290" y2="71" stroke="#3A6122" stroke-width="1.4" marker-end="url(#arA)" data-page-node-id="Dx7JWaiNbbFVYRCAfSUibr"/>
+        <text x="300" y="40" font-size="14" fill="#5B5648" data-page-node-id="xFDpcpgTmsuqgq1vMEGxsa">偏置 b（= −θ）</text>
+      </svg>
+      <figcaption data-page-node-id="t4xYoSs4Djx3Z9pxRfGi7N">M-P 神经元模型：输入加权求和并加偏置，经非线性激活产生输出｜按 PPT 第 12 页绘制</figcaption>
+    </figure>
+    <div class="card" data-page-node-id="P8nl55mMPh3cAJihSo6khP">
+      <p data-page-node-id="DgsGLJQk7KMRHW2UelcDwu"><strong data-page-node-id="FBzlMMq33elWjbBwhBjV4b">统一数学表达（2026 版标准符号）</strong></p>
+      <p data-page-node-id="LvWFDQJIKbpUmJBa1cOLJS">输入向量 $\boldsymbol{x}=[x_1,x_2,\dots,x_n]^{\mathrm{T}}$，权值向量 $\boldsymbol{w}=[w_1,w_2,\dots,w_n]^{\mathrm{T}}$；</p>
+      <p data-page-node-id="B30RyxdSPA1d7HDsToxKZX">净输入与输出：</p>
+      <div class="math-scroll" data-page-node-id="WPHOTPECm3Vc7wCdtoYaQS">$$Net=\sum_{i=0}^{n} w_i x_i + b,\qquad y=f(Net)$$</div>
+      <p data-page-node-id="WeInwV5sSuxc4bC70vWjU0">符号约定：偏置 $b$ 与阈值 $\theta$ 的关系为 <span class="kw" data-page-node-id="hRWD8RqQB63wOLGukmiyHG">$b=-\theta$</span>，统一用 $+b$ 避免混乱。</p>
+      <p data-page-node-id="iajLbF5XsEDumiF6sWaXeT"><strong data-page-node-id="EvdhQYI1GgvjieZvHLDUC6">这是全章的骨架公式</strong>——后续所有网络都由它堆叠而成。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="VhcAewQWDk7L1OU2D9nAq5">8. 激活函数——非线性的来源（P13）</h3>
+    <p data-page-node-id="Lyox2hifynMIHCIOX2w6Fv">引入非线性，是神经网络能够逼近任意函数的关键。</p>
+    <figure class="fig" data-page-node-id="b1Y06yKBrGEYOWq9dhzelO">
+      <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="OwvSlgbkPK7FBJAC8kxNla">
+        <!-- 4 panels, each 160x180 area -->
+        <!-- panel 1: step -->
+        <g transform="translate(20,20)" data-page-node-id="32iUyWjgAdWM8QhSTMYxLS">
+          <rect x="0" y="0" width="150" height="180" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="IvDe1HgfDokDLxn2P3X9GS"/>
+          <line x1="15" y1="130" x2="140" y2="130" stroke="#8E887A" data-page-node-id="WJhSxYxhRGH8utqUjwdaUB"/>
+          <line x1="75" y1="160" x2="75" y2="20" stroke="#8E887A" data-page-node-id="TmYhnwADq142OuXtIoGX70"/>
+          <polyline points="18,130 75,130" fill="none" stroke="#3A6122" stroke-width="2.5" data-page-node-id="LnBJHu5QiZ6OHpCduuu0mi"/>
+          <polyline points="75,45 138,45" fill="none" stroke="#3A6122" stroke-width="2.5" data-page-node-id="dNWCmHVJBqHB1LenaGTJjP"/>
+          <circle cx="75" cy="45" r="3.2" fill="#3A6122" data-page-node-id="WHld4yaAO0BkjtmDSdhIvH"/>
+          <circle cx="75" cy="130" r="3.2" fill="#fff" stroke="#3A6122" stroke-width="2" data-page-node-id="SSOeWceBWLcfyhenX2968k"/>
+          <text x="75" y="200" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Ej8PEcXCyMwtQXulTElnmQ">① 阈值型（Step）</text>
+          <text x="130" y="42" font-size="11" fill="#5B5648" data-page-node-id="B2fKaO7gUnyJB6ExVpfAlg">1</text>
+          <text x="60" y="145" font-size="11" fill="#5B5648" data-page-node-id="z3FHHhYBkwOl8rFeZTScwD">0</text>
+        </g>
+        <!-- panel 2: piecewise linear -->
+        <g transform="translate(190,20)" data-page-node-id="uDnEZvRd9QfJmdNEN22Cpk">
+          <rect x="0" y="0" width="150" height="180" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="BbRhPpE4exsyyqltqdX0Kj"/>
+          <line x1="15" y1="130" x2="140" y2="130" stroke="#8E887A" data-page-node-id="LO2zM7GRmRq3EGzA1m120B"/>
+          <line x1="40" y1="160" x2="40" y2="20" stroke="#8E887A" data-page-node-id="MelGA5fJi1tICzj44TFn79"/>
+          <polyline points="18,130 55,130 115,45 138,45" fill="none" stroke="#3A6122" stroke-width="2.5" data-page-node-id="uox3V5H4ynjE1mDsKf2d7o"/>
+          <text x="75" y="200" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="rwDpykMMUUWWolWD14ICML">② 分段线性型</text>
+          <text x="118" y="42" font-size="11" fill="#5B5648" data-page-node-id="JCvAD1ZpYjHBZqHHjh4kYq">1</text>
+          <text x="66" y="95" font-size="11" fill="#5B5648" data-page-node-id="lqvka6DS3BVMfcjANQelDH">α</text>
+        </g>
+        <!-- panel 3: sigmoid -->
+        <g transform="translate(360,20)" data-page-node-id="00ycKqUfJKd5synGrlcIRx">
+          <rect x="0" y="0" width="150" height="180" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="9Z3lwawEc7GfEVZiCtyZBS"/>
+          <line x1="15" y1="130" x2="140" y2="130" stroke="#8E887A" data-page-node-id="rXz0t3Zlm28zIjrMrWkxxo"/>
+          <line x1="75" y1="160" x2="75" y2="20" stroke="#8E887A" data-page-node-id="3JgYIDTGfhFto0ClGbbIA0"/>
+          <path d="M18,126 C45,124 55,116 75,87 C95,58 105,49 138,47" fill="none" stroke="#3A6122" stroke-width="2.5" data-page-node-id="5QjLAloNxpYdvYu0FqQDnf"/>
+          <text x="75" y="200" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="SqzJE2kzFcv8tfGfnjMHVh">③ Sigmoid（Logistic）</text>
+          <text x="130" y="42" font-size="11" fill="#5B5648" data-page-node-id="bzE3hWkB5PuOus61BmclYJ">1</text>
+          <text x="18" y="142" font-size="11" fill="#5B5648" data-page-node-id="LtBeiFosSLlAxrMLhf32BL">0</text>
+        </g>
+        <!-- panel 4: tanh -->
+        <g transform="translate(530,20)" data-page-node-id="ef8LO7Zx4oVIkQReXNCEuI">
+          <rect x="0" y="0" width="150" height="180" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="Ewvq4qe8dAnX46eNxd9WyU"/>
+          <line x1="15" y1="90" x2="140" y2="90" stroke="#8E887A" data-page-node-id="oVKPdYZR3YwjLC1El4psn6"/>
+          <line x1="75" y1="160" x2="75" y2="20" stroke="#8E887A" data-page-node-id="Pa1KjRSxGsxnZhmXYCpj84"/>
+          <path d="M18,140 C45,138 55,130 75,90 C95,50 105,42 138,40" fill="none" stroke="#3A6122" stroke-width="2.5" data-page-node-id="BYbA6XsjyslIlMuh2HA263"/>
+          <text x="75" y="200" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="hUBfXVduBOPMAWJINOWciB">④ Tanh（双曲正切）</text>
+          <text x="130" y="36" font-size="11" fill="#5B5648" data-page-node-id="8CsGf6BnlFyzvkS4o2v4Fx">1</text>
+          <text x="130" y="152" font-size="11" fill="#5B5648" data-page-node-id="JgdLElHCYEfD25R2KtYVeo">−1</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="1lOBdH1gJnN6eVR5So6LCv">四种常用激活函数｜按 PPT 第 13 页绘制</figcaption>
+    </figure>
+    <table class="data" data-page-node-id="FzsCDOm7KParWhmbEWlz3I">
+      <tr data-page-node-id="84vxMF4HhAIAnr2jI9awqx"><th data-page-node-id="dWgkXzHaCFFyZjmjf4PkDN">类型</th><th data-page-node-id="45BIaDdUaRp7efgCjHSTBc">表达式</th><th data-page-node-id="9BDLrxCmai2jCM950oVXim">特点 / 用途</th></tr>
+      <tr data-page-node-id="vY5x4dZwLDVRwHW0K2dPVx"><td class="rowh" data-page-node-id="1GyHkDl9tHGkwmkV21DyLH">① 阈值型</td><td class="lft" data-page-node-id="Qn3etDbvI6HKkfnN53nLB9">$net\geq 0$ 输出 $1$，否则输出 $0$</td><td class="lft" data-page-node-id="SAMODNlXW6YiQYOBtbGiEQ">用于感知机</td></tr>
+      <tr data-page-node-id="GorYSa843FdejTpadLsgid"><td class="rowh" data-page-node-id="8ywgZBLPL3sbol4iQgeqTC">② 分段线性型</td><td class="lft" data-page-node-id="7K95LIymae3nOx5Iw4ZXv2">$net_0\sim net_1$ 线性过渡（斜率 $\alpha$），两端饱和 $0/1$</td><td class="lft" data-page-node-id="8EGCbbpbDED9NdeKkiCuRX">饱和区与非饱和区并存</td></tr>
+      <tr data-page-node-id="kAAlBotgdpBVjUebECIaZA"><td class="rowh" data-page-node-id="CnFTRD3Bt80l57T00Yl1AI">③ Sigmoid</td><td class="lft" data-page-node-id="ccZlZJsOFI2HQNXAb2JzeH">$f(net)=\dfrac{1}{1+e^{-net}}$</td><td class="lft" data-page-node-id="Q4gtpamfVwPEsqHltit7Je">输出 $0\sim1$，可作概率输出</td></tr>
+      <tr data-page-node-id="gDYDRycC4iOKyl1OfiPeHI"><td class="rowh" data-page-node-id="0rnkkPECWngg45WSMEZmll">④ Tanh</td><td class="lft" data-page-node-id="ml4ffkSX8xddKl0xJUvKTw">$f(net)=\dfrac{e^{net}-e^{-net}}{e^{net}+e^{-net}}$</td><td class="lft" data-page-node-id="SVlK8YuFQxNCCywUMOnOW7">输出 $-1\sim1$，零中心</td></tr>
+    </table>
+    <div class="note" data-page-node-id="yvqDkrBuDl9kCgqpLdxC2d"><span class="nt" data-page-node-id="hkuhejmQ8oiJJnQgNF68D9">饱和区 vs 非饱和区</span><strong data-page-node-id="2WLIdCI4unwi4nZsEeRdRv">饱和区（曲线两端）</strong>：梯度趋近 0，权值几乎不更新——“学不动”；<strong data-page-node-id="zW1DBJW3sWrDH2E1oPsxL6">非饱和区（中段）</strong>：梯度显著，学习效率高——“学得快”。$|net|$ 较大时 Sigmoid / Tanh 进入饱和区，即<strong data-page-node-id="aEHVQCiAfo4gMuDnrKQDLW">梯度消失</strong>。</div>
+
+    <h3 class="sub-title" data-page-node-id="h8eCxoNEjescgyHaVGCOxe">9. 神经网络的连接结构（Topology）（P14）</h3>
+    <p data-page-node-id="CHBgwcLN057ItouepzjucE">按信息流向分为三大类（原“相互结合型”并入反馈）：</p>
+    <div class="grid3" data-page-node-id="oAhwgKjnMKaZh753UyC4sf">
+      <div class="mini" data-page-node-id="tybX4a1grRo8gPZ9mxpCRB">
+        <p class="mt" data-page-node-id="wVnbgOoqV2qdfXgeH4aYAj">① 前向网络 FEEDFORWARD</p>
+        <p data-page-node-id="2ZK4iFcY4w6lSayhKQcOtd">信息单向传播、无反馈环，适合<strong data-page-node-id="lxQ6al1SmwYc5EniAErGtK">静态映射</strong>。</p>
+        <p data-page-node-id="aWohmxmWt9VeVGBWzrBHeb">典型：MLP、CNN</p>
+      </div>
+      <div class="mini" data-page-node-id="c6FUJ7LVkqeL6MmmEfn3zy">
+        <p class="mt" data-page-node-id="90cOATtVHOarheR3BpYm9Q">② 反馈网络 FEEDBACK · RECURRENT</p>
+        <p data-page-node-id="fTo7GV2CDyD137U8UDGift">含反馈环，具有记忆与动力学特性，适合<strong data-page-node-id="QMt4pXzkNIjYfW8KiCAk1A">时序与联想记忆（动态记忆）</strong>。</p>
+        <p data-page-node-id="cX2MIQijVUkAjIDmGBCG2J">典型：Hopfield、RNN、LSTM</p>
+      </div>
+      <div class="mini" data-page-node-id="nZGDcDG6pJxBaBzNGkM86G">
+        <p class="mt" data-page-node-id="Kf0TglP8hlZEEdl0ZRGJjj">③ 自组织网络 SELF-ORGANIZING</p>
+        <p data-page-node-id="6EH63BmWoiaHZrytBbThTd">通过竞争学习，自动发现输入数据的<strong data-page-node-id="xBGd5HGZ5EeCdUQ7JzUuEE">聚类特征</strong>。</p>
+        <p data-page-node-id="0uMcsg6kCZVMGXUvPA5oJ9">典型：SOM、ART</p>
+      </div>
+    </div>
+    <div class="note" data-page-node-id="fS2BShaR0Q4HWPvUgiTMKg"><span class="nt" data-page-node-id="ZUZ0nF3i4vWbFu3lcjXUYC">选用口诀</span>看到任务先想拓扑——<span class="kw" data-page-node-id="lgcRUNMFHZLmLIAecDdKuK">静态映射选前向，时序记忆选反馈，聚类特征选自组织</span>。</div>
+
+    <h3 class="sub-title" data-page-node-id="JybAd056e0VhelctLJhiUh">10. 神经网络如何“学习”？——三种数据驱动范式（P15）</h3>
+    <p data-page-node-id="9rDsfrJGdDHmC47DQfnpap">按“有没有监督信号”划分——<span class="kw" data-page-node-id="AMcWbaW9uAxAXX2VtCBMNH">强化学习直接面向控制与决策，是自动化专业的关注重点</span>。</p>
+    <table class="data" data-page-node-id="7gT3ueDd5T99YmFpOK8UsV">
+      <tr data-page-node-id="q6ZSxUAbSM4JXSHCfmXwFa"><th data-page-node-id="jl9zo8FKp2GlYwpv3BfpSi">学习范式</th><th data-page-node-id="ZWWvCPdflJW5UecVevdoTD">是否有标签？</th><th data-page-node-id="vWK2ZpcoAo4BnxKbeHoDLM">核心思想</th><th data-page-node-id="cbiLjin2AGP1XHkHRWBXqQ">典型算法</th><th data-page-node-id="BphjFtgCvrdvM3EnSjTfmd">控制领域应用</th></tr>
+      <tr data-page-node-id="UiCAij9hvPtKDWPpJNYoNl"><td class="rowh" data-page-node-id="CTCk93JAgZcmAfnDscSoiC">有监督学习<br data-page-node-id="AovKUYqZfTvo2AvAZRR0KR">（“模仿”）</td><td data-page-node-id="MRwyZFlgekr7RFOlYE5Fe6">✓ 有（期望输出 $t$）</td><td data-page-node-id="KI6wytj8DisHW85Pu7mXov">通过误差反向传播修正权值</td><td data-page-node-id="i4buZ99fB218eU1Xyjl9Fw">BP 算法、δ 规则</td><td data-page-node-id="wFhPxuSNIQbXkjQAC1zuAs">系统辨识、静态建模</td></tr>
+      <tr data-page-node-id="kcsWmv42Agi6jJgR0LUUCV"><td class="rowh" data-page-node-id="eeZ5qIFCpCL8f7854J2nkk">无监督学习<br data-page-node-id="blEGU3YZIYHTlMFcRAoW9Z">（“发现”）</td><td data-page-node-id="3BCspHOQ2BrwodDowOoc8C">✗ 无</td><td data-page-node-id="k2EPFqibOTjMPqfwWCaLnO">自动发现数据内在规律与聚类结构</td><td data-page-node-id="qKwoHnByFF12IcSPzgi5CZ">Hebb 规则、WTA、K-means</td><td data-page-node-id="ej1XkVAcihcZJ4xoDPSVj0">特征提取、数据压缩</td></tr>
+      <tr data-page-node-id="jSpMqr6ULHrAm9UcqBiKTB"><td class="rowh hl" data-page-node-id="uWkRubqBpb5bKATbYyrfFJ">⭐ 强化学习<br data-page-node-id="VV42BXCzONynzD7pkm3EPT">（“决策”）</td><td data-page-node-id="XqAB7WgUlWGrudBWH0i7j1">有奖励信号（非标签）</td><td data-page-node-id="FQHUEMp4lSk3dC9vG0UTW3">“试错”交互，最大化累计奖励</td><td data-page-node-id="DzUmlPAQ66yaGsCrzcxlB4">DQN、SAC、PPO</td><td data-page-node-id="VIzJf0P5xBcP54aNRSIIyg">直接面向控制与决策：机器人、自动驾驶、游戏 AI</td></tr>
+    </table>
+
+    <h3 class="sub-title" data-page-node-id="sSXlEZYwcpeWopooFQTiZ2">11. Hebb 规则——“突触可塑性”的数学描述（P16）</h3>
+    <div class="defbox" data-page-node-id="8LzVCA0Ee1pHnTEqSt3G4o">
+      <p class="dt" data-page-node-id="7CLAwyCCrcYiBH2iiOxeSQ">生物基础 · 1949 年 Hebb 提出</p>
+      <p data-page-node-id="AVn0FhRBA49dfiXc8w5emt">“Cells that fire together, wire together.”——一起放电的神经元，连接被加强。</p>
+    </div>
+    <p data-page-node-id="fECrdA8tYb4bigLx8FIyWs"><strong data-page-node-id="1oB4QKFNM5QsprtKj1V6IH">数学形式 · 权值增量</strong>：</p>
+    <div class="math-scroll" data-page-node-id="gSlgOtONhF5Tzy9bzatBHT">$$\Delta w_{ji}=\eta\, y_j\, x_i$$</div>
+    <p data-page-node-id="zHHhlQmnsfBCpfYBJwfWXN">$x_i$ 输入信号 ｜ $y_j$ 输出信号 ｜ $w_{ji}$ 连接权值 ｜ $\eta$ 学习率（正小常数）。</p>
+    <ul class="clean" data-page-node-id="XUq3lzaXnChf2nMGOWUKeG">
+      <li data-page-node-id="PCHnQhj0D7pjeOn2TA7hT3"><span class="tag" data-page-node-id="uLF9eehMpM9jkVj429spFS">无监督</span>无误差信号，仅依赖局部突触活动</li>
+      <li data-page-node-id="gjCPQBiWqULuSmIWjH3iaF">突触两端神经元的活动越同步，连接强度提升越多</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="r8llCV7PFh7K7ArjZ4nQi9">12. 纠错学习（Error-Correction）与 δ 规则（P17）</h3>
+    <p data-page-node-id="Rq0tKkZUgAe2iLLYcr4ltZ"><strong data-page-node-id="6SpDuaGGHqBp1th5swwIec">核心逻辑</strong>：利用期望输出 $t_j$ 与实际输出 $y_j$ 的偏差，驱动权值调整。</p>
+    <p data-page-node-id="bRGG83dpzyk3fo9grQFOBh"><strong data-page-node-id="42pRad9Xyg5HGunUqZSPq7">误差信号定义</strong>：</p>
+    <div class="math-scroll" data-page-node-id="7WUUy0OcuOgJc2G7pFfecr">$$\delta_j = t_j - y_j$$</div>
+    <p data-page-node-id="15h1Qe3mrlFtTxrsoEvpg3"><strong data-page-node-id="4ZZIMUJwYBN7Zwc0i4kaR8">权值更新公式（δ 规则）</strong>：</p>
+    <div class="math-scroll" data-page-node-id="DBq7ndMEgn3rR76vzxRl83">$$\Delta w_{ji}=\eta\,\delta_j\, x_i$$</div>
+    <div class="note" data-page-node-id="jn5wZoWtrxHbfC0V4lRUmI"><span class="nt" data-page-node-id="kE9GebzusfRaYbfAGgnK6B">⚠ 符号要点</span>修正量乘的是<strong data-page-node-id="CbFtOLv6qCkQ37Ik4SEeVV">输入信号 $x_i$</strong>（权值所传递的那路信号），原课件误写为 $y_i$，课件中已修正，本讲义沿用修正后的写法。</div>
+    <p data-page-node-id="fQlbUnCJGKEcUoSMV1RvEn">有监督学习的核心机制：<span class="kw" data-page-node-id="27FeKVQBBOEUbP0zh8zGrT">误差在哪里，修正就跟到哪里</span>。历史地位：δ 规则是 BP 算法的雏形；单层线性网络的误差曲面为凸函数，可保证收敛。</p>
+
+    <h3 class="sub-title" data-page-node-id="zZ0Ko3YMFEBzKud4lHnmD4">13. 无监督学习——Winner-Take-All（胜者独占）（P18）</h3>
+    <p data-page-node-id="q5AMRiLHYAGqEumD2KdvC9">适用场景：聚类分析、特征映射（如 Kohonen 自组织网络）。</p>
+    <p data-page-node-id="d0CGtd3r3XCxJaCpxH5qNN"><strong data-page-node-id="OI6VtRCU1FXprKNxfEOA05">权值调整 · 仅调整胜者 $m$</strong>：</p>
+    <div class="math-scroll" data-page-node-id="2pF6GFJ1y3dqn0xzovAzQU">$$\Delta w_{mj}=\eta\left(x_j - w_{mj}\right)\quad (j=1,2,\dots,n_i)$$</div>
+    <p data-page-node-id="bHDHVVh5V4sLBtdW4SUiJw">直观理解：胜者权值向输入样本“靠拢”，对该类输入越来越敏感——这就是<strong data-page-node-id="RgmODczTgz1GKcJW3BUMjN">聚类的形成过程</strong>。</p>
+
+    <h3 class="sub-title" data-page-node-id="hayHd73mj6I0W1zQNIW41c">14. 泛化能力（Generalization）（P19）</h3>
+    <div class="defbox" data-page-node-id="oUftH9fIoE4rgAuLfZvAXZ">
+      <p class="dt" data-page-node-id="sxH4oE7ey0h90LHGHLWQzC">泛化能力</p>
+      <p data-page-node-id="g4aNeNaK4Q9cCoHAYvYCLo">对未见过的新数据给出正确响应的能力；经典度量：泛化误差 ≈ 测试误差 − 训练误差。</p>
+    </div>
+    <p data-page-node-id="IPORhJWhRd2N6Pi04o4cLs"><strong data-page-node-id="UUN3SGdEfHPUH2uKmn41db">两种失败模式</strong>：</p>
+    <ul class="clean" data-page-node-id="vk4bNeoMnIjSGw9ko84F1i">
+      <li data-page-node-id="C5ZaOGiNo2ntsBjJ0kLTxj">节点太少 → <strong data-page-node-id="uTb2jW7zc9Km0MfkC47LeI">欠拟合</strong>：容量不足，无法学习数据规律</li>
+      <li data-page-node-id="T4Y3RW5ZG7Wof7mxaG7FI1">节点太多而样本太少 → <strong data-page-node-id="yT8BlLSiAAHEn2tk6Kg1pn">过拟合</strong>：死记硬背，失去泛化能力</li>
+    </ul>
+    <p data-page-node-id="oepnynWNumm0ZBAkhggq55"><strong data-page-node-id="bUerQ95prVWBbidym6K3Bo">★ 现代解决手段（工程守则）</strong>：</p>
+    <ol class="num" data-page-node-id="VDAMFI7qg4MuMiqdC2Hgmb">
+      <li data-page-node-id="sjjC5JOkf4pvAib9VfqZsk"><strong data-page-node-id="CXvoJyqgDhBig45aZaYSPV">正则化</strong>（L1 / L2）——在误差函数中增加权值惩罚项</li>
+      <li data-page-node-id="GRn8dlT7OyeNkeypXovxd6"><strong data-page-node-id="DO9jiTohuxQh3y2I8FhBrh">Dropout</strong>——训练时随机“丢弃”部分神经元，防止协同适应（Hinton 2012）</li>
+      <li data-page-node-id="xylNkiPBV6z7Z57RYNJLQc"><strong data-page-node-id="yICJjpBfez7t7fzKMVLao1">早停法</strong>（Early Stopping）——验证集误差上升时提前终止训练</li>
+    </ol>
+    <div class="note" data-page-node-id="w64zjXxntLKhPyRNYTNrwS"><span class="nt" data-page-node-id="z0aTRW2FJWulGCSuwCpRph">核心矛盾</span>网络节点数（容量）与训练样本数的匹配。<span class="kw" data-page-node-id="cqDS5H9pIC8HuOP1hFL3Ou">训练好 ≠ 用得好——泛化才是工程目标</span>。</div>
+
+    <h3 class="sub-title" data-page-node-id="rDvFCpE7dhKRYQKILDeozm">15. 本节回顾（P20）</h3>
+    <div class="card" data-page-node-id="4XBDhWdgCPU6m3r86s0y83">
+      <p data-page-node-id="UCjiUCoPer3ihUqYNQlxIg">五个关键词收束全节：<strong data-page-node-id="fDFoqG235LdNWcnTKcJ7gJ">动机（数据驱动）、支柱（三大智能）、维度（模型/结构/架构/算法）、历史（80 年沉浮）、学习（Hebb/δ/WTA/泛化）</strong>。</p>
+      <p data-page-node-id="7Z7YysAHwKugrO0h6dMtjA">下一节：前向传播网络（MLP）与 BP 算法的完整数学推导——所有深度模型的基础骨架。</p>
+    </div>
+  </section>
+
+  <!-- ========== P21–43：二、前馈神经网络 ========== -->
+  <section class="slide" id="feedforward" data-page-node-id="pfHL58lKBwPMbKagutVYne">
+    <span class="slide-tag" data-page-node-id="J6cZzy84qZN42DmauFAuGR">PPT 第 21–43 页</span>
+    <h2 class="sec-title" data-page-node-id="5iFO9lSEBNpj0chggiKPoz">二、前馈神经网络</h2>
+
+    <h3 class="sub-title" data-page-node-id="Rx5nlk192w79engXfqWFNr">1. BP 学习算法的诞生（P23）</h3>
+    <p data-page-node-id="LlxgnuundBSWBtvYG0BUEH">20 世纪 80 年代由多人独立发现：David Rumelhart &amp; Geoffrey Hinton、Ronald Williams、David Parker、Yann LeCun。<strong data-page-node-id="70Enad4HcFUnaNB43PLhVe">1986 年 Rumelhart &amp; McClelland</strong> 进行了详尽的分析，奠定 BP 算法的理论基础。</p>
+    <p data-page-node-id="DuAgjN9zDxSHHeo5i2npki">本节内容地图（5 大模块）：<strong data-page-node-id="h7crxMY8D5vp1x4RUTzj05">BP 网络结构 → BP 算法推导 → BP 算法实现 → 网络应用</strong>（解决 XOR 问题、函数逼近、数据压缩、手写体数字识别、MATLAB 演示程序）。</p>
+
+    <h3 class="sub-title" data-page-node-id="DJHTfOcXKrKZEJ341QTz45">2. BP 算法网络结构（P24–25）</h3>
+    <ul class="clean" data-page-node-id="pRGaODt3HbeEKEsMwk95M8">
+      <li data-page-node-id="tHaUoPNfNBy4w5ev25h3qS">☆ <strong data-page-node-id="YNrflop2MDRTPWDqIfVAWN">输入层</strong></li>
+      <li data-page-node-id="GFCmiQnXoVNvBo094V7JSj">☆ <strong data-page-node-id="BGRMasiyM2P4K3KWmr05E2">隐层</strong>：一层或者多层</li>
+      <li data-page-node-id="jneHY5Dz8QMrfLmuz7kRSx">☆ <strong data-page-node-id="byGw0DHtkWcDsWEGDUcGfm">输出层</strong></li>
+      <li data-page-node-id="aRiaq3eYvi5t7PJ3dt3LmP">转移函数：<strong data-page-node-id="phy9z0xExM2unwrbW02ajz">sigmoid</strong></li>
+    </ul>
+    <div class="grid2" data-page-node-id="CbYCqfLJSHPybt6KjLDfB6">
+      <div class="mini" data-page-node-id="pLHW47wFDKLLu95fC7qoIa">
+        <p class="mt" data-page-node-id="jWWlDoxdWfxFsb4pdKTXKA">单极性 Sigmoid</p>
+        <p data-page-node-id="zFVhUk4ngoT1pBW0mslI6I">$$f(x)=\frac{1}{1+e^{-x}},\qquad f'(x)=f(x)\bigl[1-f(x)\bigr]$$</p>
+      </div>
+      <div class="mini" data-page-node-id="MAAofVb1xCS5AO2co2bBmG">
+        <p class="mt" data-page-node-id="TEV1ZBlqNR2nMLBFca4Bod">双极性 Sigmoid</p>
+        <p data-page-node-id="XIGxx3hNAPz8BwoTz8dacY">$$f(x)=\frac{1-e^{-x}}{1+e^{-x}},\qquad f'(x)=\frac{1}{2}\bigl[1-f^{2}(x)\bigr]$$</p>
+      </div>
+    </div>
+    <figure class="fig" data-page-node-id="H1VyzU3sf0a60XXhKq8wGp">
+      <svg viewBox="0 0 620 260" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="IBann1hftnoQYEVzYEBAN9">
+        <line x1="60" y1="220" x2="590" y2="220" stroke="#26231B" stroke-width="1.5" marker-end="url(#arD)" data-page-node-id="npQpciqNimTbySCx1OP3rr"/>
+        <line x1="310" y1="235" x2="310" y2="15" stroke="#26231B" stroke-width="1.5" marker-end="url(#arD)" data-page-node-id="8EBurlcKyO3O5pt4EWmksV"/>
+        <defs data-page-node-id="Jy72BeuaxDpvTnsiGZTG3z">
+          <marker id="arD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="kuE5dXKf0gyJa5WjC8S03g">
+            <path d="M0,0 L10,5 L0,10 z" fill="#26231B" data-page-node-id="9HnAu2066l98ANGqJZcseb"/>
+          </marker>
+        </defs>
+        <text x="585" y="245" font-size="14" fill="#26231B" data-page-node-id="ANiHrBJ8JXXahV4jjcBfCf">输入</text>
+        <text x="40" y="30" font-size="14" fill="#26231B" data-page-node-id="5ap6OGI6GWdpFR7SpwHfhM">输出</text>
+        <text x="80" y="240" font-size="12.5" fill="#5B5648" data-page-node-id="fBzgjTDhM7l3Qz8Js4OrZa">−10.0</text>
+        <text x="230" y="240" font-size="12.5" fill="#5B5648" data-page-node-id="AAogm5UN6pv4iq10MMpAU6">−5.0</text>
+        <text x="305" y="240" font-size="12.5" fill="#5B5648" data-page-node-id="EGqrXMpZwnnFECewfZgIft">0</text>
+        <text x="385" y="240" font-size="12.5" fill="#5B5648" data-page-node-id="E3lzHhbGyTURopaplr3oWl">5.0</text>
+        <text x="520" y="240" font-size="12.5" fill="#5B5648" data-page-node-id="qg1VYQBlxKhr07VflWtRm5">10.0</text>
+        <text x="262" y="45" font-size="12.5" fill="#5B5648" data-page-node-id="FbqfPLuJcNSXnJfYaPRSCB">1.0</text>
+        <text x="268" y="130" font-size="12.5" fill="#5B5648" data-page-node-id="zdB5iDwtoea1PsDw6CzGDG">0.5</text>
+        <!-- sigmoid solid: x in [-10,10] -> px 60..590, scale 26.5/unit; y=1 at py40, y=0 at py220 -->
+        <path d="M60,219 C170,218 240,212 310,130 C380,48 450,42 590,41" fill="none" stroke="#3A6122" stroke-width="2.6" data-page-node-id="x9HavtshIjVxTKV7rfDBys"/>
+        <!-- derivative dashed: max 0.25 -> py 220-0.25*180=175 -->
+        <path d="M60,219 C150,218 220,212 270,190 C295,179 300,176 310,175 C320,176 330,180 355,191 C410,214 480,218 590,219" fill="none" stroke="#8FB469" stroke-width="2.2" stroke-dasharray="7 5" data-page-node-id="SFRTamN9b2rYFl35HTcPvy"/>
+        <text x="420" y="90" font-size="14" fill="#2C4A1A" font-weight="600" data-page-node-id="FOGhqSBjWOwOQvdopGBPsa">Sigmoid 函数</text>
+        <line x1="420" y1="98" x2="385" y2="115" stroke="#2C4A1A" stroke-width="1" data-page-node-id="P42j066GVhShIThG0PUBwQ"/>
+        <text x="370" y="160" font-size="14" fill="#5B5648" data-page-node-id="BiG4CpXGJu3T3pRdeGqjJp">微分值</text>
+        <line x1="375" y1="168" x2="345" y2="180" stroke="#5B5648" stroke-width="1" data-page-node-id="CejMyaXQdRHO2fuawICZA2"/>
+      </svg>
+      <figcaption data-page-node-id="44rkCdUGkUXvGcGGRVFScX">Sigmoid 函数（实线）及其微分值（虚线）｜重绘自 PPT 第 24 页</figcaption>
+    </figure>
+    <figure class="fig" data-page-node-id="r8WEetMQaLLTVF8LGBweqz">
+      <svg viewBox="0 0 680 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="Pt3g774b8XbfWg5CoHVT5N">
+        <defs data-page-node-id="kSzusnnwnZJaug49kH8lX4">
+          <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" data-page-node-id="ADZ0qTwV3B4oeoaB7Kpnns">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5B5648" data-page-node-id="JeGjhW3epbyp1W1mg9iTBj"/>
+          </marker>
+        </defs>
+        <!-- layers: input x (col 90), hidden y (col 340), output o (col 590) -->
+        <!-- edges input->hidden (sample) -->
+        <g stroke="#9AA38C" stroke-width="1" data-page-node-id="R1OUOUCz7PTuxWgknH2tGN">
+          <line x1="105" y1="70" x2="325" y2="90" data-page-node-id="n0SFELdFcyFcmtdlBmUpta"/><line x1="105" y1="70" x2="325" y2="165" data-page-node-id="6GjISY1YBo6XT2EaG3TdIm"/><line x1="105" y1="70" x2="325" y2="240" data-page-node-id="mXwHie1R2EATIpPapcz1ui"/>
+          <line x1="105" y1="140" x2="325" y2="90" data-page-node-id="r6N8YiFm4QfSjogJTp1UYP"/><line x1="105" y1="140" x2="325" y2="165" data-page-node-id="3GtPJSrJ79nXHB6wCHygvx"/><line x1="105" y1="140" x2="325" y2="240" data-page-node-id="yLCMe6fDqjdrAlQULYFFeP"/>
+          <line x1="105" y1="260" x2="325" y2="90" data-page-node-id="AdAm22LemV02Zaf3iTVEWW"/><line x1="105" y1="260" x2="325" y2="165" data-page-node-id="ancCeHKYTAAhr3rylH2Zgu"/><line x1="105" y1="260" x2="325" y2="240" data-page-node-id="1hNHrUZGQj4HOqziAZuBdD"/>
+        </g>
+        <!-- edges hidden->output -->
+        <g stroke="#9AA38C" stroke-width="1" data-page-node-id="oMGs4nNcCdjas26G98D5ME">
+          <line x1="355" y1="90" x2="575" y2="90" data-page-node-id="taQx4NK2ZEfzKj3bGeCXys"/><line x1="355" y1="90" x2="575" y2="165" data-page-node-id="1DbrXlIUCQVsry2BKuCmSq"/><line x1="355" y1="90" x2="575" y2="240" data-page-node-id="uaAx8HWGo7CKjmP2sqMgqq"/>
+          <line x1="355" y1="165" x2="575" y2="90" data-page-node-id="LLVnoBLQ2a1C4etG4G1qOL"/><line x1="355" y1="165" x2="575" y2="165" data-page-node-id="ToDEJpgs0M7U4J1kAuq8lC"/><line x1="355" y1="165" x2="575" y2="240" data-page-node-id="GeO91nUAed90LBdDbFeb8w"/>
+          <line x1="355" y1="240" x2="575" y2="90" data-page-node-id="fGpopq6Hzv5nIwvGGQN9CW"/><line x1="355" y1="240" x2="575" y2="165" data-page-node-id="jorFSiwa0hiZYvK9udhFXr"/><line x1="355" y1="240" x2="575" y2="240" data-page-node-id="azBrW4DvMS0tLcuDP3KqiW"/>
+        </g>
+        <!-- input nodes -->
+        <g data-page-node-id="ZzdL0D93WKNWHqNIpOa2FX">
+          <circle cx="90" cy="70" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="j2JsaidsxGmvEZbnuVZ6UL"/>
+          <circle cx="90" cy="140" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="3vz9TqE0wehyy5dJfzlSEi"/>
+          <text x="90" y="205" font-size="20" text-anchor="middle" fill="#4C7D2C" data-page-node-id="0dhqzxxBJltFlk33D0lBwA">⋮</text>
+          <circle cx="90" cy="260" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="X07jEDfCjd72WR8FtHbKNN"/>
+        </g>
+        <g font-size="14" fill="#26231B" font-style="italic" data-page-node-id="1uF2m8RNeM27U6U6eOn0Zj">
+          <text x="52" y="75" data-page-node-id="qEHdulU9dlUWR3rykv1AQT">x</text><text x="60" y="79" font-size="10" data-page-node-id="HxuZ2BGvZ8HEPWJr4nPmvs">1</text>
+          <text x="52" y="145" data-page-node-id="lGuX3FX3wiVlWfHvu78TEh">x</text><text x="60" y="149" font-size="10" data-page-node-id="MfVgDikbJyuJTdDCcJYQX2">2</text>
+          <text x="52" y="265" data-page-node-id="cOnhYGLig7ZpIHZtZ9UEBw">x</text><text x="60" y="269" font-size="10" data-page-node-id="DjsoRo7AOaMLc2s6TKKhzr">n</text>
+        </g>
+        <text x="90" y="310" font-size="14" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="YYAlFypgpWEmJq04EHNc5h">输入层</text>
+        <!-- hidden nodes -->
+        <g data-page-node-id="XcavmZjK41HW8pIOmJWFCJ">
+          <circle cx="340" cy="90" r="16" fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="6NDH5cUOK7bH08sSVGAogu"/>
+          <circle cx="340" cy="165" r="16" fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="Quc0auBmn3VvqmTDnIpNUM"/>
+          <text x="340" y="128" font-size="18" text-anchor="middle" fill="#8a7200" data-page-node-id="m5azMBDlZUWImN3hSEfG9E">⋮</text>
+          <text x="340" y="212" font-size="18" text-anchor="middle" fill="#8a7200" data-page-node-id="VY3U10LnYOjqSCvk19KXIR">⋮</text>
+          <circle cx="340" cy="240" r="16" fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="ekGPzMDUzYLaRdxLwQ3xRi"/>
+        </g>
+        <g font-size="14" fill="#26231B" font-style="italic" data-page-node-id="9mHA1loUBv6RBBGQhARFzd">
+          <text x="305" y="80" data-page-node-id="ECIXBWYlSiFWW86SPkDJwb">y</text><text x="313" y="84" font-size="10" data-page-node-id="VBHEC749rNpMgCnjWkyMNi">1</text>
+          <text x="305" y="155" data-page-node-id="gBJ8ykCIDsC659Nj8Gwh6W">y</text><text x="313" y="159" font-size="10" data-page-node-id="LdQfkBW23GrH3eDTHo0acG">2</text>
+          <text x="305" y="245" data-page-node-id="xyiDTC8JicSzwDzg9rWxO8">y</text><text x="311" y="249" font-size="10" data-page-node-id="kEXTSYKnHyS3zzSZETkPD4">m</text>
+        </g>
+        <text x="340" y="310" font-size="14" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="v46UHLju2Y2BgF74FiZM35">隐层（m 个节点）</text>
+        <!-- output nodes -->
+        <g data-page-node-id="3UvHtew6j8IT8wiwK34Dz4">
+          <circle cx="590" cy="90" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="DF5mEl0Hh4L4GN9SLzWWkc"/>
+          <circle cx="590" cy="165" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="2ZHl7fnW7pCAwzgkgMcLSO"/>
+          <text x="590" y="212" font-size="20" text-anchor="middle" fill="#4C7D2C" data-page-node-id="lBt7wjCZP2VifW4y50nvEx">⋮</text>
+          <circle cx="590" cy="240" r="16" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="JbTris6Pu6TwrP0pQ98o9i"/>
+        </g>
+        <g font-size="14" fill="#26231B" font-style="italic" data-page-node-id="0BUq7Crt76odh2u04QdG4x">
+          <text x="622" y="95" data-page-node-id="AgL8OAjZJlvhJCxAvYk6Su">o</text><text x="630" y="99" font-size="10" data-page-node-id="CGWVVXmBVDhEBx8qLRt2lo">1</text>
+          <text x="622" y="170" data-page-node-id="2eil0WaU7LGcLrrOkcmh48">o</text><text x="630" y="174" font-size="10" data-page-node-id="8nEvx3PMSAoyjn8zdRFlXX">k</text>
+          <text x="622" y="245" data-page-node-id="tByLSTVyVoZr7SFnE8tC9G">o</text><text x="630" y="249" font-size="10" data-page-node-id="3TqDVoeDwfpPAnK5svs4rF">l</text>
+        </g>
+        <text x="590" y="310" font-size="14" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="PKB3G4kfIUWp33u5bUM3nz">输出层（l 个节点）</text>
+        <!-- weight matrix labels -->
+        <g font-size="15" fill="#3A6122" font-weight="700" font-style="italic" data-page-node-id="REMKSP02QJMWzVmjFSEP5X">
+          <text x="200" y="45" data-page-node-id="5igOPdnlBS2AayBPbFe8jr">V</text><text x="210" y="49" font-size="10" data-page-node-id="c2juCvVQiJDI632yYf2snp">1</text>
+          <text x="212" y="180" data-page-node-id="9NRAn2WYI55RtnNuEqWuSm">… V</text><text x="238" y="184" font-size="10" data-page-node-id="AZwlBRdlTtiGay0O2CZMr3">j</text>
+          <text x="200" y="290" data-page-node-id="w5eDj2pqJdd9fLcU3x5SpM">… V</text><text x="226" y="294" font-size="10" data-page-node-id="rcc5PHOxQIBz438N2hRyY9">m</text>
+          <text x="450" y="45" data-page-node-id="DMNAcPlOXkap9u5AFHYwQW">W</text><text x="463" y="49" font-size="10" data-page-node-id="tOFSthXcgAbE8QSonNqdYi">1</text>
+          <text x="462" y="180" data-page-node-id="0q7m23RKGUiJqFj9zqeZUl">… W</text><text x="490" y="184" font-size="10" data-page-node-id="ltCRTs5elvNdBZQCDftE9E">k</text>
+          <text x="450" y="290" data-page-node-id="xE6AgjCC0Bqxod2GDF6P2N">… W</text><text x="476" y="294" font-size="10" data-page-node-id="nN6zx71NTk54RHIbE3kqLb">l</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="y85CBtFGetBhqUPNu3zhuo">三层 BP 网络结构：输入层 $n$ 个节点，隐层 $m$ 个（输出 $y_j$，权值列向量 $V_j$），输出层 $l$ 个（输出 $o_k$，权值列向量 $W_k$）｜重绘自 PPT 第 24–25 页</figcaption>
+    </figure>
+    <div class="example" data-page-node-id="5w0Or2jCJypaHwFD2QO5Gy">
+      <p class="et" data-page-node-id="HqFWGhWhwXjUnbYv3r8znp">思考</p>
+      <ol class="num" data-page-node-id="SjTktuDNXDDYeqDJlZjaV9">
+        <li data-page-node-id="MlS8HZgqkq9qCW5X6QHUpB">为什么不使用多层的感知机级联形成多层网络呢？</li>
+        <li data-page-node-id="dGXAYJFCCP6lddcGt11fZk">为什么不使用多层的 Adaline 级联形成多层网络呢？</li>
+        <li data-page-node-id="B0Fkl4eASvYzcBQ8D72Vi0">多层网络是否必须每一层都是非线性的？</li>
+      </ol>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="Y6zdlA2jbYWFnw58VVE6WM">3. BP 网络的数学模型（P26）</h3>
+    <div class="card" data-page-node-id="zNWC4o8aBuKy8ugv0Oo5uO">
+      <p data-page-node-id="HOnELLISps1uhRfWrCzonG">输入向量：$X=(x_1,x_2,\cdots,x_i,\cdots,x_n)^{T}$</p>
+      <p data-page-node-id="PJRufeMzlQEvSDRnJ0GMPw">隐层输出向量：$Y=(y_1,y_2,\cdots,y_j,\cdots,y_m)^{T}$</p>
+      <p data-page-node-id="6uYI6dHaGF29uixUYRARgQ">输出层输出向量：$O=(o_1,o_2,\cdots,o_k,\cdots,o_l)^{T}$</p>
+      <p data-page-node-id="xabnvgiAf6G4ZZnP1xTUqy">期望输出向量：$d=(d_1,d_2,\cdots,d_k,\cdots,d_l)^{T}$</p>
+      <p data-page-node-id="rHcBP3HMmPK7wrDM78nVnW">输入层到隐层权值矩阵：$V=(V_1,V_2,\cdots,V_j,\cdots,V_m)$</p>
+      <p data-page-node-id="d3ynNW0fGF1h7QE4KVT9VD">隐层到输出层权值矩阵：$W=(W_1,W_2,\cdots,W_k,\cdots,W_l)$</p>
+      <p data-page-node-id="GVBOrWZOSRcu020G2X1H83">在隐层以及输出层神经元引入阈值：$x_0=-1,\; y_0=-1$。</p>
+    </div>
+    <p data-page-node-id="yLleZdiv6L3QiVka9ya3Ur"><strong data-page-node-id="itGNg49DsJloUacVT9AheV">前向计算</strong>：</p>
+    <div class="math-scroll" data-page-node-id="yuOCuVAcykrwjYJPyYkKGT">$$\begin{aligned}
+\text{隐层：}\quad & net_j=\sum_{i=0}^{n} v_{ij}\,x_i,\qquad y_j=f(net_j),\quad j=1,2,\dots,m\\[4pt]
+\text{输出层：}\quad & net_k=\sum_{j=0}^{m} w_{jk}\,y_j,\qquad o_k=f(net_k),\quad k=1,2,\dots,l
+\end{aligned}$$</div>
+
+    <h3 class="sub-title" data-page-node-id="rZZDBo00JkRnrp0e1BrR8D">4. BP 网络的主要能力（P27）</h3>
+    <ul class="clean" data-page-node-id="PXvCSu74xD9ksAEhYtVO4g">
+      <li data-page-node-id="Mnx1HZuoEcm2J1mU6p5KVt">☆ <strong data-page-node-id="1E84HGAuhW0X0o2ICp9cpX">非线性映射能力</strong>：完成 $n$ 维空间到 $m$ 维空间的映射——适用于难以得到解析解、缺乏专家经验、能够表示和转化为模式识别或非线性映射的问题</li>
+      <li data-page-node-id="2c7dI7A5Zcpcmv7UkrdEiu">☆ <strong data-page-node-id="W8lwXR1c7yZOxLsDS2TQYK">泛化能力</strong>：对于新的样本能够正确地映射</li>
+      <li data-page-node-id="XJGQS6s5T015jVKONHCNZ8">☆ <strong data-page-node-id="ovwAGLOCbCDQ5fy60cWAHV">容错能力</strong>：对于错误的样本可以得到比较鲁棒的结果</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="Bf9t5gygJxKUJP0y0PBbrR">5. 逼近定理（P28）</h3>
+    <div class="defbox" data-page-node-id="HZGHDvIHoGNgiZLgjHlP8R">
+      <p class="dt" data-page-node-id="gyobiqvWzFlChyNKyarUsK">逼近定理</p>
+      <p data-page-node-id="IawQN0vxUA39IUxTPh4AX4">令 $\varphi(\cdot)$ 为有界、非常量的单调增连续函数，$I_p$ 表示 $p$ 维单位超立方体 $[0,1]^p$，$C(I_p)$ 表示定义在 $I_p$ 上的连续函数的集合。则给定任何函数 $f\in C(I_p)$ 和 $\varepsilon>0$，存在整数 $M$ 和一组实常量 $\alpha_i,\theta_i,w_{ij}$（$i=1,\cdots,M$，$j=1,\cdots,p$），使得网络的输出</p>
+      <div class="math-scroll" data-page-node-id="YFGx5hWb3xTTcq8PQXQ0Oj">$$F(x_1,\cdots,x_p)=\sum_{i=1}^{M}\alpha_i\,\varphi\Bigl(\sum_{j=1}^{p} w_{ij}x_j-\theta_i\Bigr)$$</div>
+      <p data-page-node-id="51FYlRybYbpKu7Vag4wGrn">可任意逼近 $f$，即：</p>
+      <div class="math-scroll" data-page-node-id="WpYUUKAJVr6Dohbcj9onFX">$$\forall\,(x_1,\cdots,x_p)\in I_p,\qquad \bigl|F(x_1,\cdots,x_p)-f(x_1,\cdots,x_p)\bigr|<\varepsilon$$</div>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="w12RkJVB6y4aNHhKSdqFIN">6. BP 算法推导（P29–33）</h3>
+    <h4 class="minor" data-page-node-id="nesQTO9Sy2wOSkfSiJA3vy">（1）输出层与隐层的误差信号（P29）</h4>
+    <div class="grid2" data-page-node-id="g1nAVJuF4pEg4NN1lW6EMT">
+      <div class="mini" data-page-node-id="3bS7CwXaEURt3ZkDkxoBXn">
+        <p class="mt" data-page-node-id="ys9o2Z0zYCWDIh407pdZYK">输出层误差信号</p>
+        <p data-page-node-id="8RSA6S9tjxssL7XKlfzvTC">$$\delta_k^{o}=(d_k-o_k)\,o_k(1-o_k)$$</p>
+      </div>
+      <div class="mini" data-page-node-id="yNDp35hmqFJaVK5fR2QA7t">
+        <p class="mt" data-page-node-id="RCByP063ITyVLHwNvlGAVx">隐层误差信号</p>
+        <p data-page-node-id="UBDbGUA1Fi0QpGDuW2l9vF">$$\delta_j^{y}=\Bigl(\sum_{k=1}^{l}\delta_k^{o}\,w_{jk}\Bigr)y_j(1-y_j)$$</p>
+      </div>
+    </div>
+
+    <h4 class="minor" data-page-node-id="ZLd6hGdOhIh30ryDpbbiDf">（2）输出误差的定义与展开（P30）</h4>
+    <p data-page-node-id="BEyBSWn0cMv3lBy4U8VFyQ">以三层网络为例推导，再推广到多层前向神经网络。输出误差的定义：</p>
+    <div class="math-scroll" data-page-node-id="gyzXz0Eju57givjsgaUEwP">$$E=\frac{1}{2}(d-O)^{2}=\frac{1}{2}\sum_{k=1}^{l}(d_k-o_k)^{2}=\frac{1}{2}\sum_{k=1}^{l}\bigl[d_k-f(net_k)\bigr]^{2}$$</div>
+    <p data-page-node-id="grTWy4ttqngjDQJgWgeZQJ">误差展开到隐层（代入 $net_k=\sum_{j=0}^{m}w_{jk}y_j$ 与 $y_j=f(net_j)=f\bigl(\sum_{i=0}^{n}v_{ij}x_i\bigr)$）：</p>
+    <div class="math-scroll" data-page-node-id="DEEuOUlYS7rjaM8pKcgYI2">$$E=\frac{1}{2}\sum_{k=1}^{l}\Bigl\{d_k-f\Bigl[\sum_{j=0}^{m}w_{jk}\,f\Bigl(\sum_{i=0}^{n}v_{ij}x_i\Bigr)\Bigr]\Bigr\}^{2}$$</div>
+    <p data-page-node-id="vmbp4ny3Dlo4trtyGIYA8Z"><strong data-page-node-id="rRHv9KXsywlpSzCjwYpDdZ">系数调整量与误差的负梯度成正比</strong>（$\eta\in(0,1)$）：</p>
+    <div class="math-scroll" data-page-node-id="p8g9LVAXkYXenJSxGpa8PX">$$\Delta w_{jk}=-\eta\frac{\partial E}{\partial w_{jk}}\ (j=0,1,2,\dots,m;\ k=1,2,\dots,l);\qquad
+\Delta v_{ij}=-\eta\frac{\partial E}{\partial v_{ij}}\ (i=0,1,2,\dots,n;\ j=1,2,\dots,m)$$</div>
+
+    <h4 class="minor" data-page-node-id="Dmtm8qMlnkSo4ZisjpqjcI">（3）复合微分法（链法则）与误差信号（P31）</h4>
+    <p data-page-node-id="d8wBvvoCjVdZDTNBbDK4mE">微积分中的复合微分法（链法则）：</p>
+    <div class="math-scroll" data-page-node-id="fBaRZlOkT5L4efeDflGeug">$$\frac{d\bigl(f(n(w))\bigr)}{dw}=\frac{df(n)}{dn}\times\frac{dn(w)}{dw}$$</div>
+    <p data-page-node-id="wYVKhGFs4TJIlP4B1H5ZWd">例如：$f(n)=e^{n},\ n=2w\Rightarrow f(n(w))=e^{2w}$，$\dfrac{df(n(w))}{dw}=\dfrac{df(n)}{dn}\times\dfrac{dn(w)}{dw}=(e^{n})(2)$。</p>
+    <p data-page-node-id="iwrcHwLrzEyNrBHDFady32">链法则应用于 BP 权值调整：</p>
+    <div class="math-scroll" data-page-node-id="Y9M3fqFgfR56pdtznQV7tB">$$\Delta w_{jk}=-\eta\frac{\partial E}{\partial w_{jk}}=-\eta\frac{\partial E}{\partial net_k}\frac{\partial net_k}{\partial w_{jk}};\qquad
+\Delta v_{ij}=-\eta\frac{\partial E}{\partial v_{ij}}=-\eta\frac{\partial E}{\partial net_j}\frac{\partial net_j}{\partial v_{ij}}$$</div>
+    <p data-page-node-id="YaDnEfTXTozRAMQhStgEST">⟦ 定义误差信号 ⟧</p>
+    <div class="math-scroll" data-page-node-id="ON6AAWOGUbSIdDqs3iocj8">$$\delta_k^{o}=-\frac{\partial E}{\partial net_k},\qquad \delta_j^{y}=-\frac{\partial E}{\partial net_j}$$</div>
+    <p data-page-node-id="hrt5X7dpejowMFgcig9Uki">⟦ 公式化简 ⟧</p>
+    <div class="math-scroll" data-page-node-id="KaT9tGqeZPSOMlvG8xzyCN">$$\Delta w_{jk}=\eta\,\delta_k^{o}\,y_j,\qquad \Delta v_{ij}=\eta\,\delta_j^{y}\,x_i$$</div>
+
+    <h4 class="minor" data-page-node-id="Hg1wlKmhO5MruZHN3yecvI">（4）误差公式的继续展开（P32）</h4>
+    <p data-page-node-id="6fbHW8J6kT24aneYINhgfD">对于输出层以及隐层的误差公式继续展开：</p>
+    <div class="math-scroll" data-page-node-id="taNiSPhmNDogFILQ0Ajnij">$$\delta_k^{o}=-\frac{\partial E}{\partial net_k}=-\frac{\partial E}{\partial o_k}\frac{\partial o_k}{\partial net_k}=-\frac{\partial E}{\partial o_k}\,f'(net_k),\qquad \frac{\partial E}{\partial o_k}=-(d_k-o_k)$$</div>
+    <div class="math-scroll" data-page-node-id="RsByAiWLGIMHBx8EVmXXGQ">$$\delta_j^{y}=-\frac{\partial E}{\partial net_j}=-\frac{\partial E}{\partial y_j}\frac{\partial y_j}{\partial net_j}=-\frac{\partial E}{\partial y_j}\,f'(net_j),\qquad
+\frac{\partial E}{\partial y_j}=-\sum_{k=1}^{l}(d_k-o_k)\,f'(net_k)\,w_{jk}$$</div>
+    <p data-page-node-id="5TCaiNu5X3IsBmoxkYsxBj">最终化简结果（<strong data-page-node-id="MyGmxhsiNo7GwoBmVo6NVA">导数 × 误差反向汇聚</strong>）：</p>
+    <div class="math-scroll" data-page-node-id="CxOUa2Ltwyxrx0IfudGENr">$$\delta_k^{o}=(d_k-o_k)\,o_k(1-o_k)$$</div>
+    <div class="math-scroll" data-page-node-id="r50ARfMl5DdamRkIPytQ8s">$$\delta_j^{y}=\Bigl[\sum_{k=1}^{l}(d_k-o_k)\,f'(net_k)\,w_{jk}\Bigr]f'(net_j)=\Bigl(\sum_{k=1}^{l}\delta_k^{o}\,w_{jk}\Bigr)y_j(1-y_j)$$</div>
+
+    <h4 class="minor" data-page-node-id="XNNfazkRpKRRGaPL2UDy8N">（5）BP 算法的本质——Delta 学习规则（P33）</h4>
+    <div class="math-scroll" data-page-node-id="4DCR0wwGWCpMRVI1uHKLeq">$$\Delta w_{jk}=\eta\,\delta_k^{o}\,y_j=\eta\,(d_k-o_k)\,o_k(1-o_k)\,y_j$$</div>
+    <div class="math-scroll" data-page-node-id="2ThEB8Mhe0d0sMCUyro7tG">$$\Delta v_{ij}=\eta\,\delta_j^{y}\,x_i=\eta\,\Bigl(\sum_{k=1}^{l}\delta_k^{o}\,w_{jk}\Bigr)y_j(1-y_j)\,x_i$$</div>
+    <div class="note" data-page-node-id="Z0YLefMbiag2hBGNCzfqLb"><span class="nt" data-page-node-id="BOO8kVSeFGKOkrj923QYpJ">对比</span>Delta 学习规则 $r=(d_j-o_j)\,f'(net_j)$：BP 算法属于 <strong data-page-node-id="sJ7c0HAcoYZyCHP3cAaZNt">Delta 学习算法 ＝ 误差的梯度下降算法</strong>（Gradient Descent）。</div>
+  </section>
+
+  <!-- ========== P34–35：多层 BP 与训练策略 ========== -->
+  <section class="slide" data-page-node-id="AD88GQPDZ6WWBXK0GZekK0">
+    <span class="slide-tag" data-page-node-id="kWT4plLJ59I8fFGGYGT5nE">PPT 第 34–35 页</span>
+    <h3 class="sub-title" data-page-node-id="qHW1Z2FdnzBHuOOpWtqMsF">7. 多层神经网络 BP 算法（P34）</h3>
+    <div class="card" data-page-node-id="lCAJHFdVrvkCnJJE5eYVIA">
+      <ul class="clean" data-page-node-id="Qmcqas0G00x87rjMT2FIoF">
+        <li data-page-node-id="0AMwxCVebQCXskjDEYQ5mG">H 个隐层（共 H+2 层）</li>
+        <li data-page-node-id="0toyJy4mhyO6l74Oquvlsh">各层的节点数：$m_1,m_2,\cdots,m_h$</li>
+        <li data-page-node-id="O7hCVDb0M5BqnJdBxLFnmf">各隐层的输出：$y^{1},y^{2},\cdots,y^{h}$</li>
+        <li data-page-node-id="WGEdPv0ptusmudMeOuUvXx">各层的权值矩阵：$W^{1},W^{2},\cdots,W^{h},W^{h+1}$（$W^{h+1}$ 为输出层权系数）</li>
+      </ul>
+    </div>
+    <figure class="fig" data-page-node-id="77usWnZgjuH6oUsSbieIqA">
+      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="Bhq0wHjuAbBgsjhxUoCe8w">
+        <g stroke="#9AA38C" stroke-width="1" data-page-node-id="gupejXMT7W0QobkaHQ3i3o">
+          <line x1="70" y1="80" x2="200" y2="80" data-page-node-id="tZNNeQXYFPGZHEY8iwOH61"/><line x1="70" y1="80" x2="200" y2="150" data-page-node-id="FmLhIku7mYIA0ZQcEHpvms"/><line x1="70" y1="80" x2="200" y2="220" data-page-node-id="HSdKuv41pWJUq141ZdgGhD"/>
+          <line x1="70" y1="150" x2="200" y2="80" data-page-node-id="24BPxnQjV4BHZ1Xgt47s9n"/><line x1="70" y1="150" x2="200" y2="150" data-page-node-id="hPfz8c3TUcjHZ5HSbDFWtR"/><line x1="70" y1="150" x2="200" y2="220" data-page-node-id="IserDETodT9w1cuDM6HGqB"/>
+          <line x1="70" y1="220" x2="200" y2="80" data-page-node-id="fWVCPdRQ9abEZdb11Vgod4"/><line x1="70" y1="220" x2="200" y2="150" data-page-node-id="R6fSOyI9z6ssauzlTm024R"/><line x1="70" y1="220" x2="200" y2="220" data-page-node-id="NotAFHExWwh77swwYasGZC"/>
+          <line x1="230" y1="80" x2="330" y2="80" data-page-node-id="fUdJjG9RVrXoLugtOwS7SQ"/><line x1="230" y1="80" x2="330" y2="150" data-page-node-id="I3AbTCvRmKlJUSBe4sJtJV"/><line x1="230" y1="80" x2="330" y2="220" data-page-node-id="Akfyo1rF8rIjWhbgQ0F8nP"/>
+          <line x1="230" y1="150" x2="330" y2="80" data-page-node-id="jf4ajQz86DDWhHVDYCQFCf"/><line x1="230" y1="150" x2="330" y2="150" data-page-node-id="vfJFoRkrPHlHHiCHbnltbP"/><line x1="230" y1="150" x2="330" y2="220" data-page-node-id="shiTRD4qeLmpzcNdwQjf4T"/>
+          <line x1="230" y1="220" x2="330" y2="80" data-page-node-id="KDNPROvACLRp9vnEC0CG1u"/><line x1="230" y1="220" x2="330" y2="150" data-page-node-id="Z19qs2htDAkCkNqmGzbKlz"/><line x1="230" y1="220" x2="330" y2="220" data-page-node-id="D2aScfCUZCPbvyWmuiwg3e"/>
+          <line x1="440" y1="80" x2="545" y2="110" data-page-node-id="zO9GUFpVhSPuVJgYjc4TBB"/><line x1="440" y1="80" x2="545" y2="190" data-page-node-id="4HckpA28ElnyBkrgPVoE3B"/>
+          <line x1="440" y1="150" x2="545" y2="110" data-page-node-id="ur1hhLV8JdjB2ZOOVc9GPn"/><line x1="440" y1="150" x2="545" y2="190" data-page-node-id="jdgiZQOujb6juFopL03F3M"/>
+          <line x1="440" y1="220" x2="545" y2="110" data-page-node-id="spFZAf3i0z00U7Sc2YkypJ"/><line x1="440" y1="220" x2="545" y2="190" data-page-node-id="ABuT7EgTU0XHwsrR9vN5pR"/>
+        </g>
+        <!-- input layer -->
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="EpgJMzKDZFYSUIEw89IOlz">
+          <circle cx="55" cy="80" r="15" data-page-node-id="iN3inbRlqmr7r92Yr1dIot"/><circle cx="55" cy="150" r="15" data-page-node-id="7ov0nygmvOq82cI4C7ZIAy"/><circle cx="55" cy="220" r="15" data-page-node-id="BRfzCBdWDpu9svPMjzYKAc"/>
+        </g>
+        <text x="55" y="190" font-size="18" text-anchor="middle" fill="#4C7D2C" data-page-node-id="d2tzJCFmFota54uK07rZXY">⋮</text>
+        <g font-size="13.5" fill="#26231B" font-style="italic" data-page-node-id="Qihpkw7kTvFFbQp4mGsTu0">
+          <text x="22" y="85" data-page-node-id="QHB3QkxFo1ZA6AQuinNFGR">x</text><text x="29" y="89" font-size="10" data-page-node-id="oeqT1HAaYVfbQFvoKxuD9m">1</text>
+          <text x="22" y="155" data-page-node-id="vtCAOa4EHFE3B0sJ0iDvt1">x</text><text x="29" y="159" font-size="10" data-page-node-id="O5MFNleohchH4PfKbRRZGH">2</text>
+          <text x="22" y="225" data-page-node-id="9DaetU9Yj6ClT4egHT0pFN">x</text><text x="29" y="229" font-size="10" data-page-node-id="KTDKMdkI8bdycPUNeyNZKu">n</text>
+        </g>
+        <text x="55" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="A1BOyJ51TCYy4f5KOPKR86">输入层</text>
+        <!-- hidden layer 1 -->
+        <g fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="YgBmtjcywK2FekyDZqyqVu">
+          <circle cx="215" cy="80" r="15" data-page-node-id="FvvrpUEHfsua0rvTCKyTfh"/><circle cx="215" cy="150" r="15" data-page-node-id="3MFwv6aO0sTy96hKhTnS2F"/><circle cx="215" cy="220" r="15" data-page-node-id="II6xV2WJJ64znkjQhdXGxH"/>
+        </g>
+        <text x="215" y="190" font-size="16" text-anchor="middle" fill="#8a7200" data-page-node-id="Ybg4PmAuopneUBefV31IkJ">⋮</text>
+        <g font-size="13" fill="#26231B" font-style="italic" data-page-node-id="6kkZMMTflFJU2gdPzCipV3">
+          <text x="243" y="78" data-page-node-id="d3UJ6rH9BBb9kerPIPxcN5">y</text><text x="250" y="82" font-size="9" data-page-node-id="CQZ0CD6DUH1GctmnSrZ1B0">1</text><text x="255" y="74" font-size="9" data-page-node-id="cXmhDASVaRFION8FwSMnaF">1</text>
+          <text x="243" y="148" data-page-node-id="U5VD2bZZwoG0xIBdAnbNy1">y</text><text x="250" y="152" font-size="9" data-page-node-id="cafjvuThChLMKnaDHHGhe2">2</text><text x="255" y="144" font-size="9" data-page-node-id="83m6vDpC0oFmOKNRhBCsQV">1</text>
+          <text x="243" y="222" data-page-node-id="a3pp7WzudpDi3nNE5cBzOS">y</text><text x="250" y="226" font-size="9" data-page-node-id="NhG3GpQO3kHN4b0f5vV3He">m</text><text x="258" y="230" font-size="8" data-page-node-id="30v8b1n1KlKOjXDoC7jumk">1</text><text x="262" y="218" font-size="9" data-page-node-id="M55C3LEyol1gHj3mifPQRo">1</text>
+        </g>
+        <text x="215" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="qMgl0ZWPTt04KKWHA0w1FW">m</text><text x="223" y="269" font-size="10" fill="#2C4A1A" data-page-node-id="DllMNI6trBK3dRrie9tdUW">1</text>
+        <!-- hidden layer 2 -->
+        <g fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="sglPb2sUyABRcPSHhslqGp">
+          <circle cx="345" cy="80" r="15" data-page-node-id="Xd8laNrZkV1upbY9rcc4SS"/><circle cx="345" cy="150" r="15" data-page-node-id="pv3Vn2h9rLk7XwNkOPZYMR"/><circle cx="345" cy="220" r="15" data-page-node-id="B28K5an3YFPzIDNmvDRaUS"/>
+        </g>
+        <text x="345" y="190" font-size="16" text-anchor="middle" fill="#8a7200" data-page-node-id="vEA5zW2sjEaKFzaZgrAn0U">⋮</text>
+        <g font-size="13" fill="#26231B" font-style="italic" data-page-node-id="GVtAD83e9z23g4Ompr2BVQ">
+          <text x="373" y="78" data-page-node-id="ViVrsZyIVugCIkezBXiyig">y</text><text x="380" y="82" font-size="9" data-page-node-id="0Ddv1RZ7HDaz7FX1ZWTh6H">1</text><text x="385" y="74" font-size="9" data-page-node-id="rNwQJADC8e9nfn2MHmBBlC">2</text>
+          <text x="373" y="222" data-page-node-id="jPdrp52dQ7YpFzyECdzEjX">y</text><text x="380" y="226" font-size="9" data-page-node-id="CZjSzCIZw7RzghHOWgsvkM">m</text><text x="388" y="230" font-size="8" data-page-node-id="RmPaABbVT4SzsI0FBBduYU">2</text><text x="392" y="218" font-size="9" data-page-node-id="O2VteyhJTtkxtM6oRElU72">2</text>
+        </g>
+        <text x="345" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="Mu70GdNYGwKINASoRhHK9G">m</text><text x="353" y="269" font-size="10" fill="#2C4A1A" data-page-node-id="ajJGmI1tiKXBexrdyox3Cd">2</text>
+        <!-- ellipsis + hidden layer h -->
+        <text x="395" y="150" font-size="26" text-anchor="middle" fill="#8E887A" data-page-node-id="vTf5iGdcTOHeLVG021NKFp">⋯</text>
+        <text x="395" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="HED0A3PaxLnIw9xFXzxVCO">h 个隐层</text>
+        <g fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="POy5CuAckvmHkbAKGsP7MO">
+          <circle cx="425" cy="80" r="15" data-page-node-id="m2oM2IHnDCWVdT9YIGh5VF"/><circle cx="425" cy="150" r="15" data-page-node-id="0T6jY6YNukDy5KriSYIDza"/><circle cx="425" cy="220" r="15" data-page-node-id="glVeGCAz5otGiU5lE345Xk"/>
+        </g>
+        <text x="425" y="190" font-size="16" text-anchor="middle" fill="#8a7200" data-page-node-id="NgPtotaBM5INl057CHWohs">⋮</text>
+        <g font-size="13" fill="#26231B" font-style="italic" data-page-node-id="hNawOMOuASsaj4n7HKcAzA">
+          <text x="451" y="78" data-page-node-id="5ZztxFEmX8ShRHGoooMnN7">y</text><text x="458" y="82" font-size="9" data-page-node-id="rjfN59sItqX1C2TfYwDGso">1</text><text x="463" y="74" font-size="9" data-page-node-id="q6TdCNE4eQz6FZzcm07sMx">h</text>
+          <text x="451" y="222" data-page-node-id="HWnAQSlqBqtQTDgTKanLmm">y</text><text x="458" y="226" font-size="9" data-page-node-id="kM1AY4UYyt9vDeunUhJY05">m</text><text x="466" y="230" font-size="8" data-page-node-id="zTAF6H8tATC7dWxonA0CEi">h</text><text x="455" y="212" font-size="9" data-page-node-id="cTZMkgVxqOuf3qZsa2wT3E">h</text>
+        </g>
+        <text x="425" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="YFQrBcFpVAnBpSNve69lhU">m</text><text x="433" y="269" font-size="10" fill="#2C4A1A" data-page-node-id="SGnlFNpZrCsQCPsf3cim18">h</text>
+        <!-- output layer -->
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="wW6RBeBlZBVeTQlWa7BeSg">
+          <circle cx="560" cy="110" r="15" data-page-node-id="Q2tYNWEMxx50SM9mCqem2z"/><circle cx="560" cy="190" r="15" data-page-node-id="gPXDTS8swYxmbRQYNFV7oT"/>
+        </g>
+        <text x="560" y="158" font-size="18" text-anchor="middle" fill="#4C7D2C" data-page-node-id="JJDqNjTFrgl9dL0skKszBB">⋮</text>
+        <g font-size="13.5" fill="#26231B" font-style="italic" data-page-node-id="qNaynECODvbM7cHrzj6AYH">
+          <text x="588" y="115" data-page-node-id="ALjuex3XGjL4SJayieXiZ8">o</text><text x="596" y="119" font-size="10" data-page-node-id="Xwx7ETYjeKRp0B1H1iZR3k">1</text>
+          <text x="588" y="195" data-page-node-id="Qkc98s8YDqlbfL7BgEbeWM">o</text><text x="596" y="199" font-size="10" data-page-node-id="jdzJCdwAwFriMaGpw1FFsq">m</text>
+        </g>
+        <text x="560" y="265" font-size="13.5" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="BPmnz25VhcvsLrE7sliraa">输出层 m</text>
+        <!-- weight labels -->
+        <g font-size="15" fill="#3A6122" font-weight="700" font-style="italic" data-page-node-id="giBZPx23V81KXwhmKpHY6Y">
+          <text x="128" y="285" data-page-node-id="zj7yRYyLTjDMU22kqyXrDC">W</text><text x="140" y="281" font-size="10" data-page-node-id="LpOwCE9U0KarKQ2anM3Yll">1</text>
+          <text x="273" y="285" data-page-node-id="BUEdsxcMPij49mOrR6yd3T">W</text><text x="285" y="281" font-size="10" data-page-node-id="nBz0lbAhfo9neNvkFWFn6F">2</text>
+          <text x="378" y="240" data-page-node-id="1lfYhZeiLEohdvs3LufoZ6">W</text><text x="390" y="236" font-size="10" data-page-node-id="koVWQrND3TxvxLmhYGcYJi">h</text>
+          <text x="490" y="285" data-page-node-id="VDazo3m9ZtOnvtFOhd8KDO">W</text><text x="502" y="281" font-size="10" data-page-node-id="L8a9mHBYD2aosgcor0qUk2">h+1</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="Zg8piJHOsHxgW5XEnCb7H2">多层 BP 网络：输入层 – h 个隐层 – 输出层，各层权值矩阵 $W^{1},W^{2},\dots,W^{h+1}$｜重绘自 PPT 第 34 页</figcaption>
+    </figure>
+    <p data-page-node-id="IQrFmcCymL80vccVbFwRDC"><strong data-page-node-id="hikNmz2SYz3mU08IYNJx2c">第 $n$ 层权系数更新公式</strong>：</p>
+    <div class="math-scroll" data-page-node-id="WljAjxvIx6GN1RWWVQgNG9">$$\Delta w_{ij}^{n}=\eta\,\delta_j^{n}\,y_i^{\,n-1}=\eta\Bigl(\sum_{k=1}^{m_{n+1}}\delta_k^{\,n+1}w_{jk}^{\,n+1}\Bigr)y_j^{\,n}\bigl(1-y_j^{\,n}\bigr)\,y_i^{\,n-1}$$</div>
+    <ul class="clean" data-page-node-id="VWHrRjcBWYh1hPc4oho5QE">
+      <li data-page-node-id="xaw7mFraGPuOmD89DjTbvK"><span class="tag" data-page-node-id="tl5MtrUhGWxCLCo806nOun">输出层</span>$\Delta w_{jk}^{\,h+1}=\eta\,\delta_k^{\,h+1}y_j^{\,h}=\eta\,(d_k-o_k)\,o_k(1-o_k)\,y_j^{\,h}$</li>
+      <li data-page-node-id="1g34we8lrduvyhfoDf1mZb"><span class="tag" data-page-node-id="qHpRGDHlpeYS3MAMJDdQWs">第 h 隐层</span>$\Delta w_{ij}^{\,h}=\eta\,\delta_j^{\,h}y_i^{\,h-1}=\eta\Bigl(\sum\limits_{k=1}^{l}\delta_k^{\,o}w_{jk}^{\,h+1}\Bigr)y_j^{\,h}\bigl(1-y_j^{\,h}\bigr)y_i^{\,h-1}$</li>
+      <li data-page-node-id="Znb6Ll9lRb1goMm9HKJRP2"><span class="tag" data-page-node-id="xXsBT66yhB6UoGjYQLdS7U">第一隐层</span>$\Delta w_{pq}^{\,1}=\eta\,\delta_q^{\,1}x_p=\eta\Bigl(\sum\limits_{r=1}^{m_2}\delta_r^{\,2}w_{qr}^{\,2}\Bigr)y_q^{\,1}\bigl(1-y_q^{\,1}\bigr)x_p$</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="ZqRkuM68dAk5FfTOFQcbpH">8. 两种训练策略（P35）</h3>
+    <div class="grid2" data-page-node-id="HdOQ7FxmjrMyHo64F6WbsF">
+      <div class="mini" data-page-node-id="ClT5qYkABFoFv7UvPAvLu9">
+        <p class="mt" data-page-node-id="HdHf9X3Oiyr62FGHdPQO78">1. 批处理：BP 算法误差公式</p>
+        <p data-page-node-id="nS5TaKNy8BqPU9BiKcgZJy">$$E=\frac{1}{2}\sum_{p=1}^{P}\sum_{k=1}^{l}(d_k-o_k)^{2}$$</p>
+        <p data-page-node-id="MQrfDlkhYBezLjwyBVhnDi">★ 将总的修正系数在整个样本训练完毕后统一进行修改，训练整体速度快。</p>
+        <p data-page-node-id="NEc6ohEIDanzllBZO7SC7c">★ 精度的判据：可以使用总体的误差，后者使用均方根误差。</p>
+      </div>
+      <div class="mini" data-page-node-id="eKg5eMqKyD4uncxTVW11Nr">
+        <p class="mt" data-page-node-id="TL9OLyEpMtkqIAT7fVTFMI">2. 单样本训练 BP 算法误差公式</p>
+        <p data-page-node-id="LXWkFYX2HZLaDQMIT9SJ7n">$$E=\frac{1}{2}(d-O)^{2}=\frac{1}{2}\sum_{k=1}^{l}(d_k-o_k)^{2}$$</p>
+        <p data-page-node-id="EoaDYoe8tg6iGGSOBrO5wc">★ 每一个样本就立即进行权系数的调整。</p>
+        <p data-page-node-id="tlqC1o83GHREnlrNrX0Z9C">★ 训练速度比较的慢。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== P36–43：RBF 网络 ========== -->
+  <section class="slide" id="rbf" data-page-node-id="aCSLWhfTAX6n3igfEASfFl">
+    <span class="slide-tag" data-page-node-id="UPOLDzbJsFrjkBzGkkdRpY">PPT 第 36–43 页</span>
+    <h3 class="sub-title" data-page-node-id="NpfDPEYBtZneWQ5OMFij1N">9. 径向基（RBF）网络的引入（P36）</h3>
+    <ul class="clean" data-page-node-id="e1ocs5Gklkd2om8nN3BqMf">
+      <li data-page-node-id="rwz4KesGuCFcQGQsjHjjul">☆ 样本空间转换到高位空间，将原有的<strong data-page-node-id="3gKFDpUDm9v8NjFGeqfp51">线性不可分</strong>的问题转换成<strong data-page-node-id="VM4Mmy8ALwXLnAGxdd4sin">线性可分</strong>的问题；</li>
+      <li data-page-node-id="D3woojHRUCPeOFjHF4ZEaR">☆ 函数逼近与内插。</li>
+    </ul>
+    <p data-page-node-id="hfxxAtrBN0NfWZhSQDFLD5"><strong data-page-node-id="zsbMOBK1CdBJe4b97ktOZl">使用隐层的作用</strong>：① 合并原有的模式，使之可以线性可分；② 将原有的样本变换到一个更高维的空间可以线性可分。</p>
+    <figure class="fig" data-page-node-id="zsp9dAGrnucrufG0mfhyHF">
+      <svg viewBox="0 0 340 170" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="af8d9cMPm2q7b9FrLvDz6o">
+        <defs data-page-node-id="3wo0Y16TwKrt89nV1DyxER">
+          <marker id="arF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse" data-page-node-id="j3UtKoOf1bMCORamRoIxlA">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="4P0ZB9bLvRhrEsb0HdL5Oy"/>
+          </marker>
+        </defs>
+        <g stroke="#3A6122" stroke-width="1.4" fill="none" data-page-node-id="LoInc94RAlhRMuVdd2KvKv">
+          <line x1="62" y1="50" x2="150" y2="80" marker-end="url(#arF)" data-page-node-id="DQDWaBjku5d4HblNsnxmmL"/>
+          <line x1="62" y1="120" x2="150" y2="90" marker-end="url(#arF)" data-page-node-id="jSzqQ22zwyZeqqCcTSBFuF"/>
+          <line x1="182" y1="85" x2="260" y2="85" marker-end="url(#arF)" data-page-node-id="aHA7vsp79XLOPQ1ONk7XZa"/>
+        </g>
+        <circle cx="45" cy="50" r="17" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="1bWeNkcdKAiVTtGo6nNSRe"/>
+        <circle cx="45" cy="120" r="17" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="hXIvgHMEnCzdqq4MrurIpF"/>
+        <circle cx="166" cy="85" r="17" fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="N5r8EcBKDN5e4SdpFK8OFl"/>
+        <circle cx="277" cy="85" r="17" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="g3snvarlpBgTn2nyD7f9YT"/>
+        <text x="45" y="55" font-size="13.5" text-anchor="middle" fill="#26231B" font-style="italic" data-page-node-id="QSCDPvrpxG2uw6EIjczMDX">x</text><text x="52" y="59" font-size="10" fill="#26231B" data-page-node-id="C9yByZ4l3qMKituyRjex4L">1</text>
+        <text x="45" y="125" font-size="13.5" text-anchor="middle" fill="#26231B" font-style="italic" data-page-node-id="fyyM4q89KGQFQmcEA3sYxT">x</text><text x="52" y="129" font-size="10" fill="#26231B" data-page-node-id="KYD914QoXTO6HBMt8HNxIY">2</text>
+        <text x="166" y="90" font-size="13.5" text-anchor="middle" fill="#26231B" font-style="italic" data-page-node-id="ZKHJ2nqKyRRaloRhwbas5b">x</text><text x="173" y="94" font-size="10" fill="#26231B" data-page-node-id="UwniUvY6qtr5Ks6cA9Nf35">3</text>
+        <text x="308" y="90" font-size="14" fill="#26231B" font-style="italic" data-page-node-id="ebvfrpXfwChQDVi9ChK9jw">y</text>
+      </svg>
+      <figcaption data-page-node-id="85UzqtYy3RI4qEpKN6ylYd">加入一个隐层节点 $x_3$：低维线性不可分样本映射到高维后线性可分｜重绘自 PPT 第 36 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="AIx7llj95YHX4LQkQjvulu">10. RBF 网络的提出（P36）</h3>
+    <ul class="clean" data-page-node-id="NJ7yoGDXy2pMlsOyAksJQL">
+      <li data-page-node-id="Zfk8acED8B6ATUyMjtd0Ju">☆ <strong data-page-node-id="TJJwtIM2POsdBBVHhux5Ek">1985 年 Powell</strong> 提出了多变量插值的径向基函数（Radial Basis Functions）；</li>
+      <li data-page-node-id="SMROGpWSDUPu0tKoeb9jQD">☆ <strong data-page-node-id="2rTGviMDKbjRXXDjCAlaCj">1988 年 Broomhead &amp; Lowe</strong> 将 RBF 应用于神经网络设计，构成 RBF 神经网络；</li>
+      <li data-page-node-id="X7OJiIEoFrfSrCjx17kcfb">☆ RBF 神经网络属于<strong data-page-node-id="wjpJEs0kdO4t9K0EVexH27">多层前向神经网络</strong>：
+        第一层——输入层：信号源节点；
+        第二层——隐含层：变换函数是对于中心径向对称且衰减的非负非线性函数；
+        第三层——输出层：对于输入模式的响应。</li>
+    </ul>
+    <div class="note" data-page-node-id="Sp0853mgHE1s5bPFXFugoz"><span class="nt" data-page-node-id="mLpQ3OC47rw5KwGFQPD46T">排版说明</span>原 PPT 此处文字换行粘连（“信号源节点第二层：”），已按语义理顺为三层分述。</div>
+
+    <h3 class="sub-title" data-page-node-id="Yuy3zaZl0JHQdB0uBeFWBD">11. 函数逼近与内插（P37）</h3>
+    <p data-page-node-id="b7u95IMIFeyaGarO3uy0Kd">规定 $N$ 个样本：$(x_i,d_i),\ i=1,2,\cdots,N$，它们中蕴含的函数 $f(x)$ 可由一系列内插函数 $\varphi_i(x,t)$ 经过线性组合形成：</p>
+    <div class="math-scroll" data-page-node-id="IESuTZx8jSPkfpoHhi6q7z">$$f(x)=\sum_{i=1}^{N} w_i\,\varphi_i(x_i,t_i)$$</div>
+    <p data-page-node-id="LjJZ6895nvJkeo3tUvXBpc">其中 $\varphi_i(x,t)$ 的系数 $w_i$ 可由下面方程求解得到：</p>
+    <div class="math-scroll" data-page-node-id="r4hqQUjU5ABQp93tIiiAZR">$$\begin{bmatrix}
+\varphi_{11} & \varphi_{12} & \cdots & \varphi_{1N}\\
+\varphi_{21} & \varphi_{22} & \cdots & \varphi_{2N}\\
+\vdots & \vdots & \vdots & \vdots\\
+\varphi_{N1} & \varphi_{N2} & \cdots & \varphi_{NN}
+\end{bmatrix}
+\begin{bmatrix} w_1\\ w_2\\ \vdots\\ w_N\end{bmatrix}
+=
+\begin{bmatrix} d_1\\ d_2\\ \vdots\\ d_N\end{bmatrix}$$</div>
+    <p data-page-node-id="K96ldthVHSpj5IQSwYXhUx">上面关系式可写成矩阵形式：$\Phi w=d$，则 $w=\Phi^{-1}d$。</p>
+    <p data-page-node-id="TiKHv2mUrRABzgwduGw5sx">实际中，$\Phi$ 接近奇异时，根据<strong data-page-node-id="KqZpH56jsIj0z5lEQ6xSID">正规化理论</strong>，可以选择足够大的 $\lambda$ 使得下式得以计算：</p>
+    <div class="math-scroll" data-page-node-id="9jTRhJmfdQeUGAnTNCCaCC">$$w=(\Phi+\lambda I)^{-1}d$$</div>
+    <p data-page-node-id="Y5OoOWfItBjTjAezYKlVAM">由上面的内插方式，可以得到如下的网络（<strong data-page-node-id="XtY1REfqfei9WgQQqF3DwK">正规化网络</strong>）：一般情况下，采用<strong data-page-node-id="rahZRL6aG1YNGmqBTHQ7zv">平移和旋转不变的径向基函数</strong>（如采样函数 $f_s(t)$、格林函数 $h(t)$ 的叠加逼近 $f(t)$）。</p>
+    <figure class="fig" data-page-node-id="vXGASJuBe6ECpTjVJiDffO">
+      <svg viewBox="0 0 640 270" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="Nf7ZXCIompq9SkfXB0g9vP">
+        <defs data-page-node-id="vyGEjAAHkSoVDe6uZOQHGb">
+          <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse" data-page-node-id="fSu8egCZlw9Ov377AkmWoC">
+            <path d="M0,0 L10,5 L0,10 z" fill="#3A6122" data-page-node-id="idNaKanctmtxEGGzSZAURT"/>
+          </marker>
+        </defs>
+        <g stroke="#9AA38C" stroke-width="1" data-page-node-id="WyS3c10vegURXDk7Rzaclv">
+          <line x1="85" y1="45" x2="245" y2="60" data-page-node-id="O67Znyk4a7N2WNJcc1WX52"/><line x1="85" y1="45" x2="245" y2="135" data-page-node-id="OrlCodl7UzENaOP1BgmkuG"/><line x1="85" y1="45" x2="245" y2="210" data-page-node-id="gix4FHmGMVsgthgEAEBqGe"/>
+          <line x1="85" y1="105" x2="245" y2="60" data-page-node-id="ix6UeVEb2BFAzTRv8HHrvS"/><line x1="85" y1="105" x2="245" y2="135" data-page-node-id="RwhEjQTKlQ9bBIuPDoq4w8"/><line x1="85" y1="105" x2="245" y2="210" data-page-node-id="vpaV955KipvMyjZZtt6IuY"/>
+          <line x1="85" y1="210" x2="245" y2="60" data-page-node-id="EOqZTaL227IS822NIMcNjP"/><line x1="85" y1="210" x2="245" y2="135" data-page-node-id="55x2qToEeCuEZagHZ5EZwj"/><line x1="85" y1="210" x2="245" y2="210" data-page-node-id="pDSYDCHOxeK0eYfXG6GJkZ"/>
+        </g>
+        <g stroke="#3A6122" stroke-width="1.3" fill="none" data-page-node-id="tEoY3Cg82e5yHl1uTrwe2S">
+          <line x1="290" y1="60" x2="450" y2="130" marker-end="url(#arG)" data-page-node-id="XFC2NOX3EgeH0TBoyxBfuV"/>
+          <line x1="290" y1="135" x2="450" y2="135" marker-end="url(#arG)" data-page-node-id="2C9geXPWAiGHBpYh8OLRJu"/>
+          <line x1="290" y1="210" x2="450" y2="140" marker-end="url(#arG)" data-page-node-id="F1J3P84vQyCTfUgz6TM5M7"/>
+          <line x1="490" y1="135" x2="560" y2="135" marker-end="url(#arG)" data-page-node-id="apooOOP9tkpGDbCCo0uKoM"/>
+        </g>
+        <g fill="#fff" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="aqV8ovNKG2EeeS6tUkjO9D">
+          <circle cx="70" cy="45" r="15" data-page-node-id="QcLR2grFopIgGN94FOOAsa"/><circle cx="70" cy="105" r="15" data-page-node-id="PQ2OJP3Pj1Hn0EhlW3rcIN"/><circle cx="70" cy="210" r="15" data-page-node-id="9wxnNxAnTHBpC9KNN0KkhZ"/>
+        </g>
+        <text x="70" y="165" font-size="17" text-anchor="middle" fill="#4C7D2C" data-page-node-id="Xi9KfhAL6JAq6UE4x7Uzuv">⋮</text>
+        <g font-size="13.5" fill="#26231B" font-style="italic" data-page-node-id="lPRdpWdq39iGRyTVZ8iV3u">
+          <text x="36" y="50" data-page-node-id="3PuCUqJEeUof9PnFX8Re9h">x</text><text x="43" y="54" font-size="10" data-page-node-id="pzkb3HZZJ3dzzYs7PZQvCH">1</text>
+          <text x="36" y="110" data-page-node-id="HWlTBp0wYveXcFf7yD104T">x</text><text x="43" y="114" font-size="10" data-page-node-id="xdKtPDpOmH5SkfwBFWm5Uh">2</text>
+          <text x="30" y="192" data-page-node-id="evk9pSzNZdEag9lA7DPmzG">x</text><text x="37" y="196" font-size="10" data-page-node-id="T4FhJpdTjQwANtyAsEf1Mk">p−1</text>
+          <text x="36" y="226" data-page-node-id="yjCKW5E8ej9ITPbNCIWEtI">x</text><text x="43" y="230" font-size="10" data-page-node-id="i2TrjHh6idjgUmgruEWM5Z">p</text>
+        </g>
+        <g fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="vBJ0QYRstHfr7ilLkZYmlr">
+          <circle cx="270" cy="60" r="19" data-page-node-id="KtiWv34olM44EZV6i08nOf"/><circle cx="270" cy="135" r="19" data-page-node-id="IXOrNrmGOyhZYDZydzdgCK"/><circle cx="270" cy="210" r="19" data-page-node-id="wff3XbSjnVllfMshwXISGE"/>
+        </g>
+        <g font-size="15" fill="#574500" font-weight="700" text-anchor="middle" data-page-node-id="X4qEDGwvdxGvD94kVG4RzX">
+          <text x="270" y="66" data-page-node-id="kDAwdmNBToVxa2uYjRFm7F">G</text><text x="270" y="141" data-page-node-id="wnlpIPJHxGGtlBnp9GFS2o">G</text><text x="270" y="216" data-page-node-id="9UgxLIbJxFD3z6tN51NrpX">G</text>
+        </g>
+        <text x="270" y="104" font-size="15" text-anchor="middle" fill="#8a7200" data-page-node-id="dTcSmZ0LeEuzO3RNGUAeQN">⋮</text>
+        <text x="270" y="175" font-size="15" text-anchor="middle" fill="#8a7200" data-page-node-id="8qXGo8XKvvL490l4v4hHDs">⋮</text>
+        <circle cx="470" cy="135" r="20" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="5Q9LpDa7iAPm4larFesO3V"/>
+        <text x="470" y="141" font-size="16" text-anchor="middle" fill="#2C4A1A" data-page-node-id="0THw1iGt9LjOxhg5gpG5Kj">Σ</text>
+        <g font-size="13.5" fill="#26231B" font-style="italic" data-page-node-id="JQaCJF9lsGZhDuUwGkjQu9">
+          <text x="360" y="55" data-page-node-id="8Hp1mBhMIB9483jGFcLtB2">w</text><text x="368" y="59" font-size="10" data-page-node-id="MrLhG7V4Irkx4kLwZCWqYb">1</text>
+          <text x="360" y="125" data-page-node-id="NiremddH7chDW6KYscIN4f">w</text><text x="368" y="129" font-size="10" data-page-node-id="791blERFQc873r1cKNw941">j</text>
+          <text x="360" y="222" data-page-node-id="GV3pdbCpnbWGDciQfRMYML">w</text><text x="368" y="226" font-size="10" data-page-node-id="FAFmdEU8mcvDd9CMvddMtA">N</text>
+          <text x="575" y="130" data-page-node-id="zv3nC6V7lzatoCXzEAGxE1">F(x)</text>
+        </g>
+        <text x="70" y="255" font-size="13" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="6zgBAnYVe4rwM86GXzy8Z1">输入层</text>
+        <text x="270" y="255" font-size="13" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="TAA2HPYvQiJBb3eEt1nNkd">格林函数构成的隐层</text>
+        <text x="470" y="255" font-size="13" text-anchor="middle" fill="#2C4A1A" font-weight="600" data-page-node-id="2hmWzccclwE7ZNAHFOJyYq">输出层</text>
+      </svg>
+      <figcaption data-page-node-id="yGg286jthV4WGa3AIH20xF">由内插方式得到的正规化网络：输入层 – 格林函数隐层 – 加权求和输出 $F(x)$｜重绘自 PPT 第 37 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="nXerb7JOXMy2CsQNYibewZ">12. RBF 网络结构：正规化网络 vs 广义网络（P38）</h3>
+    <p data-page-node-id="fAboCYVzDQyeMBitMLBXsY">☆ <strong data-page-node-id="8OaXLbzktufa7502HeWUSt">正规化网络</strong>（Regularization Network）；☆ <strong data-page-node-id="ZcpzrwWD4JgWGSmbGtFGHH">广义网络</strong>（Generalized Network）。这两种网络模型的主要区别在于<span class="kw" data-page-node-id="8UT9zBNCDH92HlsEwEHuCx">中间隐含层的节点的数量以及它的确定方式</span>。</p>
+    <div class="grid2" data-page-node-id="aqavasBPDkcxDGjpFYByJZ">
+      <div class="mini" data-page-node-id="8fBd7udko1I1FEAZ27oay9">
+        <p class="mt" data-page-node-id="QE0DqsjBWumnmTkPqikaw3">正规化网络</p>
+        <p data-page-node-id="ILgcs2GMujPw0gHFlv2Kne">正则化网络的隐单元就是训练样本，所以正则化网络的隐单元个数与训练样本的个数相同。</p>
+      </div>
+      <div class="mini" data-page-node-id="fHA6ytITedBOCL153PYQxy">
+        <p class="mt" data-page-node-id="lxlR7KfIbBBgKoAWiXXNye">广义网络</p>
+        <p data-page-node-id="KxtVvyrt4EF4VVaiIxzKbD">¤ 输入层有 $M$ 个神经元；</p>
+        <p data-page-node-id="wIIgM3Py3fiYFmm9LUam99">¤ 隐层有 $I$（$I&lt;N$）个神经元：每个神经元有自己的中心、方差；</p>
+        <p data-page-node-id="bEdIIdq28GZdulVgNOPDg7">¤ 输出层有 $J$ 个神经元：隐层到输出层有权系数矩阵。</p>
+      </div>
+    </div>
+    <div class="card" data-page-node-id="rITLRUvqroITKLfGG3ncsX">
+      <ul class="clean" data-page-node-id="mUgEfIoQzcZbx3qrWfJaS4">
+        <li data-page-node-id="9lybFRzaX6oWh3LimTKD0C">□ 输入层 $M$ 个神经元：样本的维数</li>
+        <li data-page-node-id="z8C1RhbfvKFfGP0mA6iqS0">□ 隐含层 $N$ 个神经元：样本的个数，其中传输函数为“基函数”，它的中心就是每一个样本，它的方差另外求出</li>
+        <li data-page-node-id="lgPQwtKzdFTuwmd3XM4CAf">□ 输出层 $J$ 个神经元</li>
+        <li data-page-node-id="PnA71xmK5INorMfDuc5Ntu">□ 输入层与隐层之间直接联系</li>
+        <li data-page-node-id="3UBscWJVFZQGg8iGrc3bYw">□ 隐层与输出层突触的权值</li>
+      </ul>
+      <p data-page-node-id="cmeLDgNWNAFoRut5YAf3dY">训练样本集合：$X=[X_1,X_2,\cdots,X_N]^{T}$；每一个样本：$X_k=[x_{k1},x_{k2},\cdots,x_{kM}]^{T}$；</p>
+      <p data-page-node-id="aLIaCMoT7K236a24zXPe93">对应的输出：$Y_k=[y_{k1},y_{k2},\cdots,y_{kJ}]^{T}$；期望输出：$d_k=[d_{k1},d_{k2},\cdots,d_{kJ}]^{T}$。</p>
+      <div class="math-scroll" data-page-node-id="SswJ8aJ0GGrVImwx8e2N0y">$$y_{kj}(X_k)=\sum_{i=1}^{N} w_{ij}\,\varphi(X_k,X_i,\sigma_i),\qquad j=1,2,\cdots,J$$</div>
+    </div>
+    <figure class="fig" data-page-node-id="iEkbT8Csa154r1IF3Wm5cO">
+      <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="X1MuZsw39FrDGG895vny3R">
+        <g stroke="#9AA38C" stroke-width="1" data-page-node-id="tQjlNCHVVxDXz88PBwtLnq">
+          <line x1="90" y1="45" x2="250" y2="65" data-page-node-id="UTiUKKKHUtprhnYJ0SQ4S8"/><line x1="90" y1="45" x2="250" y2="130" data-page-node-id="sOfosAF99SHe2KwxLl3oNC"/><line x1="90" y1="45" x2="250" y2="195" data-page-node-id="Cg4jtlZnlcGWY07pwg2xGG"/>
+          <line x1="90" y1="130" x2="250" y2="65" data-page-node-id="4u2CRWsI4YPHLPNAOZPDTd"/><line x1="90" y1="130" x2="250" y2="130" data-page-node-id="0BLlChZb1FDKaxo7o91e6d"/><line x1="90" y1="130" x2="250" y2="195" data-page-node-id="0nNl9fFQj52pmBiZKgJOcb"/>
+          <line x1="90" y1="215" x2="250" y2="65" data-page-node-id="A2eqdJ8MaQZt9J3f62noPV"/><line x1="90" y1="215" x2="250" y2="130" data-page-node-id="cJe17hzgRQgFAChKXISZVr"/><line x1="90" y1="215" x2="250" y2="195" data-page-node-id="ggEQDvM3VDJFV1trummb2O"/>
+          <line x1="305" y1="65" x2="440" y2="85" data-page-node-id="jF2fN3aEJ0eXgWNotlOXHC"/><line x1="305" y1="65" x2="440" y2="175" data-page-node-id="jnqvQScxeAF4u5ErVT1DHn"/>
+          <line x1="305" y1="130" x2="440" y2="85" data-page-node-id="upMrIkpeENJxyHgKDISKPf"/><line x1="305" y1="130" x2="440" y2="175" data-page-node-id="2kJOHkDTFxKywpgKDszJXT"/>
+          <line x1="305" y1="195" x2="440" y2="85" data-page-node-id="gUIpj8unQLfPcdFQFOcCSX"/><line x1="305" y1="195" x2="440" y2="175" data-page-node-id="aFW5XXpmpF7YNgadhzVjN3"/>
+        </g>
+        <g fill="#26231B" data-page-node-id="jNwUGbRwJf0Z1lY1ENlhHY">
+          <circle cx="75" cy="45" r="7" data-page-node-id="OABWEglgcp394ffAoIQTLc"/><circle cx="75" cy="130" r="7" data-page-node-id="B5DaLzmAVwz3jPSrlXzmhb"/><circle cx="75" cy="215" r="7" data-page-node-id="C7jG3ajXxWPSjofJFi6lfl"/>
+        </g>
+        <text x="75" y="105" font-size="15" text-anchor="middle" fill="#26231B" data-page-node-id="Qcw9vh3dvnG1qHIwn9pUVH">⋮</text>
+        <text x="75" y="180" font-size="15" text-anchor="middle" fill="#26231B" data-page-node-id="doK3GlpHVgXjHcOG20t61J">⋮</text>
+        <g font-size="13" fill="#26231B" font-style="italic" data-page-node-id="ZjJe1DCpWhAi6ovYcujHZI">
+          <text x="40" y="50" data-page-node-id="HWqrK8bndn9vsAGRnh0IMF">x</text><text x="47" y="54" font-size="10" data-page-node-id="zQCPi7pRyFnXjIVXQsRNP9">1</text>
+          <text x="40" y="135" data-page-node-id="s8DHG7nHK8oOr7VIYzeo0q">x</text><text x="47" y="139" font-size="10" data-page-node-id="d3DzIx6IWpBvbZHZwiizVh">2</text>
+          <text x="40" y="220" data-page-node-id="HdTqcq5HUnURC3UPOGmgZp">x</text><text x="47" y="224" font-size="10" data-page-node-id="FK1jyfTVcx25M7i4onEwWa">n</text>
+        </g>
+        <g fill="#FDD000" stroke="#C9A900" stroke-width="1.8" data-page-node-id="UCSjkEKaofMKkA00Y1ElyL">
+          <circle cx="280" cy="65" r="19" data-page-node-id="5ovCHNzLHjlqDRDyr0wWEY"/><circle cx="280" cy="130" r="19" data-page-node-id="AubIWSnmN0vQPJvvXUj61S"/><circle cx="280" cy="195" r="19" data-page-node-id="0beLWCX8qLp9ug4faDHhXZ"/>
+        </g>
+        <g font-size="13.5" fill="#574500" font-weight="700" text-anchor="middle" data-page-node-id="inHTfnAVnurytfzfcazTJ2">
+          <text x="280" y="71" data-page-node-id="HJrkOm7zcGf9fsx4ODkzwb">G</text><text x="280" y="71" dy="0" font-size="9" data-page-node-id="P5YCq1TYdSE5Wh70fkk25J">1</text>
+          <text x="280" y="136" data-page-node-id="NLSPBoKTUXyzJWQ8uQlU3F">G</text><text x="280" y="136" dy="0" font-size="9" data-page-node-id="k0huyAma2dg4fACvVmFMDR">2</text>
+          <text x="280" y="201" data-page-node-id="C7ycAYMNrsZzxl6LMIfZhT">G</text><text x="280" y="201" dy="0" font-size="9" data-page-node-id="a8EuXCc42CILFRf5GClRyJ">j</text>
+        </g>
+        <text x="280" y="102" font-size="14" text-anchor="middle" fill="#8a7200" data-page-node-id="9WetxTgJxWhnL5RqHTvZlF">⋮</text>
+        <text x="280" y="168" font-size="14" text-anchor="middle" fill="#8a7200" data-page-node-id="jfs3dD7SbIcGNarrK14bfn">⋮</text>
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.8" data-page-node-id="8fYXyqJVJpISkDJhK23Spb">
+          <circle cx="465" cy="85" r="17" data-page-node-id="txLBBDCiBwJjX8bwtRdCTA"/><circle cx="465" cy="175" r="17" data-page-node-id="ZEaQGnxLnB3h3ZesN6brcD"/>
+        </g>
+        <text x="465" y="140" font-size="15" text-anchor="middle" fill="#4C7D2C" data-page-node-id="hsdn29jjSoGEfFx3tV63Nd">⋮</text>
+        <g font-size="15" fill="#2C4A1A" text-anchor="middle" data-page-node-id="jzN9L4DgMAAkocxpBB1xjz">
+          <text x="465" y="91" data-page-node-id="K4uNPuDiMhKQPKSuFOHJLz">Σ</text><text x="465" y="181" data-page-node-id="SJdxYhSZpos9trJDTGgfrV">Σ</text>
+        </g>
+        <g font-size="13" fill="#26231B" font-style="italic" data-page-node-id="ZHnBOFCvQBSEGbtkvRZDGm">
+          <text x="510" y="90" data-page-node-id="fgbLRhnZcYAtArcZwGQzVL">y</text><text x="517" y="94" font-size="10" data-page-node-id="lBaHjJaBFcqXl7OMG2YmC9">1</text>
+          <text x="510" y="180" data-page-node-id="eKBFl7XG0A9uufts4m6F1O">y</text><text x="517" y="184" font-size="10" data-page-node-id="q6s6HFgtDNABBXzfAO9a1n">2</text>
+          <text x="510" y="240" data-page-node-id="En8vNti0vLU51Sov0UP6EM">y</text><text x="517" y="244" font-size="10" data-page-node-id="bAiCCLUngmhit11NknU1qE">m</text>
+        </g>
+        <line x1="482" y1="85" x2="505" y2="85" stroke="#3A6122" stroke-width="1.3" data-page-node-id="mZyUGUqAmYCALkn5MtsRuS"/>
+        <line x1="482" y1="175" x2="505" y2="175" stroke="#3A6122" stroke-width="1.3" data-page-node-id="sVDXNPFjqYndPJGd8WVc9c"/>
+        <g font-size="13" fill="#2C4A1A" font-weight="600" text-anchor="middle" data-page-node-id="N0b4YbV5eMdCyBDFtnkgGW">
+          <text x="75" y="250" data-page-node-id="3QoJkOR1a1SmKJEI3a4qUC">输入层</text>
+          <text x="280" y="250" data-page-node-id="qnxOInmtXs8kUSokWiRjfT">隐层（RBF 单元）</text>
+          <text x="465" y="250" data-page-node-id="V82AE7Sh9GffEJ1R75cIDF">输出层</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="8biXBeOZAde431l0Ke8kt5">RBF 网络的一般结构：输入层 – 高斯型隐单元 $G_1\sim G_j$ – 线性求和输出层｜重绘自 PPT 第 38、41 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="QwzXEXZ2fLMZlNQAeDQg6M">13. 径向基神经网络简介与正规网络的特点（P39）</h3>
+    <div class="defbox" data-page-node-id="WqgHJ3zNhklIvzQAwRRP2h">
+      <p class="dt" data-page-node-id="aOZ6HHHEmXQti1EIPLs8aJ">基本思想</p>
+      <p data-page-node-id="s9IL4UJ2qZXrk7Fs3Kt6uJ">用径向基函数（RBF）作为隐单元的“基”，构成隐含层空间，隐含层对输出矢量进行变换，将低维空间的模式输入数据变换到高维空间内，使得在低维空间内的线性不可分问题在高维空间内线性可分。</p>
+      <p data-page-node-id="mwyEfOPk405ZmSASAnlpOn">径向基网络也可以从函数逼近与内插的观点来认识：将样本所在处替换成一个内插函数，由它们的线性组合，来模拟（逼近）它们中所蕴含的函数。</p>
+    </div>
+    <p data-page-node-id="q5dcTbA1jmhXuxDTmqi5Qx"><strong data-page-node-id="IxB7vlMMaFZ7G9Rtb6cudo">正规径向基网络的特点</strong>：</p>
+    <ul class="clean" data-page-node-id="obYGObEZtP5cEu8kscvSwN">
+      <li data-page-node-id="ovjwdpZs9zrAQ8veB2QAtB">☆ 可以逼近任意的非线性函数；</li>
+      <li data-page-node-id="sFhs5IExl6zOvH5FtokELK">☆ 对于任意一个非线性的函数，总存在一组权值使网络对该函数的逼近效果最好；</li>
+      <li data-page-node-id="tGHi0lcAe9Maokw6nL8tAu">☆ 当样本的个数很大的时候，网络的实现复杂，且在求解网络的权值的时候，容易产生<strong data-page-node-id="ukai1zSaBN3jSNwkLSza6R">病态</strong>的问题（illconditioning）。</li>
+    </ul>
+    <div class="example" data-page-node-id="XnOiIXP8eV7KZoOHs5AN6m">
+      <p class="et" data-page-node-id="XpX6KBsvWlF6OFiK4o848g">解决病态问题的方法</p>
+      <ol class="num" data-page-node-id="LPUvqmaXAVJe766mXcdXfv">
+        <li data-page-node-id="eoOv3LuVf5H3st95ZGz0M5">减少隐层的神经元个数 → <strong data-page-node-id="0YzJ9Pplj7AwoQHkBBXtsL">广义网络</strong>；</li>
+        <li data-page-node-id="nYOXEkJVOD3spahM4H8dpK">使用<strong data-page-node-id="ASaUVWtDW0hsfsMtrN0g2i">正规化理论</strong>求解。</li>
+      </ol>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="Ee2HmA6nN66bqLCcGtFkpr">14. 径向基函数（P40）</h3>
+    <p data-page-node-id="T7VX2TSOucFETHmv6P9z3y">中心点对称且衰减的<strong data-page-node-id="JB1739bhfCUkEPLx0PkEua">非负非线性函数</strong>；一般选用格林函数：<span class="kw" data-page-node-id="A1bepOtVMQ4oInuOPAbYU8">高斯函数</span>。两个参数：<strong data-page-node-id="5wtUQobEnD4Qg4qBOHJ1mp">中心 $t$</strong>、<strong data-page-node-id="PK7BIDKGGZaRjj9fDdZDnU">方差 $\sigma$</strong>。</p>
+    <table class="data" data-page-node-id="Sua1n5DwPtsDXCtlouKlss">
+      <tr data-page-node-id="iJ1NAdf7VxUMHJxkECkkVd"><th style="width:22%" data-page-node-id="JNzOK7GZhKZGi4X1BCYaNN">名称</th><th data-page-node-id="lHFP9vpYD8N4hpZOefW30t">表达式</th><th style="width:26%" data-page-node-id="PzbKpANJZAGlOEBpXvpHHQ">参数</th></tr>
+      <tr data-page-node-id="XEy0gyQak5tvvOlGKCqFPA"><td class="rowh" data-page-node-id="SFzqI6kzDXDDIDbqMrDRcg">① 高斯函数</td><td class="lft" data-page-node-id="F50PMqK8E7PGYJBAQerYjy">$\varphi(r)=\exp\!\left(-\dfrac{(r-t)^{2}}{2\sigma^{2}}\right)$</td><td data-page-node-id="mQiEeQMP9QSpbMd61P4zyU">中心 $t$，方差 $\sigma$</td></tr>
+      <tr data-page-node-id="VsOV75dCuQq2lcZYaWjBl0"><td class="rowh" data-page-node-id="qFp6rjEJLWHvPKoYrvywLd">② 逆多二次函数</td><td class="lft" data-page-node-id="8P4FfCkKfDOoH8k0lcstrR">$\varphi(r)=\dfrac{1}{(r^{2}+c^{2})^{1/2}}$</td><td data-page-node-id="g0X4YpLlDaOC40ut81AhUx">$c>0$</td></tr>
+      <tr data-page-node-id="6yHGdFvK9rw8d0QlYwOQss"><td class="rowh" data-page-node-id="IW9aqdonqbK7czSNMBCNgf">③ 多二次函数</td><td class="lft" data-page-node-id="qGMHovosgdSGWjP6m0nRBx">$\varphi(r)=(r^{2}+c^{2})^{1/2}$</td><td data-page-node-id="dXtS7Hfsw8ni94DQOjL2uz">$c>0;\ r\in R$</td></tr>
+      <tr data-page-node-id="nOZpLU0cEx2BLupRguDMwB"><td class="rowh" data-page-node-id="clmAW7SsT3WNDD6qBDYz9c">④（PPT 原式）</td><td class="lft" data-page-node-id="mBhoMVC7O6a4eywjPuWhtN">$\varphi(r)=\dfrac{1}{(r^{2}+c^{2})^{1/2}}$</td><td data-page-node-id="34Kgb3j54SuFLm1vndWUG4">$c>0;\ r\in R$</td></tr>
+    </table>
+    <div class="note" data-page-node-id="FZjBXeiLDlbIafSbLPaUvJ"><span class="nt" data-page-node-id="E9zQHNjktYcxNMcphQl7UB">勘误</span>PPT 中 ② 与 ④ 印刷完全相同；④ 对应插图为上凹曲线（多二次型走势），疑为不同参数或排版重复，讲义按原样转写并标注。</div>
+    <figure class="fig" data-page-node-id="RvOdk3nOQxWraTV22rqXJT">
+      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="fhusePeaRxdKA2D9rZRWrV">
+        <!-- panel a: Gaussian family -->
+        <g transform="translate(15,15)" data-page-node-id="1Eu21Kn9HmWHuhB6kWPUOj">
+          <rect x="0" y="0" width="205" height="165" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="8nw2oI5zGzthxK8DXYposn"/>
+          <line x1="12" y1="140" x2="196" y2="140" stroke="#8E887A" data-page-node-id="UzQcOtYiDLyig1U8eHpd2r"/>
+          <line x1="104" y1="152" x2="104" y2="12" stroke="#8E887A" data-page-node-id="F0feSWuEpb7XidJIfZFNIA"/>
+          <path d="M12,139 C50,138 66,130 104,28 C142,130 158,138 196,139" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="YnAndNFCu2FGCOFC83cd6p"/>
+          <path d="M40,139 C72,136 84,116 104,44 C124,116 136,136 168,139" fill="none" stroke="#8FB469" stroke-width="2" data-page-node-id="3R7pTsJ0JQO9QUzxb5D7xO"/>
+          <path d="M70,139 C88,135 94,106 104,62 C114,106 120,135 138,139" fill="none" stroke="#C9D8B2" stroke-width="2" data-page-node-id="mktW78X7H0XdNPcQ78bfD9"/>
+          <text x="104" y="182" font-size="12.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="r5mRXRKim6XOdgXYRwj3vL">(a) 高斯函数（σ = 0.5 / 1 / 2）</text>
+        </g>
+        <!-- panel b: inverse multiquadric -->
+        <g transform="translate(238,15)" data-page-node-id="Vrp6wHWdOOtStK2aF0DAp5">
+          <rect x="0" y="0" width="205" height="165" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="3eNRG12YZMTAlEuNHJBg9b"/>
+          <line x1="12" y1="140" x2="196" y2="140" stroke="#8E887A" data-page-node-id="tw5Dfnta90LKcLXVxv1hCM"/>
+          <line x1="104" y1="152" x2="104" y2="12" stroke="#8E887A" data-page-node-id="wyGAcrmfU4K7sOk47df93f"/>
+          <path d="M12,118 C55,108 72,84 104,30 C136,84 153,108 196,118" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="FGWKmqc98mEVkCPYIuk8j4"/>
+          <path d="M12,128 C60,122 80,100 104,56 C128,100 148,122 196,128" fill="none" stroke="#8FB469" stroke-width="2" data-page-node-id="VYHcFbOZG4YzrIKFx28YSG"/>
+          <path d="M12,135 C66,132 88,118 104,86 C120,118 142,132 196,135" fill="none" stroke="#C9D8B2" stroke-width="2" data-page-node-id="lHI8PDaQ2IQ1Euvec0hMiG"/>
+          <text x="104" y="182" font-size="12.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="cZwGMHD8Dbl1QRNh8AwwIG">(b) 逆多二次函数（c = 0.5 / 1 / 2）</text>
+        </g>
+        <!-- panel c: multiquadric -->
+        <g transform="translate(461,15)" data-page-node-id="sVuEl255z8rVNQopWzJkiX">
+          <rect x="0" y="0" width="205" height="165" fill="#FDFEFB" stroke="#D9E5C8" data-page-node-id="wQyui3grgTlzm2JtCZclKD"/>
+          <line x1="12" y1="140" x2="196" y2="140" stroke="#8E887A" data-page-node-id="SMlnkQ7xgG1GiCFXHnNdJW"/>
+          <line x1="104" y1="152" x2="104" y2="12" stroke="#8E887A" data-page-node-id="BUUUVoxONrjRFQD1sVOPfJ"/>
+          <path d="M12,20 C60,58 84,100 104,124 C124,100 148,58 196,20" fill="none" stroke="#3A6122" stroke-width="2.2" data-page-node-id="dZFHCHnMrqdN0o9cOs4DDI"/>
+          <text x="104" y="182" font-size="12.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="kJ5mvHKULotbY4ky6FhIVJ">(c) 多二次函数（c = 1）</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="PEx8Xdf880UJCnux6a4ZHX">常用径向基函数曲线（中心对称；高斯型随 σ 增大变宽变矮）｜按 PPT 第 40 页绘制</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="6gOdQB1EtIjpjmvdwqY0Ka">15. RBF 网络学习算法（P41）</h3>
+    <p data-page-node-id="soktnUOyabOYooezChzSop"><strong data-page-node-id="mUDm8pFzb0oSG2OF2HN8UB">RBF 网络学习参数</strong>：</p>
+    <ul class="clean" data-page-node-id="PgbB3xgEDDW15B4SBCMOio">
+      <li data-page-node-id="5ZkgR4x2TXPo3RzZA5XOGF">◇ 基函数的<strong data-page-node-id="JYh8r5bLddxrmSlZa9yC3J">中心</strong>（最为重要）；</li>
+      <li data-page-node-id="sGIGKLKUb4piBUdocZbaHD">◇ <strong data-page-node-id="UhL1U8yfrrZd6Ebj3QJz3X">方差</strong>：基函数的方差；</li>
+      <li data-page-node-id="YzNSDHdnE5sb6VZU5d9rpF">◇ <strong data-page-node-id="DO9fxxAa9fbn5UjLCsXd1m">权值</strong>：隐层到输出层（LMS）。</li>
+    </ul>
+    <p data-page-node-id="1SMU2iJPLGLO8VGcGpyu0M"><strong data-page-node-id="DrAFsk4FJkFyQL2RQ191Wf">四种学习方法</strong>：</p>
+    <ul class="clean" data-page-node-id="XfHi1tern2osKfXlLsFILO">
+      <li data-page-node-id="PMdDUERTbnkPLEeDVHoyGw">◇ <strong data-page-node-id="C3cMBdGA1v7xkxl0OED5Y4">随机选取中心法</strong>（选取典型的中心）；</li>
+      <li data-page-node-id="mk5mttHqiIPWNzqfsKdCd4">◇ <strong data-page-node-id="39MY87FupzPPJUZlGWyQeS">自组织选取中心法</strong>（K-均值）；</li>
+      <li data-page-node-id="Je36Vsg1no0apGm2KSD1ZY">◇ <strong data-page-node-id="p3G4XCOFnJq1R5occBjpqb">有监督选取中心法</strong>（中心误差调整）；</li>
+      <li data-page-node-id="GAky0J42rqXjkOSDNTuem7">◇ <strong data-page-node-id="2HTA8C8r69YeVLNLbD4tDn">正交最小二乘法</strong>（MATLAB 工具箱）。</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="ho3aqdg4mNmvnbLYKF2XjL">16. 学习权值（P42）</h3>
+    <ul class="clean" data-page-node-id="gEftDfxoN7jnJfOExQQZAh">
+      <li data-page-node-id="xzT20S8abzBA8IlNpY7nem">★ 输出层的输出是直接对隐层的输出进行累加，这一点与 ADALINE 的方式相同；可以采用 ADALINE 中的 <strong data-page-node-id="uXcLngesElLRmy78DQcHW8">LMS</strong> 方法进行训练。</li>
+      <li data-page-node-id="FNQWJNKwJMIQocQbSTpbpq">★ 也可以直接使用<strong data-page-node-id="FUotCUKGlFKVqlMFEWbnda">伪逆</strong>的方式求解：
+        $$Y(n)=G(n)W(n),\quad Y(n)=\{y_{kj}(n)\}\ \ k=1,2,\cdots,N;\ j=1,2,\cdots,J$$
+        $$W=G^{+}Y=(G^{T}G)^{-1}G^{T}Y$$</li>
+    </ul>
+    <div class="card" data-page-node-id="hTb0MsCmek8NzqlH6ADzz0">
+      <p data-page-node-id="lMp9ONtgMw0KAsnGP5kbqz"><strong data-page-node-id="wD6Kuz2CdDaRFId2nEe7Fh">G 矩阵的构成</strong>（隐层的输出）：$G=\{g_{ki}\}$</p>
+      <div class="math-scroll" data-page-node-id="9WjQ2Fd2sjGa1xTCTq2cSD">$$g_{ki}=\exp\Bigl(-\frac{1}{d_{\max}^{2}}\bigl\|X_k-t_i\bigr\|^{2}\Bigr),\qquad k=1,2,\cdots,N;\ i=1,2,\cdots,I$$</div>
+      <p data-page-node-id="7njTOYejb7beqSWV2ywMFB"><strong data-page-node-id="AsBHAae3OCOlzuptmNOT5c">径向基函数的方差</strong>：$\sigma=\dfrac{d_{\max}}{\sqrt{2}}$</p>
+    </div>
+    <h4 class="minor" data-page-node-id="MUx7gPxF18cN9cYhqDb5oM">三组梯度更新公式</h4>
+    <div class="math-scroll" data-page-node-id="GGjRhQQ7z4vq6wjChYb0Nb">$$\text{输出层权值：}\quad \frac{\partial E(n)}{\partial w_i(n)}=\sum_{k=1}^{N} e_k(n)\,G\Bigl(\bigl\|X_k-t_i(n)\bigr\|_{C_i}\Bigr),\qquad
+w_i(n+1)=w_i(n)-\eta_1\frac{\partial E(n)}{\partial w_i(n)},\ \ i=1,2,\cdots,I$$</div>
+    <div class="math-scroll" data-page-node-id="ipzRkIIqrNTZu6EEvUy5Vj">$$\text{隐层 RBF 中心：}\quad \frac{\partial E(n)}{\partial t_i(n)}=2w_i(n)\sum_{k=1}^{N} e_k(n)\,G'\Bigl(\bigl\|X_k-t_i(n)\bigr\|_{C_i}\Bigr)\Sigma_i^{-1}\bigl(X_k-t_i(n)\bigr),\qquad
+t_i(n+1)=t_i(n)-\eta_2\frac{\partial E(n)}{\partial t_i(n)}$$</div>
+    <div class="math-scroll" data-page-node-id="IcIoBqDeuatL65Uz5oSvFO">$$\text{隐层 RBF 的扩展（方差倒数量）：}\quad \frac{\partial E(n)}{\partial \Sigma_i^{-1}(n)}=-w_i(n)\sum_{k=1}^{N} e_k(n)\,G'\Bigl(\bigl\|X_k-t_i(n)\bigr\|_{C_i}\Bigr)Q_{ki}(n)$$</div>
+    <div class="math-scroll" data-page-node-id="P0gJMoiZHa0AJGqLFeCYPV">$$Q_{ki}(n)=\bigl(X_k-t_i(n)\bigr)\bigl(X_k-t_i(n)\bigr)^{T},\qquad
+\Sigma_i^{-1}(n+1)=\Sigma_i^{-1}(n)-\eta_3\frac{\partial E(n)}{\partial \Sigma_i^{-1}(n)}$$</div>
+    <p class="note" data-page-node-id="GAEEav1aSgCWKlJYmT2tEw"><span class="nt" data-page-node-id="fInxLroZUc2KhOZ3cMKiXZ">说明</span>式中 $G'$ 是 $G$ 的导数。（P42 原页 $Q_{ji}$ 下标与 $Q_{ki}$ 混排，讲义统一为 $Q_{ki}$。）</p>
+
+    <h3 class="sub-title" data-page-node-id="2ngFHGpsJVtzt1CsLOkmXn">17. 径向基与多层感知机的对比（P43）</h3>
+    <div class="grid2" data-page-node-id="cEDl4vgaeaQCwSnODxHluf">
+      <div class="mini" data-page-node-id="c0YQuvTGLqYhQ64zHMi3QO">
+        <p class="mt" data-page-node-id="9WuSDnj7knc7aX35Yu7ftP">相同之处</p>
+        <p data-page-node-id="r7IxUtgLyR2WFzIX0tMBBB">□ 都是非线性多层前向网络；</p>
+        <p data-page-node-id="1LPqY93WOVJbf4JuiqOgD4">□ 都是通用的逼近器；</p>
+        <p data-page-node-id="Pf5kCx3F86UCJDNcgoJrHG">□ 对于一个多层的感知器，总存在一个 RBF 可以代替它。</p>
+      </div>
+      <div class="mini" data-page-node-id="D6tm8xVAudDhXiCA4EnyQ5">
+        <p class="mt" data-page-node-id="43rzzJwvikUXPQyjx6JkM1">不同之处</p>
+        <p data-page-node-id="EypqH24rr0BMIIald1fcT9">□ RBF 网络只有一个隐层；多层感知器可以有多层的隐层；</p>
+        <p data-page-node-id="a2Ch49JAYEI6Zq9jKPaZGs">□ 多层感知器的隐层和输出层的神经元的模型是一致的；而 RBF 的隐层的神经元和输出层的神经元的模型不相同，而且在网络中的作用也不相同；</p>
+        <p data-page-node-id="zF5DM9E1C6HKc6TGIS8BzI">□ RBF 网络隐层是非线性的，输出层是线性的；多层感知器的输出层是非线性的，也可以是线性的（解决回归的问题）。</p>
+      </div>
+    </div>
+    <ul class="clean" data-page-node-id="5E25j2wsgSa9LZ4KzqIvuv">
+      <li data-page-node-id="Hg7QsAnoC4HNq1FpM3buvX">□ RBF 网络的基函数计算的是输入向量与中心的<strong data-page-node-id="EJJr7fQ0BEo4O6RNE9mtRP">欧氏距离</strong>；多层感知器的隐单元的激励函数计算的是输入单元和连接权值间的<strong data-page-node-id="KwIjmNPfMwKjigj57aJ0eM">内积</strong>；</li>
+      <li data-page-node-id="RwHaXvuVWmGGNrQ8xagBQL">□ 多层感知器是对非线性映射的<strong data-page-node-id="LdrmktGNuGIvMpxYa3krgi">全局逼近</strong>，而 RBF 网络使用局部指数衰减的非线性函数（高斯函数）对于非线性输入输出之间进行<strong data-page-node-id="6Q4AzYEGvS5IKEtbHbrG0K">局部的逼近</strong>。RBF 所需要的神经元的个数可以比较地少；</li>
+      <li data-page-node-id="SjRPDfrDW68HSzl5NcHaLu">□ RBF 的每一个隐层的单元有一个局部的<strong data-page-node-id="yBXNo72itWQ9SmycOWloIs">“感受野”</strong>（reception field），BP 网络的 Sigmoid 函数则是全局性的。</li>
+    </ul>
+  </section>
+
+  <!-- ========== P44–57：三、动态神经网络 ========== -->
+  <section class="slide" id="dynamic" data-page-node-id="ajyvXE5xrtK5zHfXxQLHH5">
+    <span class="slide-tag" data-page-node-id="es3BIUBEOx6BKj8Y6CgEwG">PPT 第 44–57 页</span>
+    <h2 class="sec-title" data-page-node-id="wlS60N8flHB19uL1l8u4Sz">三、动态神经网络</h2>
+
+    <h3 class="sub-title" data-page-node-id="GgARE9XOE5BWqlkC1UEabO">1. 引言——从前向到反馈（P45）</h3>
+    <div class="defbox" data-page-node-id="h2vadEck25n1k9FhE2JBoq">
+      <p class="dt" data-page-node-id="MuHftJpcLyJ9bQOdQw3llb">动态神经网络</p>
+      <p data-page-node-id="bDRpap82HAl0siCPGqsdDD">前向传播网络，从学习观点看，它是一种强有力的学习系统；从系统观点看，它是一种<strong data-page-node-id="fcX2YztggJsb4LX1xHDoxV">静态非线性映射</strong>。</p>
+      <p data-page-node-id="nyPpcMB1iKFDm3D5m8r1xN">反馈型神经网络具备非线性动力学系统所特有的丰富动力学特性，如<strong data-page-node-id="T6f6PGwQpPPYHZpitzyMYo">稳定性、极限环、奇异吸引子（即混沌现象）</strong>等。一个耗散动力学系统的最终行为是由它的吸引子决定的，吸引子可以是稳定的，也可以是不稳定的。</p>
+    </div>
+    <p data-page-node-id="IwPAGxnH7TnSEJKwq6hRM2">简单非线性神经元互连而成的反馈动力学神经网络系统具有两个重要的特征：</p>
+    <ol class="num" data-page-node-id="EDvBfEGOCARhpsOnTXXOfS">
+      <li data-page-node-id="SrBAQuGXeReUuPPNttzUE2">系统有若干个稳定状态。如果从某一初始状态开始运动，系统总可以进入某一稳定状态；</li>
+      <li data-page-node-id="2MGWskm2m7OUoS5cJ6Gjsf">系统的稳定状态可以通过改变相连单元的权值而产生。</li>
+    </ol>
+
+    <h3 class="sub-title" data-page-node-id="FWGnYMEAwHycPE0DLAzpB1">2. Hopfield 发展史与神经动力学（P46）</h3>
+    <div class="grid2" data-page-node-id="LnRvH7DyU5Pc2jIkKQ6jBA">
+      <div class="mini" data-page-node-id="x4BfwMO9XFLsHWXu5ThCUF">
+        <p class="mt" data-page-node-id="f7RhHrsRQtWvUtREbcxsYt">Hopfield 发展史</p>
+        <p data-page-node-id="lr4DCi79HjASTu9ZhWdGT0">☆ 1982 John Hopfield 提出了单层全互联反馈网络——离散的 Hopfield 网络；</p>
+        <p data-page-node-id="lkTaMBXbDYX0h9Hx5QF7uV">☆ 使用<strong data-page-node-id="zwvfHTjQyRtMuBfx3eZkki">能量函数</strong>分析网络的稳定性；</p>
+        <p data-page-node-id="eZ933hQmkTkLXlOA1Iyb22">☆ 提出了利用能量函数进行计算的方法；</p>
+        <p data-page-node-id="3HAy5dmuF84uBuS0ZSVAVf">☆ 用非线性动力学的方法来研究神经网络特性；</p>
+        <p data-page-node-id="dolq16FUy7NYJk1JnAsa97">☆ 同物理中的现象进行了类比；</p>
+        <p data-page-node-id="QKPwmvALWEugrwM9WADJ26">☆ 1984 研制了 Hopfield 网络模型电路，解决了 <strong data-page-node-id="mHo2djWbahlxhBt83ZEzMP">TSP 计算难题</strong>。</p>
+      </div>
+      <div class="mini" data-page-node-id="43qd5jm9a3gzj1Ykaw71Um">
+        <p class="mt" data-page-node-id="NZRYLB8hLm8AFFBb4TMAYo">1989 Hirsh 提出神经动力学（Neurodynamics）</p>
+        <p data-page-node-id="pnenI59OXyBaFBZa8ZHIk9">☆ 将反馈神经网络看作一种非线性的动力学系统，即状态随着时间变化的系统；</p>
+        <p data-page-node-id="bZg9YhEmmfBs5lSCTBzvHM">☆ 神经动力学：</p>
+        <p data-page-node-id="PAF76SK1WMdWUiMO8N1vyb">→ <strong data-page-node-id="kDtAAILWg6RKHr8OSSiukd">确定性神经动力学</strong>：非线性微分方程；</p>
+        <p data-page-node-id="sw3fiRBU6tSVpvxC45wbVY">→ <strong data-page-node-id="FUPrVJhblgGCZERIf3AlUd">统计性神经动力学</strong>：随机性的非线性微分方程。</p>
+      </div>
+    </div>
+    <div class="note" data-page-node-id="vrnIEmd7nlKXFDsG3uZQve"><span class="nt" data-page-node-id="CVngwI6F34fpQDkCfgpMS5">设计与应用特点</span>权值<strong data-page-node-id="pTjQ2wLIqMguC7S88xyesL">不是通过学习而得到的</strong>，是通过某种方式设计出来的；应用于<strong data-page-node-id="Jb1VmWSUdcXhewjg9EaIGP">联想记忆（存储）与最优化计算</strong>。</div>
+
+    <h3 class="sub-title" data-page-node-id="HrZi5fx5IEClPSVsD8VG21">3. 动力学数学描述与基本概念（P47）</h3>
+    <p data-page-node-id="AeD1foi44rpTsMsqiBGoY1"><strong data-page-node-id="iZxCxn8PUuP1urUKo5HQ81">系统状态变量</strong>：$v_1(t),v_2(t),\dots,v_N(t)$；<strong data-page-node-id="SbBZfG8uUNQKeNvEbXQYaU">系统动力特性方程</strong>：</p>
+    <div class="math-scroll" data-page-node-id="z8dAAZe4byZzTU4C8WKJAG">$$\frac{d}{dt}v_i(t)=F_i(v_1,\dots,v_N),\quad i=1,2,\dots,N;\qquad \frac{d}{dt}V(t)=F\bigl(V(t)\bigr)\ \ (F(\cdot)\text{ 是非线性函数})$$</div>
+    <ul class="clean" data-page-node-id="3suKkZfkLd21usVQPHLrdJ">
+      <li data-page-node-id="85nwXN5ZE95URVP5RabqsP">☆ <strong data-page-node-id="6x1V1LAanKlFN31hNb9yq4">状态空间</strong>：N 维向量所处的可维的空间；</li>
+      <li data-page-node-id="PZWdseWWSq9n1dEZaCWtvT">☆ <strong data-page-node-id="DQUM0PaeBH4CFmRDVDB7i6">自治系统</strong>：系统向量函数 $F(V(t))$ 隐含地依赖于时间；</li>
+      <li data-page-node-id="Y5aZIzBtN0zzmX0sVwH4ME">☆ <strong data-page-node-id="uAuPr8dUTRbOFgIonxeEfQ">系统稳态（平衡态）</strong>：
+        → <strong data-page-node-id="SM2NZBh1l0Jkr205pREfdR">一致稳定</strong>：如果起始点和平衡点足够近，它的所有的轨迹都在一个以平衡点为中心的任意给定的半径的球内；
+        → <strong data-page-node-id="cYpTGujdFcpIekbkcqmxaw">收敛</strong>：$t\to$ 无穷大，$V\to$ 平衡态；
+        → <strong data-page-node-id="m6GdHD7GDpgnsWFnImJxT5">渐进稳定</strong>：即稳定又收敛；
+        → <strong data-page-node-id="mbwfGp8EvfIUgChJGxkAuO">全局渐进稳定</strong>（原页未给出定义）。</li>
+    </ul>
+    <figure class="fig" data-page-node-id="HS8E4r6GFdywK9sgrCGYrG">
+      <svg viewBox="0 0 360 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="eUyHlLKhJ6P2LnpHkEe8vu">
+        <line x1="20" y1="165" x2="340" y2="165" stroke="#8E887A" stroke-width="1.2" data-page-node-id="433ZgxF87IW9h1PEqkwuAP"/>
+        <line x1="180" y1="310" x2="180" y2="20" stroke="#8E887A" stroke-width="1.2" data-page-node-id="dN8pUUImUNu3oNxDzs5fzu"/>
+        <circle cx="180" cy="165" r="135" fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="sJVjIELO3AplukEQB490pz"/>
+        <circle cx="180" cy="165" r="85" fill="none" stroke="#8FB469" stroke-width="2" data-page-node-id="J1OvM4OZ3GqUJPWIFytHk7"/>
+        <circle cx="180" cy="165" r="4" fill="#2C4A1A" data-page-node-id="rnhWi98qhD6xYSJ3NquhGG"/>
+        <text x="192" y="180" font-size="14" fill="#2C4A1A" font-style="italic" data-page-node-id="bDOm29IwBfyyEhmUoJbUew">z</text><text x="200" y="184" font-size="10" fill="#2C4A1A" data-page-node-id="cMs5otVU14iRMurWQ0l8rk">e</text>
+        <circle cx="126" cy="118" r="3.5" fill="#574500" data-page-node-id="3hlyqdfVe5jZTqL3nDw2DL"/>
+        <text x="104" y="108" font-size="13" fill="#574500" font-style="italic" data-page-node-id="snjJElXdjIcnG0iAzQ1a0m">z</text><text x="111" y="112" font-size="9" fill="#574500" data-page-node-id="7lzgUqC4p4swEGhdbpdnkt">0</text>
+        <path d="M126,118 C150,100 175,110 182,135 C188,158 186,162 181,163" fill="none" stroke="#B8860B" stroke-width="2" stroke-dasharray="5 4" data-page-node-id="0qMuLp3kBxNBeENADOtGKp"/>
+        <text x="305" y="70" font-size="14" fill="#3A6122" data-page-node-id="6PrbUqEmnYqRCuvPFm6aUR">S(ε)</text>
+        <line x1="300" y1="76" x2="290" y2="88" stroke="#3A6122" stroke-width="1" data-page-node-id="gHss2xnCPqkHE6yjhCqRHF"/>
+        <text x="255" y="110" font-size="14" fill="#5B8740" data-page-node-id="l0nv0JDUAxj6iluxcVhIwQ">S(δ)</text>
+        <line x1="252" y1="116" x2="248" y2="128" stroke="#5B8740" stroke-width="1" data-page-node-id="UBDlRhrmjr4AfIYsonhN9B"/>
+        <text x="228" y="300" font-size="13" fill="#B8860B" font-style="italic" data-page-node-id="d6a0u0MCGxY3wEokzlt3UT">φ(t; z₀, t₀)</text>
+        <line x1="226" y1="292" x2="196" y2="210" stroke="#B8860B" stroke-width="1" data-page-node-id="Qh5hhHPvAZTcTEJeGx3dPD"/>
+      </svg>
+      <figcaption data-page-node-id="qyosb8UiM0VTBpZmAODLnz">Lyapunov 稳定性的几何示意：起始于 $S(\delta)$ 内的轨迹 $\varphi(t;z_0,t_0)$ 始终保持在 $S(\varepsilon)$ 内｜重绘自 PPT 第 47 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="hIwnnGmLpI8JGKTSriAKp1">4. Lyapunov 系统稳定理论（P48）</h3>
+    <p data-page-node-id="3P4oJWnJso6eMYxVXvcjAI">☆ <strong data-page-node-id="8hdmE4hAEnVIkba4dxxlPq">Lyapunov 函数</strong>：满足下列条件——函数 $E(V)$ 关于状态向量 $V$ 中的每个元素是连续偏导的；</p>
+    <div class="math-scroll" data-page-node-id="nHfBoLt34RAGb8nPIHPmqd">$$E(\bar{V})=0,\qquad E(V)>0,\ \ if\ \ V\neq\bar{V}$$</div>
+    <p data-page-node-id="lNce0luLLs2xFdTiYPftDE">☆ <strong data-page-node-id="6ApilJJs60OCBUmFMN8qdE">Lyapunov 函数特点</strong>：Lyapunov 函数是满足上面定义的一个标量函数；Lyapunov 函数的最简单形式是<strong data-page-node-id="9kAARR6FlvHzJMIi229zw9">二次型</strong>：</p>
+    <div class="math-scroll" data-page-node-id="DT1OV09xLDn8aPlNWbH0UD">$$V(X)=X^{T}QX,\qquad V(X,t)=a^{2}\sum_{i=1}^{n} x_i^{2}$$</div>
+    <p data-page-node-id="QryAfLYXfAuOy10kcwZhSU">☆ Lyapunov 函数<span class="kw" data-page-node-id="a5cHFDrYf13rwVqrMFvImn">不是唯一的</span>。</p>
+    <div class="defbox" data-page-node-id="YhfsXtanwKxaO2iorkmptl">
+      <p class="dt" data-page-node-id="nsZecFUOiDwm0ZcG6MOFXj">定理 1</p>
+      <p data-page-node-id="xGkMZ1PSHMy8gIl1T9Ba3d">若在平衡态 $\varepsilon$ 的小邻域内存在有界正函数 $E(V)$，该函数对时间的导数在区域中是有界非正函数，则该平衡态是稳定的；若该函数对时间的导数在该区域内是有界负函数，则该平衡态是渐近稳定的。</p>
+      <div class="math-scroll" data-page-node-id="wWabbsThn1juaL4cA9YzhV">$$\frac{d}{dt}E(V)\leq 0\ \ for\ V\in\rho-\bar{V}\quad(\text{稳定});\qquad
+\frac{d}{dt}E(V)< 0\ \ for\ V\in\rho-\bar{V}\quad(\text{渐近稳定})$$</div>
+    </div>
+    <figure class="fig" data-page-node-id="4vwlSvPC8dAeuJpnHDfi10">
+      <svg viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="K7rR0z7yVRNaUwPQKmEoVP">
+        <!-- (a) 吸引子 spiral in -->
+        <g transform="translate(30,10)" data-page-node-id="3qKZb8eNNOE5g5yTFHpfue">
+          <path d="M30,20 C10,40 20,80 60,95 C110,112 160,100 165,70 C169,45 140,30 110,38 C85,45 80,68 95,80 C108,90 128,84 130,68 C131,56 118,50 108,55" fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="77YoCUtbociG4AV0iXQx2H"/>
+          <circle cx="108" cy="55" r="2.6" fill="#3A6122" data-page-node-id="qjwIGA3okJg6yQYFZopMrO"/>
+          <text x="90" y="165" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="hrhqLbbwUWsJal9GXRK7Ks">(a) 吸引子</text>
+        </g>
+        <!-- (b) 有限环 closed loop -->
+        <g transform="translate(255,10)" data-page-node-id="NpmkIu2socSrri2Rd7iBYM">
+          <ellipse cx="85" cy="75" rx="72" ry="52" fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="xdFZKIcEqT5aRGdKEtn29G"/>
+          <path d="M20,90 C5,60 30,25 75,18 C125,10 160,40 155,75 C151,105 120,120 90,112" fill="none" stroke="#8FB469" stroke-width="1.8" data-page-node-id="rDXYbIJvA3xGcUrxTIBckh"/>
+          <text x="85" y="165" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="ydsIVD9b4HRYPp5kRWhlXA">(b) 有限环</text>
+        </g>
+        <!-- (c) 浑沌状态 -->
+        <g transform="translate(480,10)" data-page-node-id="jO60kB5jEMBH8CueFZ1w3D">
+          <path d="M15,100 C35,20 60,130 85,45 C105,-20 120,140 145,35 C160,90 170,60 180,110" fill="none" stroke="#3A6122" stroke-width="2" data-page-node-id="KqAIRZYswC7FNyBZmVlaGQ"/>
+          <path d="M25,60 C50,120 75,10 100,95 C120,150 140,25 165,85" fill="none" stroke="#8FB469" stroke-width="1.8" data-page-node-id="20ie73alLcjAjJ2Hn9r6Oj"/>
+          <text x="95" y="165" font-size="13.5" text-anchor="middle" fill="#2C4A1A" data-page-node-id="OAQraTHQFPY8wcFFQJOyfk">(c) 混沌状态</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="GbRf3GttC8E3CixNyCaeMa">反馈网络的三种典型动力学行为：(a) 吸引子 (b) 有限环 (c) 混沌状态｜重绘自 PPT 第 48 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="v5H4Khm6vyrIa2Ck6L53pU">5. 结构特点：DHNN（离散 Hopfield 网络）（P49）</h3>
+    <ul class="clean" data-page-node-id="a2Y3vnOZ7Y8xWDmlv5w8Eo">
+      <li data-page-node-id="6Z6tWBA8adDLOowLsmMwqB">☆ <strong data-page-node-id="xfVtyoZKYT0qVvdetzGqXr">单层全互联网络</strong>（全反馈网络）；</li>
+      <li data-page-node-id="yCdOz6lOT0alJbt2OcHCeW">☆ 神经元输出：$\{0,1\}$，$\{-1,1\}$；</li>
+      <li data-page-node-id="8cl9vRBgl2P5975ePmR83J">☆ 权值矩阵：$W$：$n\times n$，<strong data-page-node-id="BKZ4YDt0ArdDyY8SZqCsY2">对称矩阵</strong>。该矩阵是预先设计或者学习得到的——Hebb、Delta、外积方法、相关方法；</li>
+      <li data-page-node-id="554GKH1cAlzKeYjGWZ5t4B">☆ 神经元传递函数：<strong data-page-node-id="TpKVt8weqjHGrlh8skNsFD">阈值函数</strong>——$u(t)$，$\mathrm{sgn}(t)$，$\mathrm{linelim}(t)$。</li>
+    </ul>
+    <div class="math-scroll" data-page-node-id="cUMBA74c9nws9gLbcwEGP1">$$S_i(t+1)=\mathrm{sgn}\Bigl(\sum_{j=1}^{n} W_{ij}S_j(t)-T_i\Bigr)\quad \forall\, i$$</div>
+    <div class="note" data-page-node-id="1hXRPnwLWAG0B2RQkCAZtu"><span class="nt" data-page-node-id="cvzQ4U904xBk8pMhITQvJk">勘误</span>PPT 原式求和下标印为 $j=-1$，应为 $j=1$，讲义已改正。</div>
+    <figure class="fig" data-page-node-id="ZQEQLmcAd3ziZEzHFPdrsT">
+      <svg viewBox="0 0 380 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="HGqjAuVJUP5csUL6DGsv8H">
+        <defs data-page-node-id="fEyk9V2ND8t58feG9CQGbj">
+          <marker id="arH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" data-page-node-id="NjJdddjR7BE6EwryUOWXoA">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5B5648" data-page-node-id="GPQyZn9NpNqZc8S3TyVO57"/>
+          </marker>
+        </defs>
+        <!-- 5 nodes pentagon fully connected -->
+        <g stroke="#9AA38C" stroke-width="1.2" fill="none" data-page-node-id="xSdsslhvdX5DImg4UjCdcW">
+          <line x1="190" y1="48" x2="317" y2="140" marker-end="url(#arH)" data-page-node-id="BKliXNA1WqwjAsT9Ohi4rU"/><line x1="317" y1="140" x2="190" y2="48" marker-end="url(#arH)" data-page-node-id="0K0w5RvS7DAE8BWKGhiEBO"/>
+          <line x1="190" y1="48" x2="269" y2="283" marker-end="url(#arH)" data-page-node-id="Gm2RoTCKgOnzA7tSuZZfCL"/><line x1="269" y1="283" x2="190" y2="48" marker-end="url(#arH)" data-page-node-id="qWft5GzMN5Epj2Jc3DdUV7"/>
+          <line x1="190" y1="48" x2="111" y2="283" marker-end="url(#arH)" data-page-node-id="21H9EjjKYLpiEQoTJmwVyY"/><line x1="111" y1="283" x2="190" y2="48" marker-end="url(#arH)" data-page-node-id="4iXvXPNgZgTuV4WLiSX6df"/>
+          <line x1="190" y1="48" x2="63" y2="140" marker-end="url(#arH)" data-page-node-id="JyMWC45hF91rTeU0TTBsYR"/><line x1="63" y1="140" x2="190" y2="48" marker-end="url(#arH)" data-page-node-id="h2UqwAmDl4d9rwHcYMAbHw"/>
+          <line x1="317" y1="140" x2="269" y2="283" marker-end="url(#arH)" data-page-node-id="odTaruZo5G0HvAekVoDFrv"/><line x1="269" y1="283" x2="317" y2="140" marker-end="url(#arH)" data-page-node-id="pmrmpdpJDJ3CNu7sFoB41q"/>
+          <line x1="317" y1="140" x2="111" y2="283" marker-end="url(#arH)" data-page-node-id="tSNq0A8Di1ZbrYXIK3hHqp"/><line x1="111" y1="283" x2="317" y2="140" marker-end="url(#arH)" data-page-node-id="hTA9TYb6eZurVCGkn4aiKh"/>
+          <line x1="317" y1="140" x2="63" y2="140" marker-end="url(#arH)" data-page-node-id="iBHy9eTQJDfBNGT1INu1lv"/><line x1="63" y1="140" x2="317" y2="140" marker-end="url(#arH)" data-page-node-id="lWROKCLIbXgPfzSUnTQGSh"/>
+          <line x1="269" y1="283" x2="111" y2="283" marker-end="url(#arH)" data-page-node-id="BRF9Ikp1q1Uxs5AFuhMa0q"/><line x1="111" y1="283" x2="269" y2="283" marker-end="url(#arH)" data-page-node-id="mAJhDDvInA7xCl74Yx739c"/>
+          <line x1="269" y1="283" x2="63" y2="140" marker-end="url(#arH)" data-page-node-id="ShDSvSpSuDtLnyasvpmRBz"/><line x1="63" y1="140" x2="269" y2="283" marker-end="url(#arH)" data-page-node-id="nq9PXiPN9u2kkZPvAvnzi7"/>
+          <line x1="111" y1="283" x2="63" y2="140" marker-end="url(#arH)" data-page-node-id="rBxsZBsP7SoKshxMjf6X6A"/><line x1="63" y1="140" x2="111" y2="283" marker-end="url(#arH)" data-page-node-id="PSWr4PeDB7ADta1rO8VYxD"/>
+        </g>
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="2" data-page-node-id="p2DAD3ShpUELPkJLd9D0xI">
+          <circle cx="190" cy="48" r="17" data-page-node-id="nmyDI25gfC70u1CRCDetLc"/>
+          <circle cx="317" cy="140" r="17" data-page-node-id="X9CQVgUH5AEfErgwTUxlGH"/>
+          <circle cx="269" cy="283" r="17" data-page-node-id="Sl8EpFVHptC7uObSHr8E6D"/>
+          <circle cx="111" cy="283" r="17" data-page-node-id="UK6BAqYYQVAnM0LzcrVZla"/>
+          <circle cx="63" cy="140" r="17" data-page-node-id="wjMSVA7obKmyqcxFnNLurv"/>
+        </g>
+        <g font-size="14" fill="#2C4A1A" font-style="italic" text-anchor="middle" data-page-node-id="73sudGAzMbiuIYrnehC8Lu">
+          <text x="190" y="53" data-page-node-id="c6WrUYX34cZYVvgf6F0AT6">i</text>
+          <text x="317" y="145" data-page-node-id="Gu7ojGshpIHB7xahWnSzfA">j</text>
+        </g>
+        <text x="262" y="95" font-size="12.5" fill="#5B5648" font-style="italic" data-page-node-id="X4zkmSGwnnTpX0YYwZsGHE">w</text><text x="270" y="99" font-size="9" fill="#5B5648" data-page-node-id="0mMXuQMMzCua8xw7Tg2X6h">ij</text>
+        <text x="240" y="70" font-size="12.5" fill="#5B5648" font-style="italic" data-page-node-id="nFrtkRJUn70B1cRX0J3Q8F">w</text><text x="248" y="74" font-size="9" fill="#5B5648" data-page-node-id="DnDOfFk4hNfPcbJRpL3FAJ">ji</text>
+        <text x="190" y="325" font-size="13" text-anchor="middle" fill="#2C4A1A" data-page-node-id="oe9rGcIaxFQ0Ck2b7cDmBf">单层全互联：任意两节点双向连接，权值对称 w_ij = w_ji</text>
+      </svg>
+      <figcaption data-page-node-id="ke2zExOh5voU3TANPmu7Oh">DHNN 拓扑：单层全互联反馈网络（无自连接）｜重绘自 PPT 第 49 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="5LiF05F9opH4VB30kTzUFx">6. 运行规则（P50）</h3>
+    <ul class="clean" data-page-node-id="sRul12Co1BdSEA2iVImqGW">
+      <li data-page-node-id="CwT9J0CpoToDfxDa9nT742">☆ <strong data-page-node-id="IgiFuWOaDxOmAyZ1ocgiZ0">两种方式</strong>：串行（异步）工作模式；并行（同步）工作模式。</li>
+      <li data-page-node-id="zwLWuzkABXwMEUhMRogC7B">☆ <strong data-page-node-id="SH4orRxPD71avBRmvC5JEY">基本运行算法</strong>：根据不同的工作模式进行不断的迭代的过程。</li>
+      <li data-page-node-id="ViaCOnorUgd3XZ4c92WTSi">☆ <strong data-page-node-id="26jcFiKakL1D0vXctPqwIW">收敛判断</strong>：网络从某一时刻以后，状态不再发生变化，则称该网络处于稳定状态。</li>
+    </ul>
+    <div class="card" data-page-node-id="lk1jo7fVvyFgnF565n924E">
+      <p data-page-node-id="rQ0jaeV94KqP14BzKW7LNv"><strong data-page-node-id="BQTpqK0rsgfsRVp9MzxHPI">异步稳定的必要条件</strong>：</p>
+      <ol class="num" data-page-node-id="d1dnEL7zh8U41e9s2yEO2E">
+        <li data-page-node-id="Iw2X1dVcOXueTjXuUazbvD">网络为对称连接：$w_{ij}=w_{ji}$</li>
+        <li data-page-node-id="Be0TPooIZdyVMlKS1V2kvN">神经元自身无连接：$w_{ii}=0$</li>
+        <li data-page-node-id="7AsjRc11WgtJDarInBha48">工作模式为异步的工作模式</li>
+      </ol>
+      <p data-page-node-id="ywy74tXLFQTTkEdnalno4N">☆ <strong data-page-node-id="4TdGI7fv4F3yXgoAQSL9bT">稳定定理</strong>：对于串行方式，若 $W$ 对称、对角线元素非负，则网络的结果总要收敛到一个稳定状态。</p>
+      <p data-page-node-id="hX12QA3IWzsMLECJBM1kHn">☆ <strong data-page-node-id="OmxXL9W1KJF3BNjUfXgkKC">同步工作 DHNN 稳定定理</strong>：对于 DHNN 网络，如果按照同步方式调整状态，且连接权矩阵 $W$ 为非负定对称阵，则对于任意初态，网络都最终收敛到一个吸引子。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="0xmizzAajEmpTmflGaa5jW">7. 稳定性证明（P51–52）</h3>
+    <div class="math-scroll" data-page-node-id="voG5GNUQpHV6u4SCTPBE0C">$$E(t)=-\frac{1}{2}X^{T}(t)WX(t)+X^{T}T,\qquad \Delta E(t)=E(t+1)-E(t),\qquad \Delta X(t)=X(t+1)-X(t)$$</div>
+    <p data-page-node-id="mVIw65tgzFmBsqqcX3jHME">展开：</p>
+    <div class="math-scroll" data-page-node-id="eTmrXzfEyTPzDSMBgyHy5D">$$\begin{aligned}
+\Delta E(t)&=E(t+1)-E(t)\\[2pt]
+&=-\frac{1}{2}\bigl[X(t)+\Delta X(t)\bigr]^{T}W\bigl[X(t)+\Delta X(t)\bigr]+\bigl[X(t)+\Delta X(t)\bigr]^{T}T-\Bigl[-\frac{1}{2}X^{T}(t)WX(t)+X^{T}(t)T\Bigr]\\[2pt]
+&=-\Delta X^{T}(t)WX(t)-\frac{1}{2}\Delta X^{T}W\Delta X(t)+\Delta X^{T}(t)T\\[2pt]
+&=-\Delta X^{T}(t)\bigl[WX(t)-T\bigr]-\frac{1}{2}\Delta X^{T}(t)W\Delta X(t)\\[2pt]
+&=-\Delta x_j(t)\Bigl[\sum_{i=1}^{n}(w_{ij}x_i-T_j)\Bigr]-\frac{1}{2}\Delta x_j^{2}w_{jj}=-\Delta x_j(t)\,net_j(t)
+\end{aligned}$$</div>
+    <p data-page-node-id="WKf88IvzVDz26Jq0ZDYIGo">由 $\Delta E(t)=-\Delta x_j(t)\,net_j(t)$，分三种情况讨论：</p>
+    <ul class="clean" data-page-node-id="yIoRWXC2ZUbd37u9YLPDlP">
+      <li data-page-node-id="W1YX0y5kO2xdkmx548AfVR">a) $x_j(t)=-1\to x_j(t+1)=1$：$\Delta x_j(t)=2$，$net_j(t)\geq 0\Rightarrow \Delta E(t)\leq 0$</li>
+      <li data-page-node-id="NbUgLyd2eAZLwM5T3xV728">b) $x_j(t)=1\to x_j(t+1)=-1$：$\Delta x_j(t)=-2$，$net_j(t)\leq 0\Rightarrow \Delta E(t)\leq 0$</li>
+      <li data-page-node-id="QmpcziOme2Hc2qjDPBEMMw">c) $x_j(t+1)=x_j(t)$：$\Delta x_j(t)=0\Rightarrow \Delta E(t)=0$</li>
+    </ul>
+    <div class="example" data-page-node-id="NNCNJunrz2Hsm3jdaBMM97">
+      <p class="et" data-page-node-id="SVmkadx17UkHSAHZSu9fpW">稳定性证明结论</p>
+      <p data-page-node-id="ietyLeDTqTxDDZDmFFapjf">→ 函数 $E(t)$ 总是在下降；→ 函数 $E(t)$ 有下界；→ 因此可以得到一个结论：<strong data-page-node-id="pqCkPR2J9louzrnBjtfrZw">$E(t)$ 最终收敛到一个常数</strong>。</p>
+      <p data-page-node-id="VZAGuo0pL8KfQL29q0QPRj">对角线系数为零，只是简化了上述的证明；但是如果对角线不为零，不改变上述的结论。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="RNGv5cN9CDiVmzLetfzCoR">8. 吸引子（稳定态）的性质与吸引域（P53）</h3>
+    <ul class="clean" data-page-node-id="otBXa7XvS55wHb0V4JskOT">
+      <li data-page-node-id="xoVpcfAuEI3ZeWRvAjdpX4">☆ 若 $X$ 为网络的一个吸引子，且阈值 $T=0$，则 $-X$ 也一定为网络的吸引子；</li>
+      <li data-page-node-id="YTBZ621JHc4FCNVyleEciW">☆ 若 $X$ 为网络的一个吸引子，则与 $X$ 的海明距离为 1 的状态一定不是吸引子；</li>
+      <li data-page-node-id="cLBIJJHi6ca66Xja8lx67v">☆ 如果一组吸引子向量的线性组合在阈值 $T=0$ 的情况下也是该网络的吸引子。</li>
+    </ul>
+    <div class="defbox" data-page-node-id="iiy2IWPbgMcmaYGRwCoDHv">
+      <p class="dt" data-page-node-id="gbMgRHmEbnOiExwwWUxxAf">吸引域</p>
+      <p data-page-node-id="uAX1UlffTXi4biZbODcHBP">☆ 若 $X^{*}$ 为网络的一个吸引子，如果按照异步的方式存在一个调整的次序，可以使网络从初始状态 $X$ 演变到 $X^{*}$，则称为 <strong data-page-node-id="fYTBk20EpbThSAxdNAF2yy">$X$ 弱吸引到 $X^{*}$</strong>。对于任意调整次序，都可以将网络从初始状态 $X$ 演变到 $X^{*}$，则称 <strong data-page-node-id="qZeiZMIDpgC4CbCggI4Tz1">$X$ 强吸引到 $X^{*}$</strong>。</p>
+      <p data-page-node-id="s23x5BmgyQrNZOCljUGv5a">☆ <strong data-page-node-id="b0shzDGcD62OEAWQxiwqEM">弱吸引域</strong>：所有能够弱吸引到 $X^{*}$ 的 $X$ 集合；<strong data-page-node-id="YTXqI5hu9rB8vy1uCiFNp9">强吸引域</strong>：所有能够强吸引到 $X^{*}$ 的 $X$ 集合。</p>
+    </div>
+    <figure class="fig" data-page-node-id="g0PkXpYd9SEUEGPoDvAqAu">
+      <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="7Ld2TOmgydCKlckriin4Ap">
+        <line x1="40" y1="200" x2="620" y2="200" stroke="#26231B" stroke-width="1.5" marker-end="url(#arE)" data-page-node-id="Vsx4lz8LhA6TU4YjRRzbDm"/>
+        <line x1="70" y1="215" x2="70" y2="20" stroke="#26231B" stroke-width="1.5" marker-end="url(#arE)" data-page-node-id="1LRsqv6J4zFw46TqK5DIff"/>
+        <defs data-page-node-id="27OLWfUyzcPwuSjAzsmjma">
+          <marker id="arE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="mbt4BCuitlbKrRctArQvtt">
+            <path d="M0,0 L10,5 L0,10 z" fill="#26231B" data-page-node-id="Cqx6gJ3LCWxwy4dygRnYeR"/>
+          </marker>
+        </defs>
+        <text x="46" y="45" font-size="16" fill="#26231B" font-style="italic" data-page-node-id="H7nrNKPOfnHZdCxqN0yd0F">E(t)</text>
+        <text x="606" y="222" font-size="14" fill="#26231B" font-style="italic" data-page-node-id="FsGcVrjEVjkH3iDlII5tdz">t</text>
+        <path d="M72,60 C110,64 130,110 165,150 C190,176 215,172 232,148 C248,126 258,120 275,126 C300,134 320,168 350,172 C385,176 408,140 430,95 C448,58 468,52 492,72 C518,94 532,140 560,158 C578,169 592,160 606,132" fill="none" stroke="#3A6122" stroke-width="2.6" data-page-node-id="2tmf2ku3XDlj224oTRsqfa"/>
+        <!-- dashed separators -->
+        <g stroke="#8E887A" stroke-width="1.2" stroke-dasharray="6 5" data-page-node-id="pxCLez9B6fWvP3FS5BUwWi">
+          <line x1="88" y1="40" x2="88" y2="200" data-page-node-id="AIRnSuuULCJLcETcPQYBjD"/>
+          <line x1="255" y1="40" x2="255" y2="200" data-page-node-id="Q52o2QSgB9n8KSszyhoj9M"/>
+          <line x1="460" y1="40" x2="460" y2="200" data-page-node-id="EzTlJswmHC3m3BJrbFqS2y"/>
+        </g>
+        <g font-size="14" fill="#2C4A1A" text-anchor="middle" data-page-node-id="fzvmQxdcu3sPCL5Dw85kQM">
+          <text x="170" y="80" data-page-node-id="xP2R4FcDQToqhJtspXCkGy">吸引域</text>
+          <text x="360" y="80" data-page-node-id="mKnZKpKYbYWLlxO0NCiIlO">吸引域</text>
+          <text x="540" y="60" data-page-node-id="qHudcBF2vnEflqSG1ICj8D">吸引域</text>
+          <text x="170" y="228" data-page-node-id="cxgnp4J9JPz9EanylETznv">吸引子</text>
+          <text x="360" y="228" data-page-node-id="cmsXzsV1Botf3vvKoftvmZ">吸引子</text>
+          <text x="560" y="190" fill="#3A6122" data-page-node-id="SP4UWBoNjPHo7VhjjrnHsA">吸引子</text>
+        </g>
+        <g fill="#3A6122" data-page-node-id="gWu4B12yVFDUgj9JOXVswu">
+          <circle cx="170" cy="158" r="4" data-page-node-id="7PrnOe7X4unWy0Z9BhiAPq"/>
+          <circle cx="350" cy="172" r="4" data-page-node-id="6YYb1C4ySd1vGWTtOunZAj"/>
+          <circle cx="560" cy="158" r="4" data-page-node-id="kLj3h4dOzbOmFHaGg2DMwi"/>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="2z3O4ru2FNtCAtYOM6k6Rh">能量函数 $E(t)$ 的“地形”：能量谷即吸引子，谷间的区域为各自的吸引域（原页下方另附三幅相平面流线图）｜重绘自 PPT 第 53 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="GisuKYHT4LseAzxBGogGLA">9. 连续 Hopfield 网络（CHNN）（P54–55）</h3>
+    <p data-page-node-id="83hwf2mwyVsAADdf3LEkDu"><strong data-page-node-id="Gtpq6yQ9CSAHiV6tfD7fdF">1984 Hopfield 将 DHNN 进一步发展成为连续型 Hopfield 网络：CHNN</strong>。</p>
+    <ul class="clean" data-page-node-id="vCUiTofuwI9nzGhWKdcMOY">
+      <li data-page-node-id="UqSLFvFXHKQp6uq0O7azWJ">☆ 特点：
+        → 所有神经元都<strong data-page-node-id="xHuToXS2GTrmltRkqIfLSc">同步</strong>工作；
+        → 各个输入输出均是随时间连续变化的<strong data-page-node-id="Qp2QpaHFEXVAXguCuVNFXE">模拟量</strong>；
+        → 可以用常系数微分方程来描述，可以使用模拟电子线路来描述。</li>
+    </ul>
+    <figure class="fig" data-page-node-id="ABqRUKVyFi3E5DDqGny6wV">
+      <img src="images/chnn_circuit_p54.png" alt="CHNN 模拟电子线路" data-page-node-id="fAmtC2gGXx59GcDmAoFZXp">
+      <figcaption data-page-node-id="pkfOEC3Bcjf6poHeEbYyYR">CHNN 的模拟电子线路实现：运放神经元 $V_1\sim V_N$，跨接线 $w_{ij}$ 实现全互联，$R_j,C_j$ 决定时间常数，$I_j$ 为偏流｜原图（PPT 第 54 页）</figcaption>
+    </figure>
+    <div class="math-scroll" data-page-node-id="BWcAy7Lnj4EZrqiRvAi1QX">$$\text{CHNN 描述方程：}\qquad c_j\frac{du_j}{dt}+g_j u_j=\sum_{i=1}^{n}\bigl(w_{ij}v_i-u_i\bigr)+I_j$$</div>
+    <ul class="clean" data-page-node-id="lk0aMOU2jBboWAWUNC9jcg">
+      <li data-page-node-id="jD4KiEtZttjRxaPzXu4e87">☆ <strong data-page-node-id="Kq3TAlbChoG9jYhLoCQP3K">CHNN 基本特性</strong>：
+        ○ S 型式的转移函数；
+        ○ 信息传递过程中的时间常数；
+        ○ 神经元间的兴奋及抑制性连接以及神经元间的相互作用和时空作用。</li>
+      <li data-page-node-id="QinjjQpGGqk9hYB5H4NmNf">☆ <strong data-page-node-id="26YnElZS6Kb3t4L9B3IYbm">CHNN 稳定性质</strong>：若神经元转移函数存在反函数，且单调递增，同时网络权值对称，则网络的能量函数总是单调递减，网络稳定。</li>
+    </ul>
+    <div class="example" data-page-node-id="YedNKr9hRYVN4EBUad4BMs">
+      <p class="et" data-page-node-id="ZAQ6wH6yZHI9FzwEpZogvW">CHNN 应用于解决优化计算问题</p>
+      <p data-page-node-id="GjB7AGWACelXHnlrLC4cDB">☆ 对于特定的问题，选择一种合适的表示方法，使得神经网络的输出与问题的解相对应；</p>
+      <p data-page-node-id="mMaMR9CIVI3f8D4bWcfmUP">☆ 构造网络能量函数，使其最小值对应于问题的最佳解；</p>
+      <p data-page-node-id="PFWvVhh9HrtnGVYYUknBUe">☆ 将能量函数与 CHNN 标准形式进行比较，可以推出神经网络的权值与偏流的表达式，从而确定网络的结构；</p>
+      <p data-page-node-id="RsBEuC2ydMPfrUd6CF5Ej1">☆ 由网络结构建立网络的电子线路并运行，它的稳定状态就是在一定条件下的问题优化解。</p>
+    </div>
+    <div class="note" data-page-node-id="knFBOpSUOYlL1SP8ZO2jmS"><span class="nt" data-page-node-id="AaYTwLvhnWSFKHlIBfL4zD">参考文献</span>阎平凡、张长水：《人工神经元网络与模拟进化计算》P135；韩力群：《人工神经网络理论、设计及应用》P106；高隽：《人工神经网络原理及仿真实例》P135。</div>
+
+    <h3 class="sub-title" data-page-node-id="UpioFzMq5xUuw1ny8ahZZX">10. 模糊逻辑与神经网络（P56）</h3>
+    <p data-page-node-id="uOMBBMzwFMdMAnFtYCCeDL">☆ <strong data-page-node-id="ouQMHAiLqj0U1UEPNN2uhc">神经网络本质上是模糊的</strong>：它的关键特性与它的权值之间是隐含的（黑箱子、灰箱子），不容易理解。</p>
+    <figure class="fig" data-page-node-id="SYPiMdJRm7iaLzZqvyUwEA">
+      <img src="images/blackbox_comic_p56.png" alt="神经网络黑箱子示意漫画" data-page-node-id="jSVzAdRT9qWwm66L2dn0sD">
+      <figcaption data-page-node-id="fqYxilIE4BsN5Bj2fDEhcV">“黑箱子”：感觉输入 → 意向输出，内部机制难以解释（漫画：“只可意会不可言传”）｜原图（PPT 第 56 页）</figcaption>
+    </figure>
+    <p data-page-node-id="QqfP8hGUKp7MbXVfAfEBvg">☆ <strong data-page-node-id="moq2D6hobTIXNxmB7jPAHn">模糊逻辑与神经网络的联系</strong>：</p>
+    <ul class="clean" data-page-node-id="yKj89iCiH9u92Q1tc4gM2e">
+      <li data-page-node-id="rMTrLaH1EpiU86fPq4I1mH">处理实际中不确定性、不精确性引起的系统难以控制的问题；</li>
+      <li data-page-node-id="O1FyfAiEM8EBajtZOPSUSn">它们都是<strong data-page-node-id="0biAjmKDXMELok0jDG8VJv">无模型估计器</strong>，都可以逼近任意紧致集中的实连续函数。</li>
+    </ul>
+    <p data-page-node-id="tOO9j505I7Ob70PtrTGcTr">☆ <strong data-page-node-id="JjBF3k3iDVoiZIHNs0luXj">模糊逻辑与神经网络的结合——模糊神经网络</strong>：</p>
+    <ol class="num" data-page-node-id="QMZDcDZQSYbdrPN1ej9YD1">
+      <li data-page-node-id="HdLaBeCttbsE0tUBciNxno">使用与或运算代替神经网络中的传递函数；</li>
+      <li data-page-node-id="ZfxEw6cylBflR19oWpJkdR">神经网络权值是模糊量；</li>
+      <li data-page-node-id="MGHkwBxA4U7CIBmYufxqUD">神经网络输入是模糊量；</li>
+      <li data-page-node-id="xMsM2XXdDBTCDNoszh8GjX">神经网络的输出为模糊量；</li>
+      <li data-page-node-id="ySSAM0jXtmiWUKX3ebFvvw">以上诸种形式的复合。</li>
+    </ol>
+    <figure class="fig" data-page-node-id="1X0VCHQa1uaFdCKhMiXXuD">
+      <svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif" data-page-node-id="v0xz3wMkvHkv4PcQyE4xyi">
+        <line x1="40" y1="195" x2="620" y2="195" stroke="#26231B" stroke-width="1.5" marker-end="url(#arM)" data-page-node-id="1dmgIIzPCW2R57rmUgOIUa"/>
+        <line x1="60" y1="210" x2="60" y2="20" stroke="#26231B" stroke-width="1.5" marker-end="url(#arM)" data-page-node-id="5kMNekUgSOXbnHcjVqECaR"/>
+        <defs data-page-node-id="NACsoCWYlN17MiVXR2T1IS">
+          <marker id="arM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="5dZwwyD78LNsdjwwbxzAQB">
+            <path d="M0,0 L10,5 L0,10 z" fill="#26231B" data-page-node-id="j0MXN9qOa8fRCODXj6KNEU"/>
+          </marker>
+        </defs>
+        <text x="46" y="40" font-size="14" fill="#26231B" font-style="italic" data-page-node-id="my3yRkoLbz4HcLq4Z6OlDD">y</text>
+        <text x="612" y="216" font-size="14" fill="#26231B" font-style="italic" data-page-node-id="wBPZDyo6y3DcFte8tbhrm4">x</text>
+        <!-- bell curves family over a..h: centers 90..560 step ~65, heights varying -->
+        <g fill="none" stroke-width="2" data-page-node-id="Y57k32vGQgG94sS8iK1HDS">
+          <path d="M60,190 C72,150 78,90 90,60 C102,90 108,150 120,190" stroke="#E07020" data-page-node-id="3OT1nfdhrnAe4kFbXhLvV3"/>
+          <path d="M118,190 C132,140 140,70 155,42 C170,70 178,140 192,190" stroke="#3A6122" data-page-node-id="ob1u5DcMDDY47vvo3Y2f2T"/>
+          <path d="M180,190 C194,155 202,105 215,80 C228,105 236,155 250,190" stroke="#8FB469" data-page-node-id="FSI3IJLdtswoad1ErjJ0b3"/>
+          <path d="M245,190 C258,145 266,85 280,55 C294,85 302,145 315,190" stroke="#5065A8" data-page-node-id="flRbI6lsFL3gcPSe9myXef"/>
+          <path d="M310,190 C324,150 332,95 345,68 C358,95 366,150 380,190" stroke="#8A4B94" data-page-node-id="xvjQoF6CwWnhXJ6Z2xvY6g"/>
+          <path d="M372,190 C386,140 394,75 410,45 C426,75 434,140 448,190" stroke="#B03A2E" data-page-node-id="TLpEHt2toxSY5I5c5TFnuV"/>
+          <path d="M438,190 C452,150 460,100 475,72 C490,100 498,150 512,190" stroke="#C9A900" data-page-node-id="PXfgG3eTz9YcPfNS5mHH9u"/>
+          <path d="M505,190 C518,155 526,110 540,85 C554,110 562,155 575,190" stroke="#4C7D2C" data-page-node-id="Tm5gZdnlBItL6dulL2G5hW"/>
+        </g>
+        <g font-size="12.5" fill="#5B5648" text-anchor="middle" data-page-node-id="gV5uYjUXTpZgDBvxfN8DAr">
+          <text x="90" y="212" data-page-node-id="o30nwzgySrvbxTZd5L9BdG">a</text><text x="155" y="212" data-page-node-id="BBq00i41N25HGSEYCGlpXU">b</text><text x="215" y="212" data-page-node-id="NBQiRpJSKMNIqxlrtZ1VcU">c</text><text x="280" y="212" data-page-node-id="hbhB7fmyODFUkypz5i5oak">d</text>
+          <text x="345" y="212" data-page-node-id="ujgp6BG8ItkvqiQkJOZ2cU">e</text><text x="410" y="212" data-page-node-id="5wGpfNwj8x7tuVeA2SWKoh">f</text><text x="475" y="212" data-page-node-id="a2N2tsu5sMaTAzxJjjk7nT">g</text><text x="540" y="212" data-page-node-id="AfxY5IFTQyC9yNrquyDmZJ">h</text>
+        </g>
+      </svg>
+      <figcaption data-page-node-id="QI1SnjRRKMYC9jBih6FpTX">论域上的模糊隶属度曲线族（对应规则中的模糊语言值）｜按 PPT 第 56 页绘制</figcaption>
+    </figure>
+
+    <h3 class="sub-title" data-page-node-id="YhfpoG0HAQUSee67Ki69Hx">11. 模糊神经元与模糊神经网络（P57）</h3>
+    <p data-page-node-id="7DT6iCY4g8GCrSRHbbOgvp">神经网络三大要素：<strong data-page-node-id="RmiIwuGUK9zJ4W0fVtDWre">神经元 · 神经网络 · 学习算法</strong>。</p>
+    <div class="defbox" data-page-node-id="Qb269A7WrnaCaCOjAMOhGG">
+      <p class="dt" data-page-node-id="jHW2ImzDEgnVtQOZU3QgGS">模糊神经元</p>
+      <p data-page-node-id="B122q2zmRDXfPST1lnl8UN">☆ <strong data-page-node-id="8LZ9gNAjcER9HjW3NTyqiE">由模糊规则描述的模糊神经元</strong>：每个神经元由 $M$ 个模糊规则描述的输入与输出关系——if-then 的描述语句（<strong data-page-node-id="iNDL5M0wmH2GSzQWIu7SVo">第一类模糊神经元</strong>）；</p>
+      <p data-page-node-id="TqT9fGauqMr16thH7OiJ33">☆ <strong data-page-node-id="SIE099g5E1f35UUWmNjRCe">对非模糊神经元直接模糊化得到模糊神经元</strong>：</p>
+      <p data-page-node-id="Onv0diTyNwvTHHHawmdj8c">— 具有实数输入的模糊神经元（<strong data-page-node-id="mNDtswPUjJDG20PQrYHMYi">第二类模糊神经元</strong>）：加权过程变成了计算隶属度的过程；</p>
+      <p data-page-node-id="Hv1hHawJmgMClEkfKGfVep">— 具有模糊输入的模糊神经元（<strong data-page-node-id="YZafoqRlNnh8maqwYfR0uX">第三类模糊神经元</strong>）。</p>
+    </div>
+    <div class="grid2" data-page-node-id="EgLDgSCa07OKAIQ4KpHhLg">
+      <div class="mini" data-page-node-id="dTmpmqMSP7VxNca10sgwrm">
+        <p class="mt" data-page-node-id="tOCjw374Yx4Im56Ythhjpr">模糊神经元学习算法</p>
+        <p data-page-node-id="f9X7v0aXxWje2ikkHtIlVJ">（1）<strong data-page-node-id="lJ3qrsCOQsPjlA8bjX7I7l">“突触”修正</strong>：</p>
+        <p data-page-node-id="fJY36kvRHcN084wYRP7Jwv">— 通过加权或“突触”的操作来对输入进行修正；</p>
+        <p data-page-node-id="3grG8dxcgItGAZauNLKfq6">— 可能是修正输入三角运算符号的宽度或者是位移。</p>
+        <p data-page-node-id="5j1SjrPBpLKZ8fD0pASE6q">（2）<strong data-page-node-id="NAPQtzsNztCFVb8gcIPuFC">“躯体”修正</strong>：</p>
+        <p data-page-node-id="cRsBrF1lnLgHVt2lGTUpwJ">— 修正规则；</p>
+        <p data-page-node-id="ariMFPnxRhXb9WD8CDPns2">— 改变分配给规则中的模糊数语中的隶属函数；</p>
+        <p data-page-node-id="r6zkZwBVQKJAsvQYEA9zcW">— 改变表示规则的方式。</p>
+      </div>
+      <div class="mini" data-page-node-id="RvEeTMTj4ZTXTiKauTGfW7">
+        <p class="mt" data-page-node-id="fS0aLu5q18Ya7jGWh4uz9H">模糊神经网络（类型）</p>
+        <p data-page-node-id="chtwQQdDMsBBRGY4IqGcuC">☆ 模糊联想记忆：Fuzzy Associative Memory（FAM）；</p>
+        <p data-page-node-id="cjAWRvdsRBmfw7JbjuxXGl">☆ 模糊极大—极小神经网络；</p>
+        <p data-page-node-id="aLW87v7aEtNdRH7Y7lEFJY">☆ 模糊关系神经网络；</p>
+        <p data-page-node-id="6UX6JIeZBPger6o7HzJAHM">☆ 模糊 Hopfield 网络；</p>
+        <p data-page-node-id="ghuR5ug7D5KsztHwmJ8twO">☆ 模糊推理的基于 h-水平截集模糊神经网络。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot" data-page-node-id="2fwK1ZLV08tf0c3msgQvAd">
+    东南大学自动化学院 · 智能控制概论 · 第四讲 人工神经元模型（讲义）<br data-page-node-id="zpg2KNdbHoZPAsWX4Ai6Qk">
+    对应 PPT 第 1–57 页 · 主讲人：刘雪庆 · 2026 年 10 月
+  </footer>
+
+</div>
+</body>
+</html>
