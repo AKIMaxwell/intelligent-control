@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="TaOCuh0G4OAeLNmAdaEiol">
+<head data-page-node-id="3AI89FHrZW6QCq72i5Kz7L">
+<meta charset="UTF-8" data-page-node-id="rF3iRzdGQFiy6uBsBeg8tc">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3yaUHI3fwTziBMMDMw1UUp">
+<title>智能控制概论 · 第六讲 神经网络控制系统实验（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td.lft{text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data td.rowh, table.data th.rowh{
+    background:var(--green-light);font-weight:700;color:var(--green-deep);
+  }
+  table.data td.hl{background:var(--yellow);font-weight:700;color:var(--green-deep);}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  .chapter .ch-sub{
+    margin-top:10px;font-size:16px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .mini{
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 18px;
+  }
+  .mini .mt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-dark);font-size:15px;margin-bottom:6px;
+  }
+  .mini p{font-size:14.5px;line-height:1.75;margin:4px 0;}
+  .timeline{
+    position:relative;margin:18px 0 8px;padding-left:26px;
+    border-left:3px solid var(--green-line);
+  }
+  .tl-item{position:relative;padding:10px 0 10px 18px;}
+  .tl-item::before{
+    content:"";position:absolute;left:-35px;top:18px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--yellow);box-shadow:0 0 0 3px var(--green-light),0 0 0 4.5px var(--green);
+  }
+  .tl-item .yr{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:800;color:var(--green-dark);font-size:15.5px;
+  }
+  .tl-item .ti{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--ink);font-size:15px;margin-left:8px;
+  }
+  .tl-item p{font-size:14.5px;color:var(--ink-2);margin:2px 0;}
+  .tl-item.cold::before{background:#C9C4B4;box-shadow:0 0 0 3px #F1EFE7,0 0 0 4.5px #B7B2A0;}
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,header.cover,.mini{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+  pre.code{
+    background:#16294D;color:#E8EEF8;border-radius:10px;padding:14px 20px;
+    font-family:Consolas,'Courier New',monospace;font-size:14.5px;line-height:1.75;
+    overflow-x:auto;margin:10px 0 14px;
+  }
+  code{
+    font-family:Consolas,'Courier New',monospace;font-size:0.92em;
+    background:#EEF3FA;color:#1E3A6E;border-radius:4px;padding:1px 6px;
+  }
+  pre.code code{background:none;color:inherit;padding:0;}
+  sup.fn{color:#C05000;font-weight:bold;}
+</style></head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">智能控制概论 · 第六讲（实验课）</span>
+    <div class="links">
+      <a href="#cover">封面</a>
+      <a href="#task">任务书</a>
+      <a href="#principle">设计原则</a>
+      <a href="#steps">实验步骤</a>
+      <a href="#report">要求与评分</a>
+      <a href="#qa">思考与排查</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ========== P1：封面 ========== -->
+  <section class="slide" id="cover">
+    <span class="slide-tag">PPT 第 1 页</span>
+    <div class="chapter" data-num="6">
+      <div class="ch-kicker">LECTURE 6 · EXPERIMENT</div>
+      <h1>第六讲&nbsp;&nbsp;神经网络控制系统实验</h1>
+      <div class="ch-sub">实验二　神经网络直接控制实验</div>
+      <p style="margin-top:18px;font-size:15px;color:var(--ink-3)">PID 数据离线训练 BP 网络 → 直接网络控制法在线微调 → 与 PID 对比</p>
+    </div>
+  </section>
+
+  <!-- ========== P2：实验导览 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 2 页</span>
+    <h2 class="sec-title">实验导览</h2>
+    <ol class="toc">
+      <li>实验准备与任务书——软件环境 · 被控对象 · 六项实验任务</li>
+      <li>控制原理与设计原则——系统组成 · 输入输出/归一化 · 离线数据 · 在线控制律 · 参数选择</li>
+      <li>知识点回顾——对象特性 · PID 控制 · BP 网络 · 直接网络控制法</li>
+      <li>实验步骤（第 0–6 步）——建模 → PID 采集 → BP 训练 → 直接控制 → 仿真对比</li>
+      <li>实验要求与评分标准——报告要求 · 评分表 · 加分项</li>
+      <li>思考题与常见问题排查——7 道思考 · 10 条排查</li>
+    </ol>
+  </section>
+
+
+  <!-- ========== P3：实验准备 ========== -->
+  <section class="slide" id="task">
+    <span class="slide-tag">PPT 第 3 页</span>
+    <h2 class="sec-title">实验准备</h2>
+    <ol class="clean">
+      <li><span class="tag">1</span><strong>带电脑</strong>——每人一机，独立完成实验；</li>
+      <li><span class="tag">2</span><strong>预装 MATLAB</strong>——数值计算与网络训练脚本运行环境；</li>
+      <li><span class="tag">3</span><strong>预装 Simulink</strong>——搭建被控对象与控制系统仿真模型；</li>
+      <li><span class="tag">4</span><strong>预装 Deep Learning Toolbox</strong>——提供 feedforwardnet / train 等网络训练函数；</li>
+      <li><span class="tag">5</span><strong>建议 MATLAB R2020b 及以上</strong>——保证工具箱函数与 Simulink 模块兼容。</li>
+    </ol>
+  </section>
+
+  <!-- ========== P4：实验任务书 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 4 页</span>
+    <h2 class="sec-title">实验任务书（先明确任务）</h2>
+    <p>已知一个二阶系统的传递函数为</p>
+    <div class="math-scroll">$$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</div>
+    <p>设计神经网络控制器，使其具有良好的动态控制性能。具体任务如下：</p>
+    <ol class="clean">
+      <li><span class="tag">1</span><strong>设计常规 PID 控制器</strong>，使系统能稳定跟踪阶跃信号；</li>
+      <li><span class="tag">2</span><strong>采集 PID 控制数据</strong>，包括误差 $e$、误差变化率 $de$、控制量 $u$；</li>
+      <li><span class="tag">3</span><strong>用 PID 数据离线训练 BP 神经网络控制器</strong>，让网络初步逼近 PID 控制效果；</li>
+      <li><span class="tag">4</span><strong>采用直接网络控制法</strong>，将训练好的神经网络作为初始控制器，根据跟踪误差在线调整网络权值，不单独辨识被控对象模型；</li>
+      <li><span class="tag">5</span><strong>比较 PID 控制与神经网络直接控制</strong>的效果，分析超调量、调节时间、稳态误差和抗扰能力；</li>
+      <li><span class="tag">加分项</span>改变学习率、隐层节点数，分析对控制性能的影响。</li>
+    </ol>
+  </section>
+
+  <!-- ========== P5：被控对象分析 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 5 页</span>
+    <h2 class="sec-title">被控对象分析</h2>
+    <div class="math-scroll">$$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</div>
+    <table class="data">
+      <tr><th>系统类型</th><th>开环增益</th><th>自然频率</th><th>阻尼比</th><th>纯延迟</th></tr>
+      <tr><td>二阶系统</td><td>$K=20$</td><td>$\omega_n=1/\sqrt{8}\approx0.354$</td><td>$\zeta\approx0.707$</td><td>$0.2\,\text{s}$（$=20$ 拍，$T_s=0.01\,\text{s}$）</td></tr>
+    </table>
+    <p class="note">延迟环节会给控制带来相位滞后，PID 参数不能过大，否则容易振荡。</p>
+  </section>
+
+  <!-- ========== P6：系统组成 ========== -->
+  <section class="slide" id="principle">
+    <span class="slide-tag">PPT 第 6 页</span>
+    <h2 class="sec-title">一、神经网络直接控制系统的组成</h2>
+    <p>神经网络直接控制系统通常由以下部分组成：</p>
+    <ol class="clean">
+      <li><span class="tag">1</span>参考输入；</li>
+      <li><span class="tag">2</span><strong>神经网络控制器</strong>；</li>
+      <li><span class="tag">3</span>被控对象；</li>
+      <li><span class="tag">4</span>反馈测量环节；</li>
+      <li><span class="tag">5</span>数据采集与离线训练模块；</li>
+      <li><span class="tag">6</span>在线学习与权值更新模块。</li>
+    </ol>
+    <p>基本结构为 $r(k)\to$ 神经网络控制器 $\to u(k)\to$ 被控对象 $\to y(k)$，反馈误差 $e(k)=r(k)-y(k)$。神经网络控制器根据<strong>误差和误差变化率</strong>进行控制，并通过<strong>在线学习</strong>调整权值。</p>
+    <figure class="fig">
+      <img src="images/l6_p06.png" alt="神经网络直接控制系统基本结构图">
+      <figcaption>神经网络直接控制系统基本结构：r(k) → 神经网络控制器 → u(k) → 被控对象 → y(k)，e(k)=r(k)−y(k)｜PPT 第 6 页</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== P7–P9：设计原则 ①②③ ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 7–9 页</span>
+    <h2 class="sec-title">二、神经网络控制器的设计原则</h2>
+
+    <h3 class="sub-title">1. 定义输入、输出变量（P7）</h3>
+    <p>系统为<strong>单输入单输出系统</strong>。建议采用——输入：误差 $e(k)$、误差变化率 $de(k)$、累积误差 $\sum e(k)$；输出：当前控制量 $u(k)$。即：</p>
+    <div class="math-scroll">$$u(k)=N_N\bigl(e(k),\,de(k),\,{\textstyle\sum} e(k);\,W\bigr)$$</div>
+    <p>其中 $W$ 为神经网络权值。</p>
+    <p class="note"><strong>注意</strong>：本实验统一采用 $de(k)=\dfrac{e(k)-e(k-1)}{T_s}$，<strong>离线采集与在线计算必须一致</strong>。</p>
+
+    <h3 class="sub-title">2. 定义变量的归一化条件（P8）</h3>
+    <p>建议对输入输出进行归一化，例如归一化到 $[-1,1]$。若实际误差较大，可设置比例因子：</p>
+    <div class="math-scroll">$$E=K\_p\cdot e,\qquad DE=K\_d\cdot de,\qquad U=K\_i\cdot {\textstyle\sum} e(k)$$</div>
+    <table class="data">
+      <tr><th>$K_p$</th><th>$K_d$</th><th>$K_i$</th></tr>
+      <tr><td>误差比例因子</td><td>误差变化率比例因子</td><td>累积误差比例因子</td></tr>
+    </table>
+    <p class="note">控制量建议限幅：$u\in[-6,\,6]$。</p>
+
+    <h3 class="sub-title">3. 设计离线训练数据：PID 数据（P9）</h3>
+    <p>先用 PID 控制器控制被控对象，采集数据 $\{e(k),\,de(k),\,\sum e(k),\,u(k)\}$，其中 $e(k)=r(k)-y(k)$ 为跟踪误差，$de(k)=(e(k)-e(k-1))/T_s$ 为误差变化率（与统一定义一致），$\sum e(k)$ 为误差积分，$u(k)$ 为 PID 输出（导师信号）。</p>
+    <div class="math-scroll">$$\text{训练样本输入：}\ X=\bigl[e(k),\,de(k),\,{\textstyle\sum} e(k)\bigr]^{T}\qquad \text{训练样本输出：}\ Y=u(k)$$</div>
+    <p>这样训练后的神经网络可以<span class="kw">初步模仿 PID 控制器</span>。</p>
+  </section>
+
+  <!-- ========== P10–P11：知识点回顾 PID/BP ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 10–11 页</span>
+    <h2 class="sec-title">三、知识点回顾：PID 控制与 BP 网络</h2>
+
+    <h3 class="sub-title">1. PID 控制回顾（P10）</h3>
+    <p>位置式 PID：</p>
+    <div class="math-scroll">$$u(k)=K_p\,e(k)+K_iT_s\sum_{i=0}^{k}e(i)+K_d\,\frac{e(k)-e(k-1)}{T_s}$$</div>
+    <p>增量式 PID：</p>
+    <div class="math-scroll">$$\Delta u(k)=K_p\bigl[e(k)-e(k-1)\bigr]+K_iT_s\,e(k)+K_d\,\frac{e(k)-2e(k-1)+e(k-2)}{T_s}$$</div>
+    <p class="note">PID 参数参考初始值：$K_p=0.5,\ K_i=0.1,\ K_d=0.05$。可用 PID Tuner 或手动整定；控制量建议限幅 $u\in[-6,\,6]$。</p>
+
+    <h3 class="sub-title">2. BP 神经网络回顾（P11）</h3>
+    <p>单隐层 BP 网络：输入层 3 个节点，隐层 5～10 个节点（$\tanh$），输出层 1 个节点（线性）。</p>
+    <figure class="fig">
+      <img src="images/l6_p11.png" alt="单隐层 BP 网络结构">
+      <figcaption>单隐层 BP 网络结构：3–(5~10)–1，隐层 tanh、输出线性｜PPT 第 11 页</figcaption>
+    </figure>
+    <p>前向计算：</p>
+    <div class="math-scroll">$$h=\tanh(W_1x+b_1),\qquad u=W_2h+b_2$$</div>
+    <p>反向传播：</p>
+    <div class="math-scroll">$$\delta_2=e,\qquad \delta_1=(W_2^{T}\delta_2)\odot(1-h^{2})$$</div>
+    <p>权值更新：</p>
+    <div class="math-scroll">$$W_2\leftarrow W_2+\eta\,\delta_2h^{T},\qquad W_1\leftarrow W_1+\eta\,\delta_1x^{T}$$</div>
+    <p>离线训练的目标：让网络输出 $u$ 逼近 PID 输出（导师信号 $Y=u(k)$）。</p>
+  </section>
+
+  <!-- ========== P12–P13：在线控制律 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 12–13 页</span>
+    <h2 class="sec-title">设计原则 ④：在线直接控制律与雅可比近似</h2>
+
+    <h3 class="sub-title">1. 在线直接控制律（P12）</h3>
+    <p>直接网络控制法<span class="kw">不单独辨识对象模型</span>。设神经网络控制器与性能指标：</p>
+    <div class="math-scroll">$$u(k)=N_N\bigl(e(k),\,de(k),\,{\textstyle\sum} e(k);\,W\bigr),\qquad J(k)=\tfrac{1}{2}e(k)^{2}$$</div>
+    <p>考虑对象纯延迟 $d$ 拍，权值更新公式为：</p>
+    <div class="math-scroll">$$\Delta w(k)=\eta\,e(k)\,\frac{\partial y(k)}{\partial u(k-d)}\,\frac{\partial u(k-d)}{\partial w}$$</div>
+    <p>严格时 $d=0.2/T_s=20$ 拍（与对象 0.2 s 纯延迟对应）；课堂简化时可先忽略延迟，取 $d=1$：</p>
+    <div class="math-scroll">$$\Delta w(k)=\eta\,e(k)\,\frac{\partial y(k)}{\partial u(k-1)}\,\frac{\partial u(k-1)}{\partial w}$$</div>
+
+    <h3 class="sub-title">2. 对象雅可比未知时的近似（P13）</h3>
+    <p>若对象雅可比 $\dfrac{\partial y(k)}{\partial u(k-1)}$ 未知，可用符号函数近似或简单取 1：</p>
+    <div class="math-scroll">$$\frac{\partial y(k)}{\partial u(k-1)}\approx\operatorname{sgn}\!\left(\frac{\partial y(k)}{\partial u(k-1)}\right)\qquad\text{或}\qquad \frac{\partial y(k)}{\partial u(k-1)}\approx 1$$</div>
+    <p>本对象<strong>开环正增益</strong>，故符号为正。若网络输出经过<strong>反归一化</strong>，则实际更新量中应包含输出反归一化增益：</p>
+    <div class="math-scroll">$$\delta_2=e(k)\,\frac{J_p}{gain\_u}$$</div>
+    <p>其中 $J_p\approx\partial y/\partial u$，$gain\_u$ 为输出归一化增益。</p>
+    <p class="note"><strong>直接网络控制法的核心</strong>：不需要显式辨识对象模型，但需要对象雅可比的近似信息。</p>
+  </section>
+
+  <!-- ========== P14：参数选择 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 14 页</span>
+    <h2 class="sec-title">设计原则 ⑤：学习率、动量因子与网络结构</h2>
+    <table class="data">
+      <tr><th>参数</th><th>建议取值</th></tr>
+      <tr><td>学习率 $\eta$（离线训练）</td><td>$0.01\sim0.1$</td></tr>
+      <tr><td>学习率 $\eta$（在线微调）</td><td>$10^{-5}\sim10^{-3}$</td></tr>
+      <tr><td>动量因子 $\alpha$</td><td>$0.1\sim0.5$</td></tr>
+      <tr><td>隐层节点数</td><td>5～10</td></tr>
+      <tr><td>激活函数</td><td>隐层 $\tanh$ · 输出层线性</td></tr>
+      <tr><td>初始权值</td><td>小随机数，例如 $[-0.5,\,0.5]$</td></tr>
+    </table>
+    <p class="note"><strong>在线调试顺序</strong>：先令 $\eta=0$，验证离线网络控制效果；再逐步增大 $\eta$，观察在线学习效果。</p>
+  </section>
+
+  <!-- ========== P15：直接 vs 间接 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 15 页</span>
+    <h2 class="sec-title">直接网络控制法回顾：直接 vs 间接</h2>
+    <ul class="clean">
+      <li>神经网络控制器直接与被控对象串联；</li>
+      <li>根据系统输出误差在线调整网络权值；</li>
+      <li>不单独建立对象辨识模型；</li>
+      <li>需要对象雅可比 $\partial y/\partial u$ 的近似（常用符号函数或常数近似）；</li>
+      <li>结构简单，易于在线实现。</li>
+    </ul>
+    <table class="data">
+      <tr><th>项目</th><th>直接网络控制法</th><th>间接网络控制法</th></tr>
+      <tr><td>是否辨识对象</td><td>不显式辨识</td><td>需要辨识对象模型</td></tr>
+      <tr><td>雅可比获取</td><td>近似或符号函数</td><td>由辨识模型计算</td></tr>
+      <tr><td>结构</td><td>简单</td><td>复杂</td></tr>
+      <tr><td>鲁棒性</td><td>依赖近似</td><td>依赖辨识精度</td></tr>
+      <tr><td><strong>本实验</strong></td><td><strong>✔ 采用</strong></td><td>✘ 不采用</td></tr>
+    </table>
+  </section>
+
+  <!-- ========== P16–P20：实验步骤 ========== -->
+  <section class="slide" id="steps">
+    <span class="slide-tag">PPT 第 16–20 页</span>
+    <h2 class="sec-title">四、实验步骤（课堂分步操作）</h2>
+
+    <h3 class="sub-title">步骤总览（P16）</h3>
+    <figure class="fig">
+      <img src="images/l6_p16.png" alt="实验步骤总览（第 0–6 步）">
+      <figcaption>实验步骤总览：主线一 离线准备（第 0–3 步，建模 → PID 采集 → BP 训练）；主线二 在线控制（第 4–6 步，直接控制 → 仿真对比）｜PPT 第 16 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">第 0 步：打开 MATLAB，建立工作目录（P17）</h3>
+    <pre class="code">clear; clc; close all;
+mkdir('NN_DirectControl');
+cd('NN_DirectControl');</pre>
+
+    <h3 class="sub-title">第 1 步：建立被控对象模型（P17）</h3>
+    <p>在 Simulink 中搭建 PID 控制被控对象的仿真模型（含 K<sub>p</sub>/K<sub>i</sub>/K<sub>d</sub> 增益、传递函数 $20/(8s^2+4s+1)$、示波器与 <code>out.e_in</code>、<code>out.u_out</code> 工作区记录）。仿真参数：仿真时间 8～10 s；固定步长 0.01 s；求解器固定步长离散或 ode4；布尔逻辑信号 OFF；零点穿越 OFF。</p>
+    <figure class="fig">
+      <img src="images/l6_p17.png" alt="PID 控制被控对象的 Simulink 模型">
+      <figcaption>第 1 步参考模型：PID 控制被控对象的 Simulink 模型（K_p/K_i/K_d 增益 + Transfer Fcn + 工作区记录）｜PPT 第 17 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">第 2 步：设计 PID 控制器并采集数据（P18）</h3>
+    <pre class="code">X = out.e_in.Data';
+Y = out.u_out.Data';</pre>
+    <p>数据检查：是否有发散；控制量是否限幅；PID 跟踪效果是否可接受。</p>
+    <p class="note"><strong>建议</strong>：采集多种参考信号（阶跃、方波、加扰动），拼接成训练数据。</p>
+
+    <h3 class="sub-title">第 3 步：用 PID 数据训练 BP 神经网络（P18）</h3>
+    <pre class="code">net = feedforwardnet(10);
+net = train(net, X, Y);</pre>
+    <p>训练完成后，用<strong>测试数据</strong>检查网络输出是否接近 PID 输出。</p>
+
+    <h3 class="sub-title">第 4 步：搭建神经网络控制（P19）</h3>
+    <pre class="code">gensim(net, -1);</pre>
+    <p>下图为神经网络控制仿真运行的阶跃响应示例（示波器截图）：</p>
+    <figure class="fig">
+      <img src="images/l6_p19a.png" alt="神经网络控制仿真示波器曲线">
+      <figcaption>神经网络控制仿真运行示例（Scope：参考输入与系统输出）｜PPT 第 19 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">第 5 步：仿真设置（P19）</h3>
+    <p>仿真时间 8～10 s，固定步长 0.01 s；参考信号分段安排，并在 $t=3\,\text{s}$ 加入外部扰动，观察抗扰恢复能力。记录：参考输入 $r$、系统输出 $y$、跟踪误差 $e$、控制量 $u$、权值变化。</p>
+    <figure class="fig">
+      <img src="images/l6_p19b.png" alt="参考信号分段与扰动安排">
+      <figcaption>参考信号分段：0–2 s 阶跃；2–4 s 方波；4–5 s 正弦/加扰；t = 3 s 加入外部扰动｜PPT 第 19 页</figcaption>
+    </figure>
+
+    <h3 class="sub-title">第 6 步：保存与对比（P20）</h3>
+    <p>分别运行三种控制方案：</p>
+    <ol class="clean">
+      <li><span class="tag">①</span><strong>PID 控制</strong>——常规 PID，作为性能基准；</li>
+      <li><span class="tag">②</span><strong>NN 离线控制</strong>——仅离线训练的网络（$\eta=0$），检验模仿效果；</li>
+      <li><span class="tag">③</span><strong>NN 在线控制</strong>——直接网络控制法在线微调权值。</li>
+    </ol>
+    <p>对比指标（填入实验报告）：</p>
+    <table class="data">
+      <tr><th>控制器</th><th>超调量</th><th>调节时间（2% 误差带）</th><th>稳态误差</th><th>抗扰恢复时间</th></tr>
+      <tr><td>PID</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>NN 离线</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>NN 直接</td><td></td><td></td><td></td><td></td></tr>
+    </table>
+  </section>
+  <!-- ========== P21：任务书正式版 ========== -->
+  <section class="slide" id="report">
+    <span class="slide-tag">PPT 第 21 页</span>
+    <h2 class="sec-title">五、实验任务书（正式版）</h2>
+    <p>已知一个二阶系统的传递函数为 $G(s)=\dfrac{20}{8s^{2}+4s+1}e^{-0.2s}$。</p>
+    <table class="data">
+      <tr><th>分值</th><th>任务</th><th>要求</th></tr>
+      <tr><td><strong>20%</strong></td><td>设计常规 PID 控制器</td><td>使系统稳定跟踪阶跃信号</td></tr>
+      <tr><td><strong>30%</strong></td><td>采集 PID 数据并训练 BP 神经网络控制器</td><td>网络初步逼近 PID 控制效果</td></tr>
+      <tr><td><strong>50%</strong></td><td>直接网络控制法离线控制并对比</td><td>与 PID 比较超调量、调节时间、稳态误差、抗扰能力</td></tr>
+      <tr><td><strong>+10%</strong></td><td>改变学习率、隐层节点数，分析对控制性能的影响</td><td>加分项</td></tr>
+    </table>
+    <!-- <p class="note"><sup>*</sup> PPT 原文作“离线控制并对比”，与上下文“直接网络控制法在线调权”矛盾，应为<strong>在线</strong>，转写时已更正。</p> -->
+  </section>
+
+  <!-- ========== P22：实验要求 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 22 页</span>
+    <h2 class="sec-title">六、实验要求</h2>
+    <ol class="clean">
+      <li><span class="tag">1</span>报告结构完整，含实验目的、原理、步骤、数据、结论；</li>
+      <li><span class="tag">2</span>图表清晰，编号规范，如“图 1 PID 控制系统 Simulink 模型”；</li>
+      <li><span class="tag">3</span>给出直接网络控制系统的结构图；</li>
+      <li><span class="tag">4</span>给出神经网络前向计算和权值更新公式；</li>
+      <li><span class="tag">5</span>给出 PID、NN 离线两种情况的对比曲线；</li>
+      <li><span class="tag">6</span>分析学习率、隐层节点数、雅可比估计对控制性能的影响；</li>
+      <li><span class="tag">7</span>提交程序源代码和实验报告；</li>
+      <li><span class="tag">8</span>提交途径：雨课堂；</li>
+      <li><span class="tag">9</span><strong>截止时间：11 月 3 日 24:00</strong>。</li>
+    </ol>
+    <p class="note">报告核心三要素：<strong>结构图 · 公式 · 两条对比曲线</strong>。</p>
+  </section>
+
+  <!-- ========== P23：思考题 ========== -->
+  <section class="slide" id="qa">
+    <span class="slide-tag">PPT 第 23 页</span>
+    <h2 class="sec-title">八、思考题</h2>
+    <ol class="clean">
+      <li><span class="tag">Q1</span>为什么先用 PID 数据训练神经网络？有什么好处？</li>
+      <li><span class="tag">Q2</span>直接网络控制法与间接网络控制法有什么区别？</li>
+      <li><span class="tag">Q3</span>直接网络控制中为什么需要对象雅可比？未知时如何处理？</li>
+      <li><span class="tag">Q4</span>学习率过大或过小分别会出现什么现象？</li>
+      <li><span class="tag">Q5</span>隐层节点数对控制性能有什么影响？</li>
+      <li><span class="tag">Q6</span>如果对象延迟增大，直接网络控制会遇到什么问题？</li>
+      <li><span class="tag">Q7</span>能否设计在线学习方法？如何实现？</li>
+    </ol>
+  </section>
+
+  <!-- ========== P24：常见问题与排查 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 24 页</span>
+    <h2 class="sec-title">九、常见问题与排查</h2>
+    <table class="data">
+      <tr><th>问题</th><th>可能原因</th><th>解决方法</th></tr>
+      <tr><td>网络发散</td><td>学习率过大</td><td>减小 $\eta$，加限幅</td></tr>
+      <tr><td>跟踪效果差</td><td>训练数据不足</td><td>增加参考信号类型</td></tr>
+      <tr><td>控制量振荡</td><td>雅可比估计不准</td><td>用符号函数或差分估计</td></tr>
+      <tr><td>在线学习破坏离线效果</td><td>在线学习率过大</td><td>先设 $\eta=0$，再逐步增大</td></tr>
+      <tr><td>仿真步长与采样不一致</td><td>Simulink 设置错误</td><td>固定步长 0.01 s</td></tr>
+      <tr><td>归一化不一致</td><td>在线未用相同归一化参数</td><td>保存 <code>psX, psY</code> 并在线调用</td></tr>
+      <tr><td>在线函数第二次调用报错</td><td><code>psX, psY</code> 未设为 <code>persistent</code></td><td>将 <code>psX, psY</code> 加入 <code>persistent</code></td></tr>
+      <tr><td>离线/在线效果差异大</td><td>$de$ 定义不一致</td><td>统一为 $(e(k)-e(k-1))/T_s$</td></tr>
+      <tr><td>网络输出尺度不对</td><td><code>fitnet</code> 自动归一化与手动归一化冲突</td><td>禁用 <code>fitnet</code> 自动归一化</td></tr>
+      <tr><td>在线更新量过大</td><td>未考虑输出反归一化增益</td><td>更新中加入 <code>/psY.gain(1)</code></td></tr>
+    </table>
+  </section>
+
+  <!-- ========== P25：总结 ========== -->
+  <section class="slide">
+    <span class="slide-tag">PPT 第 25 页</span>
+    <h2 class="sec-title">总结</h2>
+    <div class="example">
+      <p style="font-size:17px;line-height:2">
+        先用 PID 数据让神经网络<strong>“学会初步控制”</strong>，<br>
+        再切换到直接网络控制法<strong>在线调整权值</strong>，<br>
+        最后与 PID 控制进行对比。
+      </p>
+    </div>
+    <p>提交：<strong>实验报告 + 源代码</strong>，途径：<strong>雨课堂</strong>（截止 11 月 3 日 24:00）。</p>
+  </section>
+
+</div>
+</body>
+</html>
