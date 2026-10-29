@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="TaOCuh0G4OAeLNmAdaEiol">
+<head data-page-node-id="3AI89FHrZW6QCq72i5Kz7L">
+<meta charset="UTF-8" data-page-node-id="rF3iRzdGQFiy6uBsBeg8tc">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3yaUHI3fwTziBMMDMw1UUp">
+<title>智能控制概论 · 第七讲 智能控制的集成技术（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  header.cover{
+    margin:36px 0 8px;
+    padding:64px 40px 56px;
+    background:linear-gradient(135deg,#2C4A1A 0%,#3F6826 55%,#4C7D2C 100%);
+    border-radius:20px;color:#fff;position:relative;overflow:hidden;
+  }
+  header.cover::after{
+    content:"";position:absolute;right:-40px;bottom:-30px;
+    width:300px;height:300px;opacity:.22;
+    background:
+      conic-gradient(from 0deg at 50% 100%,transparent 0 40deg,var(--yellow) 40deg 50deg,transparent 50deg),
+      conic-gradient(from 0deg at 50% 100%,transparent 0 30deg,var(--yellow) 30deg 40deg,transparent 40deg);
+    clip-path:polygon(50% 0,100% 100%,0 100%);
+  }
+  .cover .kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;letter-spacing:4px;color:var(--yellow);margin-bottom:14px;
+  }
+  .cover h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:42px;font-weight:800;letter-spacing:2px;line-height:1.3;
+  }
+  .cover .en{
+    font-size:19px;font-style:italic;opacity:.9;margin-top:6px;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  .cover .lecture{
+    display:inline-block;margin-top:26px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;font-weight:700;color:var(--green-deep);
+    background:var(--yellow);
+    border-radius:999px;padding:6px 20px;
+  }
+  .cover .meta{
+    margin-top:30px;font-size:15.5px;opacity:.92;line-height:2;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td.lft{text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  table.data td.rowh, table.data th.rowh{
+    background:var(--green-light);font-weight:700;color:var(--green-deep);
+  }
+  table.data td.hl{background:var(--yellow);font-weight:700;color:var(--green-deep);}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  .chapter .ch-sub{
+    margin-top:10px;font-size:16px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+  .mini{
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 18px;
+  }
+  .mini .mt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-dark);font-size:15px;margin-bottom:6px;
+  }
+  .mini p{font-size:14.5px;line-height:1.75;margin:4px 0;}
+  .timeline{
+    position:relative;margin:18px 0 8px;padding-left:26px;
+    border-left:3px solid var(--green-line);
+  }
+  .tl-item{position:relative;padding:10px 0 10px 18px;}
+  .tl-item::before{
+    content:"";position:absolute;left:-35px;top:18px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--yellow);box-shadow:0 0 0 3px var(--green-light),0 0 0 4.5px var(--green);
+  }
+  .tl-item .yr{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:800;color:var(--green-dark);font-size:15.5px;
+  }
+  .tl-item .ti{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--ink);font-size:15px;margin-left:8px;
+  }
+  .tl-item p{font-size:14.5px;color:var(--ink-2);margin:2px 0;}
+  .tl-item.cold::before{background:#C9C4B4;box-shadow:0 0 0 3px #F1EFE7,0 0 0 4.5px #B7B2A0;}
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,header.cover,.mini{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .cover h1{font-size:30px;}
+  }
+  pre.code{
+    background:#16294D;color:#E8EEF8;border-radius:10px;padding:14px 20px;
+    font-family:Consolas,'Courier New',monospace;font-size:14.5px;line-height:1.75;
+    overflow-x:auto;margin:10px 0 14px;
+  }
+  code{
+    font-family:Consolas,'Courier New',monospace;font-size:0.92em;
+    background:#EEF3FA;color:#1E3A6E;border-radius:4px;padding:1px 6px;
+  }
+  pre.code code{background:none;color:inherit;padding:0;}
+  sup.fn{color:#C05000;font-weight:bold;}
+</style></head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">智能控制概论 · 第七讲</span>
+    <div class="links">
+      <a href="#cover">封面</a>
+      <a href="#fnn">模糊神经网络</a>
+      <a href="#mrac">自适应控制</a>
+      <a href="#opt">优化算法</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ========== 第 1 页：封面 ========== -->
+  <section class="slide" id="cover">
+    <span class="slide-tag">第 1 页</span>
+    <div class="chapter" data-num="7">
+      <div class="ch-kicker">LECTURE 7</div>
+      <h1>第七讲&nbsp;&nbsp;智能控制的集成技术</h1>
+      <div class="ch-sub">模糊神经网络控制 · 基于神经网络的自适应控制 · 智能控制的优化算法</div>
+      <!-- <p style="margin-top:16px;font-size:14.5px;color:var(--ink-3)">按 50 页版内容提取稿组织（原第三版课件第六章 64 页重组）</p> -->
+    </div>
+  </section>
+
+  <!-- ========== 第 2 页：目录 ========== -->
+  <section class="slide">
+    <span class="slide-tag">第 2 页</span>
+    <h2 class="sec-title">本章内容</h2>
+    <ol class="toc">
+      <li>模糊神经网络控制——五层结构 · 两阶段学习（自组织 + 有导师 BP）（第 3–22 页）</li>
+      <li>基于神经网络的自适应控制——模型参考自适应 · 动态 BP 学习（第 23–32 页）</li>
+      <li>智能控制的优化算法——遗传算法 · 蚁群算法 · 迭代学习控制（第 33–50 页）</li>
+    </ol>
+  </section>
+
+
+  <!-- ========== 一、模糊神经网络控制（第 3–22 页） ========== -->
+  <section class="slide" id="fnn">
+    <span class="slide-tag">第 3–4 页</span>
+    <h2 class="sec-title">一、模糊神经网络控制：提出与系统结构</h2>
+    <h3 class="sub-title">1. 方法的提出（第 3 页）</h3>
+    <p>模糊控制系统的隶属度函数或控制规则的设计方法存在很大的<span class="kw">主观性</span>。提出模糊神经网络理论的两个基本出发点：</p>
+    <ol class="clean">
+      <li><span class="tag">1</span>利用神经网络的学习功能来<strong>优化模糊控制规则和相应的隶属度函数</strong>；</li>
+      <li><span class="tag">2</span>将一些<strong>专家知识预先分布到神经网络</strong>中去。</li>
+    </ol>
+    <p>即：模糊系统提供"可解释的推理框架"，神经网络提供"可学习的参数调节能力"。</p>
+    <h3 class="sub-title">2. 系统结构（第 4 页）</h3>
+    <p>用多层前向传播神经网络结构来逼近的模糊神经网络系统：</p>
+    <figure class="fig">
+      <img src="images/ch6ref_p04_struct.png" alt="五层模糊神经网络结构图">
+      <figcaption>模糊神经网络系统结构图（五层）</figcaption>
+    </figure>
+    <p><strong>结构说明</strong>：</p>
+    <ul class="clean">
+      <li><strong>第一层</strong>：输入节点，表示语言变量；</li>
+      <li><strong>第二层、第四层</strong>：项节点，表示相应语言变量语言值的隶属度函数；</li>
+      <li><strong>第三层</strong>：规则节点，实现模糊逻辑推理——第三、四层节点间的连接系数定义规则节点的<strong>结论部</strong>，第二、三层节点间的连接系数定义规则节点的<strong>条件部</strong>；</li>
+      <li><strong>输出层</strong>：每个输出变量有两个语言节点——一个用于训练时期望输出信号的馈入，另一个表示推理控制的输出信号节点。</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 5–9 页</span>
+    <h2 class="sec-title">五层节点的功能与公式</h2>
+    <h3 class="sub-title">第一层：输入层（第 5 页）</h3>
+    <p>只将输入变量值直接传送到下一层：</p>
+    <div class="math-scroll">$$f_j^{(1)}=u_j^{(1)},\qquad a_j^{(1)}=f_j^{(1)}$$</div>
+    <p>且输入变量与第一层节点之间的连接系数 $w_{ji}^{(1)}=1$。</p>
+    <h3 class="sub-title">第二层：隶属度函数层（第 6 页）</h3>
+    <p>实现语言值的隶属度函数变换，可选取<strong>钟型函数</strong>：</p>
+    <div class="math-scroll">$$f_j^{(2)}=M_{X_i}^{j}\bigl(m_{ji}^{(2)},\sigma_{ji}^{(2)}\bigr)=-\frac{\bigl(u_i^{(2)}-m_{ji}^{(2)}\bigr)^{2}}{\bigl(\sigma_{ji}^{(2)}\bigr)^{2}},\qquad a_j^{(2)}=e^{f_j^{(2)}}$$</div>
+    <p>其中 $m_{ji}$ 和 $\sigma_{ji}$ 分别表示第 i 个输入语言变量 $X_i$ 的第 j 个语言值隶属度函数的中心值和宽度。可抽象看作第一、二层神经元节点之间的连接系数 $w_{ji}^{(2)}$。</p>
+    <h3 class="sub-title">第三层：规则节点层（第 7 页）</h3>
+    <p>完成模糊逻辑推理条件部的匹配工作。由最大、最小推理规则可知，规则节点实现的功能是模糊"与"运算：</p>
+    <div class="math-scroll">$$f_j^{(3)}=\min\bigl(u_1^{(3)},u_2^{(3)},\dots,u_p^{(3)}\bigr),\qquad a_j^{(3)}=f_j^{(3)}$$</div>
+    <p>且第二层节点与第三层节点之间的连接系数 $w_{ji}^{(3)}=1$。</p>
+    <h3 class="sub-title">第四层：输出语言值层（第 8 页，两种模式）</h3>
+    <ul class="clean">
+      <li><strong>从上到下</strong>的传输模式时，与第二层相同，实现模糊化的功能；</li>
+      <li><strong>从下到上</strong>的传输模式中，实现模糊逻辑推理运算——根据最大、最小推理规则，是模糊"或"运算：</li>
+    </ul>
+    <div class="math-scroll">$$f_j^{(4)}=\max\bigl(u_1^{(4)},u_2^{(4)},\dots,u_p^{(4)}\bigr),\qquad a_j^{(4)}=f_j^{(4)}$$</div>
+    <p>且第三、四层节点之间的连接系数 $w_{ji}^{(4)}=1$。</p>
+    <h3 class="sub-title">第五层：输出层（第 9 页，两种模式）</h3>
+    <p>从上到下的信号传输方式同第一层；从下到上是<strong>精确化计算</strong>，如果采用重心法，有：</p>
+    <div class="math-scroll">$$f_j^{(5)}=\sum_i w_{ji}^{(5)}u_i^{(5)}=\sum_i\bigl(m_{ji}^{(5)}\sigma_{ji}^{(5)}\bigr)u_i^{(5)},\qquad a_j^{(5)}=\frac{f_j^{(5)}}{\sum_i\sigma_{ji}^{(5)}u_i^{(5)}}$$</div>
+    <p>则第四层节点与第五层节点之间的连接系数 $w_{ji}^{(5)}$ 可以看作是 $m_{ji}^{(5)}\cdot\sigma_{ji}^{(5)}$。</p>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 10–12 页</span>
+    <h2 class="sec-title">学习算法：第一阶段——自组织学习</h2>
+    <h3 class="sub-title">两阶段总览（第 10 页）</h3>
+    <ul class="clean">
+      <li><strong>第一阶段（自组织学习）</strong>：进行各语言变量语言值隶属度函数的初步定位，并尽量发掘模糊控制规则的存在性（可以通过自组织学习删除部分不可能出现的规则）；</li>
+      <li><strong>第二阶段（有导师学习）</strong>：改进和优化期望输出的各语言值隶属度函数。</li>
+    </ul>
+    <p><strong>自组织学习的任务设定</strong>：给定一组输入样本数据 $x_i(t),\ i=1,2,\dots,n$、期望的输出值 $y_i(t),\ i=1,2,\dots,m$、模糊分区 $|T(x)|$ 和 $|T(y)|$ 以及期望的隶属度函数类型（即三角型、钟型等）。学习的目的是找到隶属度函数的参数和系统实际存在的模糊逻辑控制规则。</p>
+    <h3 class="sub-title">中心值估计：Kohonen 自组织映射法（第 11 页）</h3>
+    <p>率先利用样本确定隶属度函数的均值和方差：均值（中心值）$m_i$ 的估计用 <strong>Kohonen 自组织映射法</strong>；方差（宽度值）$\sigma_i$ 与重叠参数 r 以及中心点 $m_i$ 邻域内分布函数值相关。经过一段时间的学习后，权值的分布可以近似地看作输入随机样本的概率密度分布。学习过程是一个 <strong>Winner-take-all</strong> 的过程：</p>
+    <div class="math-scroll">$$\bigl\|x(t)-m_{\text{closest}}(t)\bigr\|=\min_{1\le i\le k}\bigl\{\|x(t)-m_i(t)\|\bigr\}$$</div>
+    <div class="math-scroll">$$m_{\text{closest}}(t+1)=m_{\text{closest}}(t)+\alpha(t)\bigl[x(t)-m_{\text{closest}}(t)\bigr]$$</div>
+    <div class="math-scroll">$$m_i(t+1)=m_i(t)\qquad\text{当 } m_i(t)\ne m_{\text{closest}}(t)$$</div>
+    <p>其中 $k=|T(x)|$ 表示语言变量 x 语言值的数目；$m_i(0)$ 为一个小的随机数。</p>
+    <h3 class="sub-title">宽度 σ 的计算（第 12 页）</h3>
+    <p>一旦确定了 $m_i$ 后，再计算宽度 $\sigma_i$：通过求下列目标函数的极小值来获取：</p>
+    <div class="math-scroll">$$E=\frac{1}{2}\sum_{i=1}^{N}\Bigl[\sum_{j\in N_{\text{nearest}}}\Bigl(\frac{m_i-m_j}{\sigma_i}\Bigr)\Bigr]^{2}$$</div>
+    <p>其中 r 为重叠参数。也可以采用一阶最近邻域法近似：</p>
+    <div class="math-scroll">$$\sigma_i=\frac{\bigl|m_i-m_{\text{closest}}\bigr|}{r}$$</div>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 13–15 页</span>
+    <h2 class="sec-title">推理规则的确定、删除与合并</h2>
+    <h3 class="sub-title">推理规则的确定（第 13 页）</h3>
+    <p>即确定第三层规则节点和第四层输出语言值节点之间的连接关系，采用<strong>竞争学习</strong>获得。记 $o_i^{(3)}(t)$ 为规则节点的激励强度、$o_j^{(4)}(t)$ 为第四层输出语言值节点输出，则：</p>
+    <div class="math-scroll">$$\Delta w_{ij}(t)=o_j^{(4)}\bigl(-w_{ij}(t)+o_i^{(3)}\bigr)$$</div>
+    <h3 class="sub-title">规则删除与合并（第 14 页）</h3>
+    <p><strong>规则删除</strong>：</p>
+    <ul class="clean">
+      <li>仅保留规则节点与同一输出语言变量的所有语言值节点的连接系数<strong>最大</strong>的那个连接关系，将其余的连接关系删除；</li>
+      <li>当某一规则节点与某一输出语言变量所有语言值节点之间的连接系数都非常小时，则所有的连接关系都可以删除；</li>
+      <li>如果某一规则节点与第四层中的所有节点的连接系数都很少而被删除，则该规则节点对输出节点不产生任何影响，该规则节点可以删除。</li>
+    </ul>
+    <p><strong>规则合并的条件</strong>：</p>
+    <ul class="clean">
+      <li>该组节点具有完全相同的结论部（如图 6-2 中输出变量 $y_i$ 中的第二个语言值节点）；</li>
+      <li>在该组规则节点中某些条件部是相同的（如图 6-2 中输入变量 $x_0$ 中的第一个语言值节点的输出与该组规则节点全部相连）；</li>
+      <li>该组规则节点的其它条件输入项包含了所有其它输入语言变量某一语言值节点的输出。</li>
+    </ul>
+    <h3 class="sub-title">图 6-2：规则节点合并示例（第 15 页）</h3>
+    <figure class="fig">
+      <img src="images/ch6ref_p19_merge.png" alt="图6-2 规则节点合并示例">
+      <figcaption>图 6-2　规则节点合并示例（合并前/合并后）</figcaption>
+    </figure>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 16–21 页</span>
+    <h2 class="sec-title">第二阶段：有导师学习（BP）</h2>
+    <h3 class="sub-title">误差与学习总公式（第 16 页）</h3>
+    <p>可采用 BP 学习：</p>
+    <div class="math-scroll">$$E=\frac{1}{2}\bigl(y(t)-\hat{y}(t)\bigr)^{2}=\min$$</div>
+    <div class="math-scroll">$$w(t+1)=w(t)+\eta\Bigl(-\frac{\partial E}{\partial w}\Bigr)$$</div>
+    <div class="math-scroll">$$\frac{\partial E}{\partial w}=\frac{\partial E}{\partial(net)}\frac{\partial(net)}{\partial w}=\frac{\partial E}{\partial f}\frac{\partial f}{\partial a}\frac{\partial a}{\partial w}$$</div>
+    <h3 class="sub-title">反向传播：第五层（第 17 页）</h3>
+    <p>反向传播到上一层的广义误差 $\delta^{(5)}$ 为：</p>
+    <div class="math-scroll">$$\delta_j^{(5)}=-\frac{\partial E}{\partial f_j^{(5)}}=-\frac{\partial E}{\partial a_j^{(5)}}\frac{\partial a_j^{(5)}}{\partial f_j^{(5)}}=y(t)-\hat{y}(t)$$</div>
+    <div class="math-scroll">$$\frac{\partial E}{\partial m_{ji}^{(5)}}=-\bigl[y(t)-\hat{y}(t)\bigr]\frac{\sigma_{ji}^{(5)}u_i^{(5)}}{\sum_i\sigma_{ji}^{(5)}u_i^{(5)}}$$</div>
+    <div class="math-scroll">$$\frac{\partial E}{\partial \sigma_{ji}^{(5)}}=-\bigl[y(t)-\hat{y}(t)\bigr]\frac{m_{ji}^{(5)}u_i^{(5)}\bigl(\sum_i\sigma_{ji}^{(5)}u_i^{(5)}\bigr)-\bigl(\sum_i m_{ji}^{(5)}\sigma_{ji}^{(5)}u_i^{(5)}\bigr)u_i^{(5)}}{\bigl(\sum_i\sigma_{ji}^{(5)}u_i^{(5)}\bigr)^{2}}$$</div>
+    <h3 class="sub-title">反向传播：第四层（第 18 页）</h3>
+    <p>没有任何参数进行更新。唯一需要做的是实现误差的反向传播计算：</p>
+    <div class="math-scroll">$$\delta_j^{(4)}=\bigl(y(t)-\hat{y}(t)\bigr)\frac{m_{ji}^{(5)}\sigma_{ji}^{(5)}\bigl(\sum_i\sigma_{ji}^{(5)}u_i^{(5)}\bigr)-\bigl(\sum_i m_{ji}^{(5)}\sigma_{ji}^{(5)}u_i^{(5)}\bigr)u_i^{(5)}}{\bigl(\sum_i\sigma_{ji}^{(5)}u_i^{(5)}\bigr)^{2}}$$</div>
+    <h3 class="sub-title">反向传播：第三层（第 19 页）</h3>
+    <p>如果输出语言变量有 m 个，则：</p>
+    <div class="math-scroll">$$\delta_j^{(3)}=\frac{\partial E}{\partial f_j^{(3)}}=\delta_j^{(4)}\frac{f_j^{(4)}}{a_i^{(3)}}=\delta_j^{(4)},\qquad \delta_j^{(3)}=\sum_{k=1}^{m}\delta_k^{(4)}$$</div>
+    <h3 class="sub-title">反向传播：第二层（第 20–21 页）</h3>
+    <p>第三层到第二层的误差传播：</p>
+    <div class="math-scroll">$$q_k^{(3)}=\delta_k^{(3)}\quad(\text{当 } a_j^{(2)}\text{ 是第 } k \text{ 个规则节点输入值中的最小值时});\qquad q_k^{(3)}=0\quad(\text{其它})$$</div>
+    <div class="math-scroll">$$\frac{\partial f_k^{(3)}}{\partial a_j^{(2)}}=\frac{\partial f_k^{(3)}}{\partial u_j^{(3)}}=\begin{cases}1 & \text{if }\ f_k^{(3)}=u_j^{(3)}=\min\bigl(u_1^{(3)},u_2^{(3)},\dots\bigr)\\ 0 & \text{otherwise}\end{cases}$$</div>
+    <div class="math-scroll">$$\frac{\partial E}{\partial a_j^{(2)}}=\sum_k\delta_k^{(3)}\frac{\partial f_k^{(3)}}{\partial a_j^{(2)}}=\sum_k q_k^{(3)}$$</div>
+    <p>第二层参数（隶属度函数中心值与宽度）的学习公式：</p>
+    <div class="math-scroll">$$m_{ji}^{(2)}(t+1)=m_{ji}^{(2)}(t)-\eta\frac{\partial E}{\partial a_j^{(2)}}\,e^{f_j^{(2)}}\frac{2\bigl(u_i^{(2)}-m_{ji}^{(2)}\bigr)}{\bigl(\sigma_{ji}^{(2)}\bigr)^{2}}$$</div>
+    <div class="math-scroll">$$\sigma_{ji}^{(2)}(t+1)=\sigma_{ji}^{(2)}(t)-\eta\frac{\partial E}{\partial a_j^{(2)}}\,e^{f_j^{(2)}}\frac{2\bigl(u_i^{(2)}-m_{ji}^{(2)}\bigr)^{2}}{\bigl(\sigma_{ji}^{(2)}\bigr)^{3}}$$</div>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 22 页</span>
+    <h2 class="sec-title">整个学习流程</h2>
+    <figure class="fig">
+      <img src="images/ch6ref_p26_flow.png" alt="模糊神经网络学习流程">
+      <figcaption>学习流程：训练样本数据 → 自组织分类得出隶属度函数中心值/宽度值 → 竞争学习得出模糊推理规则 → 规则删除 → 规则合并 → 有导师学习得出最佳隶属度函数</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== 二、基于神经网络的自适应控制（第 23–32 页） ========== -->
+  <section class="slide" id="mrac">
+    <span class="slide-tag">第 23–25 页</span>
+    <h2 class="sec-title">二、基于神经网络的自适应控制</h2>
+    <h3 class="sub-title">1. 自适应控制要素与两种设计途径（第 23 页）</h3>
+    <p>神经网络控制器完全满足自适应控制的要素：<strong>在线、实时地了解对象</strong>；<strong>有一个可调节环节</strong>；<strong>能使系统性能达到指标要求和最优</strong>。常规的神经网络控制器本身也具有一定的自适应能力。</p>
+    <p>与传统的自适应控制器一样，有两种不同的设计途径：</p>
+    <ul class="clean">
+      <li><strong>间接控制</strong>：通过系统辨识获取对象的数学模型，再根据一定的设计指标进行设计；</li>
+      <li><strong>直接控制</strong>：根据对象的输出误差直接调节控制器内部参数来达到自适应控制的目的。</li>
+    </ul>
+    <h3 class="sub-title">2. 模型参考自适应控制（第 24 页）</h3>
+    <p>通过选择一个适当的<strong>参考模型</strong>和由稳定性理论设计的自适应算法，并利用参考模型的输出与实际系统输出之间的误差信号，由一套自适应算法计算出当前的控制量去控制系统，达到自适应控制的目的。</p>
+    <h3 class="sub-title">3. 模型参考自适应控制：算式（第 25 页）</h3>
+    <p>如果被控系统：</p>
+    <div class="math-scroll">$$y(k+1)=f\bigl(y(k),y(k-1),u(k-1)\bigr)+g\bigl(u(k)\bigr)$$</div>
+    <p>参考系统：</p>
+    <div class="math-scroll">$$y_m(k+1)=a_1y_m(k)+a_2y_m(k-1)+r(k)$$</div>
+    <p>则控制输入可取：</p>
+    <div class="math-scroll">$$u(k)=\hat{g}^{-1}\bigl\{-f\bigl[y(k),y(k-1),u(k-1)\bigr]+y_m(k+1)\bigr\}$$</div>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 26–29 页</span>
+    <h2 class="sec-title">神经网络模型参考自适应控制</h2>
+    <h3 class="sub-title">1. 控制结构（第 26 页）</h3>
+    <figure class="fig">
+      <img src="images/ch6ref_p32_mrac.png" alt="神经网络模型参考自适应控制结构">
+      <figcaption>基于神经网络的模型参考自适应控制结构（参考模型 / 神经网络 $N_i$、$N_c$ / TDL / 被控对象；$e_c$ 控制误差、$e_i$ 辨识误差）</figcaption>
+    </figure>
+    <h3 class="sub-title">2. 举例：非线性对象（第 27 页）</h3>
+    <p>非线性控制对象为：</p>
+    <div class="math-scroll">$$y(k+1)=\frac{y(k)y(k-1)\bigl[y(k)+2.5\bigr]}{1+y^{2}(k)+y^{2}(k-1)}+u(k)$$</div>
+    <p>参考系统的模型为：</p>
+    <div class="math-scroll">$$y_m(k+1)=0.6y_m(k)+0.2y_m(k-1)+r(k)$$</div>
+    <h3 class="sub-title">3. 举例：控制策略（第 28 页）</h3>
+    <p>记 $f\bigl(y(k),y(k-1)\bigr)=\dfrac{y(k)y(k-1)[y(k)+2.5]}{1+y^{2}(k)+y^{2}(k-1)}$。如果取：</p>
+    <div class="math-scroll">$$u(k)=-f\bigl(y(k),y(k-1)\bigr)+0.6y(k+1)+0.2y(k-1)+r(k)$$</div>
+    <p>则控制系统的误差方程为 $e_c(k+1)=0.6e_c(k)+0.2e_c(k-1)$，其中 $e_c(k+1)=y_p(k+1)-y_m(k+1)$，上述控制可渐渐稳定。</p>
+    <h3 class="sub-title">4. 神经网络实现与控制效果（第 29 页）</h3>
+    <p>由于非线性方程 $f(\cdot)$ 是未知的，利用网络辨识模型取代未知的非线性方程 $f(\cdot)$，构成基于神经网络的模型参考自适应控制器：</p>
+    <div class="math-scroll">$$u(k)=-N_i\bigl(y(k),y(k-1)\bigr)+0.6y(k)+0.2y(k-1)+r(k)$$</div>
+    <p>取 $r(k)=\sin(2\pi k/25)$。控制响应曲线：</p>
+    <figure class="fig">
+      <img src="images/ch6ref_p35_result.png" alt="神经网络模型参考自适应控制响应曲线">
+      <figcaption>神经网络模型参考自适应控制响应曲线（实线—参考模型输出，虚线—实际系统输出，两者几乎重合）</figcaption>
+    </figure>
+    <p>确定导师信号 $t_j(k+1)=y_p(k+1)-u(k)$ 进行在线辨识。在线辨识后的控制效果：</p>
+    <figure class="fig">
+      <img src="images/ch6ref_p36_online_result.png" alt="在线辨识后的控制效果">
+      <figcaption>在线辨识后的控制效果（$y(k)$ 跟踪期望轨迹）</figcaption>
+    </figure>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 30–32 页</span>
+    <h2 class="sec-title">复杂情况与动态 BP 学习算法</h2>
+    <h3 class="sub-title">1. 复杂情况（第 30 页）</h3>
+    <p>对于 $y(k+1)=f\bigl(y(k),y(k-1),u(k-1)\bigr)+g\bigl(u(k)\bigr)$，可得：</p>
+    <div class="math-scroll">$$u(k)=\hat{g}^{-1}\bigl\{-N_f\bigl[y(k),y(k-1),u(k-1)\bigr]+y_m(k+1)\bigr\}$$</div>
+    <p>如果 $\hat{g}^{-1}$ 存在，可用神经网络逼近之；如不存在，可采用<strong>动态 BP 学习算法</strong>。</p>
+    <h3 class="sub-title">2. 动态 BP 学习算法（第 31 页）</h3>
+    <p>设网络模型 $\hat{y}(k+1)=N_f\bigl(y(k)\bigr)+N_g\bigl(u(k)\bigr)$ 已离线精确获得。训练控制网络，使下列标准最小：</p>
+    <div class="math-scroll">$$e_c(k)=\hat{y}_p(k)-y_m(k),\qquad J_c=\sum_{k=1}^{T_c}\bigl\|e_c(t+k)\bigr\|^{2}$$</div>
+    <h3 class="sub-title">3. 结构图（第 32 页）</h3>
+    <figure class="fig">
+      <img src="images/ch6ref_p39_dynbp.png" alt="动态 BP 学习结构图">
+      <figcaption>动态 BP 学习结构（参考模型 / 被控对象 / 神经网络 $N_u$、$N_f$ / 控制器 $N_c$ / 延迟环节 $z^{-1}$）</figcaption>
+    </figure>
+  </section>
+
+  <!-- ========== 三、智能控制的优化算法（第 33–50 页） ========== -->
+  <section class="slide" id="opt">
+    <span class="slide-tag">第 33–39 页</span>
+    <h2 class="sec-title">三、智能控制的优化算法：遗传算法</h2>
+    <h3 class="sub-title">1. 遗传算法的提出（第 33 页）</h3>
+    <p>美国的 <strong>J. Holland</strong> 教授于 1975 年提出；在遗传学的基础上利用计算机来模拟生物的进化过程，从而实现复杂问题的优化求解。模拟生物染色体的运作（复制、交叉、变异），是一种<span class="kw">随机化搜索算法</span>。</p>
+    <h3 class="sub-title">2. 步骤（第 34 页）</h3>
+    <ol class="clean">
+      <li><span class="tag">1</span>群体的初始化；</li>
+      <li><span class="tag">2</span>评价群体中每一个体的性能；</li>
+      <li><span class="tag">3</span>选择下一代个体；</li>
+      <li><span class="tag">4</span>执行简单的操作算子（如交叉、变异）；</li>
+      <li><span class="tag">5</span>评价下一代群体的性能；</li>
+      <li><span class="tag">6</span>判断终止条件满足否？若不，则转 (3) 继续；若满足，则结束。</li>
+    </ol>
+    <h3 class="sub-title">3. 需要解决的问题与操作算子（第 35 页）</h3>
+    <p><strong>需要解决的问题</strong>：编码机制；选择机制；控制参数选择；二进制字符串的群体构成；适应度函数的计算；遗传算子（交叉、变异）的定义。</p>
+    <p><strong>遗传学习算法的操作算子</strong>：编码机制（Encoding mechanism）· 适应度函数（Fitness function）· 选择机制（Selection mechanism）· 交叉算子（Crossover）· 变异算子（Mutation）。</p>
+    <h3 class="sub-title">4. 编码机制与适应度函数（第 36 页）</h3>
+    <p><strong>编码机制</strong>：<strong>二进制编码</strong>（每一个位 0 或 1 ——基因；字符串——染色体）、多值编码方法、实数编码。</p>
+    <p><strong>适应度函数</strong>：优化问题的目标函数；"适应度值"的计算直接通过将目标函数经一定的线性变换映射到 [0, 1] 区间内的一个值。</p>
+    <h3 class="sub-title">5. 选择机制（第 37 页）</h3>
+    <p>基本思想取自于自然界进化论的"<strong>适者生存</strong>"：适应度值越高的个体，生存的数量也越高，满足"优胜劣汰"自然法则，也可称为<strong>复制机制</strong>。常用方法：比例选择法（Proportionate selection scheme）；转轮选择法（Roulette Wheel Selection Scheme，随机方法）。</p>
+    <h3 class="sub-title">6. 交叉算子（第 38 页）</h3>
+    <p>模拟有性繁殖现象：随机地从父辈集合中选取两个个体作为双亲。设 $L_l$ 表示任一个体的字符串（染色体）长度，随机地产生（0～$L_l$）之间的一个数 d，并把此点位置称为<strong>交叉点</strong>。交叉运算就是将双亲的基因链在交叉点断裂，且将在交叉点之后的基因根据交叉率的条件决定是否进行相互交换形成下一代。交叉率 $p_c$ 是根据优化问题预先确定的 0～1 之间的值，通常取 <strong>0.6～0.9</strong>。</p>
+    <h3 class="sub-title">7. 变异算子与一般过程（第 39 页）</h3>
+    <p><strong>变异算子</strong>：模拟基因突变现象——随机地选取染色体中的某个基因（字符串的某一位）进行取反运算，即将原有的"1"变为"0"和反之。变异率 $p_m$ 取比较小的数值，一般 $p_m$ 为 <strong>0.001～0.2</strong>。</p>
+    <p><strong>一般过程</strong>：① 群体初始化；② 繁殖；③ 交叉；④ 变异；⑤ 终止准则判断，若不满足，重复②～④；否则，搜索结束。</p>
+  </section>
+  <section class="slide">
+    <span class="slide-tag">第 40–46 页</span>
+    <h2 class="sec-title">蚁群算法</h2>
+    <h3 class="sub-title">1. 蚁群算法的提出（第 40 页）</h3>
+    <p><strong>Dorigo、Maniezzo、Colomi</strong> 等人于 1991 年提出；模拟昆虫王国中蚂蚁群体智能行为的仿生优化算法：当它们碰到一个还没走过的路口时，会随机地选择一个路径，并在走过的路径上释放信息素，蚂蚁所走的路径越长，则释放的信息素量就越小；当后来的蚂蚁再次路过这个路径时，选择信息量较大的路径的概率相对较大，这样便形成了一个<span class="kw">正反馈机制</span>。</p>
+    <h3 class="sub-title">2. 基本原理（第 41 页）</h3>
+    <ul class="clean">
+      <li>蚂蚁种群之间进行通讯信息交换经由信息素与所处环境而决定。每只单个蚂蚁在选择路径时是根据其周围的局部环境做出相对应的反应，只对本身经过的路径做反应，而不对其他蚂蚁所经过的路径信息素做任何反应；</li>
+      <li>蚂蚁做出的相应反应是由其内部状态决定的。蚂蚁个体虽简单，但内部状态中存储着许多自身过去的信息量，在路径选择上会依靠群体其他个体释放的信息素，选择最优路线；</li>
+      <li>对于单个蚂蚁来说，每只蚂蚁仅会对自处环境做独立选择；对于整个蚂蚁种群来说，单个蚂蚁会将路径中信息素多的作为优选，经过一段时间最终整个蚁群以高效有序的自组性选择最短路径。</li>
+    </ul>
+    <h3 class="sub-title">3. 基本机制：两个阶段（第 42 页）</h3>
+    <ul class="clean">
+      <li><strong>适应阶段</strong>：整个蚂蚁种群各自集合自身释放出的信息素，并不断调整自身结构——种群经过的路径蚂蚁数量越多则具有的信息素就越多，该路径成为最佳路径的机率就越大；而随着时间的推移，路径中的信息素数量随之降低，被选概率受到影响；</li>
+      <li><strong>协作阶段</strong>：蚂蚁种群通过相互的通讯交流中主要传递的是个体自身信息量的多少，进而获取性能更加完善的最优解。</li>
+    </ul>
+    <h3 class="sub-title">4. 原始模型①：蚁群规模（第 43 页）</h3>
+    <p>以<strong>旅行商问题</strong>为例推导蚁群算法：在两城市之间寻找最优和最短路线。设定 $b_i(t)$ 为 t 时刻位于元素 i 的蚂蚁数目，$\tau_{ij}(t)$ 为 t 时刻路径 (i, j) 上的信息量，n 表示旅行商问题的规模程度，m 为蚁群中蚂蚁的总数量值。因此：</p>
+    <div class="math-scroll">$$m=\sum_{i=1}^{n}b_i(t)$$</div>
+    <h3 class="sub-title">5. 原始模型②：路径方向选择（第 44 页）</h3>
+    <p>蚁群中的单个蚂蚁采用随机比例规则，在整个运动过程中依照各条路径上具有的信息素量程度来决定其方向的选择性。在 t 时刻，蚂蚁 k（k=1, 2, 3, …, m）在城市 i 选择城市 j 的转移概率：</p>
+    <div class="math-scroll">$$p_{ij}^{k}(t)=\begin{cases}\dfrac{\tau_{ij}^{\alpha}(t)\eta_{ij}^{\beta}(t)}{\sum_{s\in allowed\,k}\tau_{is}^{\alpha}(t)\eta_{is}^{\beta}(t)} & j\in allowed\,k\\ 0 & \text{otherwise}\end{cases}$$</div>
+    <ul class="clean">
+      <li>$allowed\,k=\{0,1,\dots,n-1\}$——蚂蚁 k 下一步允许选择的城市；</li>
+      <li>$\alpha$——<strong>信息启发式因子</strong>，代表轨迹的相对重要性；</li>
+      <li>$\beta$——<strong>期望启发式因子</strong>，代表能见度的相对重要性；</li>
+      <li>$\eta_{ij}(t)$——启发函数，$\eta_{ij}(t)=\dfrac{1}{d_{ij}}$；$d_{ij}$——相邻两个城市之间的距离。</li>
+    </ul>
+    <h3 class="sub-title">6. 原始模型③：信息素更新（第 45 页）</h3>
+    <p>为避免路径上过多残留信息素长时间被掩埋，每只蚂蚁在走完每一步路径或完成城市间所有路径后，会对残留信息进行进一步更新处理。在 t+n 时刻路径 (i, j) 上的信息量：</p>
+    <div class="math-scroll">$$\tau_{ij}(t+n)=(1-\rho)\tau_{ij}(t)+\Delta\tau_{ij}(t)$$</div>
+    <div class="math-scroll">$$\Delta\tau_{ij}(t)=\sum_{k=1}^{m}\Delta\tau_{ij}^{k}(t)$$</div>
+    <p>式中 $\rho$ 为<strong>信息素挥发系数</strong>，$1-\rho$ 为信息素残留因子，$\rho$ 的取值范围为 [0, 1]；$\Delta\tau_{ij}(t)$ 为本次循环中路径 (i, j) 上的信息素增量，初始时刻设 $\Delta\tau_{ij}(0)=0$。更新规律：</p>
+    <div class="math-scroll">$$\Delta\tau_{ij}^{k}(t)=\begin{cases}\dfrac{Q}{L_k} & \text{若第 } k \text{ 只蚂蚁在本次循环中经过 } (i,j)\\ 0 & \text{否则}\end{cases}$$</div>
+    <p>其中 Q 为<strong>信息素强度</strong>（影响算法的收敛程度）；$L_k$ 为第 k 只蚂蚁在本次循环中所走路径的总长度。</p>
+    <h3 class="sub-title">7. 应用范围（第 46 页）</h3>
+    <ul class="clean">
+      <li>广义分配问题；多重背包问题；网络路由问题。</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <span class="slide-tag">第 47–50 页</span>
+    <h2 class="sec-title">迭代学习控制</h2>
+    <h3 class="sub-title">1. 迭代学习与二阶非线性系统（第 47 页）</h3>
+    <p><strong>迭代学习（Iterative learning）</strong>的基本思想在于总结人类学习的方法，即通过多次的训练，从经验中学会某种技能。迭代学习控制是智能控制中具有严格数学描述的一个分支：它以极为简单的学习算法，在给定的时间区间上实现未知被控对象以任意精度跟踪某一给定的期望轨迹的控制问题。</p>
+    <p><strong>二阶非线性动力系统</strong>：引入变量 $x_2(t)=\dot{x}_1(t)$：</p>
+    <div class="math-scroll">$$\begin{bmatrix}\dot{x}_1(t)\\ \dot{x}_2(t)\end{bmatrix}=\begin{bmatrix}x_2(t)\\ f_1\bigl(x_1(t),x_2(t),t\bigr)\end{bmatrix}+\begin{bmatrix}0\\ g_1\bigl(x_1(t),x_2(t),t\bigr)\end{bmatrix}u(t)$$</div>
+    <p>记 $\mathbf{x}(t)=\bigl(x_1(t),x_2(t)\bigr)^{T}$，则上式可以简化为：</p>
+    <div class="math-scroll">$$\dot{\mathbf{x}}(t)=f\bigl(\mathbf{x}(t),t\bigr)+g\bigl(\mathbf{x}(t),t\bigr)u(t)$$</div>
+    <p>设系统的期望输出为 $x_d(t),\ t\in[0,T]$。控制的问题就归结为寻求一个控制输入 $u(t)$，使得系统的输出 $x(t)$ 尽可能地逼近 $x_d(t),\ t\in[0,T]$。</p>
+    <h3 class="sub-title">2. 定理 6-1（第 48 页）</h3>
+    <p>记控制输入 $u^{j}(t)$ 为第 j 次迭代中<strong>反馈控制</strong>和<strong>前馈控制</strong>两项的线性组合，即：</p>
+    <div class="math-scroll">$$u^{j}(t)=u_b^{j}(t)+u_f^{j}(t),\qquad u_b^{j}(t)=K\bigl(x_d(t)-x^{j}(t)\bigr)$$</div>
+    <p>$u_f^{j}(t)\in R^n$ 为前馈学习控制项，由学习控制器产生。当 $K=\mathrm{diag}\bigl(adb^{-1},db^{-1}\bigr)$ 时，系统跟踪误差满足：</p>
+    <div class="math-scroll">$$\bigl|x_d(t)-x(t)\bigr|\le\sqrt{1+4a^{2}}\;\frac{\lambda_2\bigl|u_d(t)-u_f^{j}(t)\bigr|_m}{a(\mu-\nu)}\le\varepsilon$$</div>
+    <p>式中 $a>0,\ b\ge\lambda_2$；$\mu>\nu,\quad \nu=a+(2+1/a)\bigl(\beta_m+\alpha_m|u_d|_m\bigr)$。</p>
+    <h3 class="sub-title">3. 迭代计算公式（第 49 页）</h3>
+    <p>取性能指标函数：</p>
+    <div class="math-scroll">$$E_j=\frac{1}{2}\sum_t\bigl(u_d(t)-u_f^{j}(t)\bigr)^{2}\qquad t\in[0,T]$$</div>
+    <p>应用梯度法得到第 j 次反馈输入迭代计算公式：</p>
+    <div class="math-scroll">$$u_f^{j+1}(t)=u_f^{j}(t)-\eta\frac{\partial E_j}{\partial u_f^{j}(t)}=u_f^{j}(t)+\eta\bigl(u_d(t)-u_f^{j}(t)\bigr)$$</div>
+    <p>η 为学习因子，为了保证迭代算法的收敛性，η 的取值范围必须满足 $0<\eta<2$。</p>
+    <h3 class="sub-title">4. 应用（第 50 页）</h3>
+    <p>迭代学习控制的最成功应用是<strong>机械手的轨迹跟踪控制</strong>。多关节机械手系统是一个严重非线性、强耦合、时变系统，动力学方程相当复杂，常规的控制方法无法得到满意的控制效果。同时，多关节机械手系统与本节研究的一类非线性系统完全耦合，因此其迭代学习控制具有<strong>控制算法简单、鲁棒性强、跟踪精度高、实时性好</strong>等优点，在重复周期作业环境的跟踪控制中有明显的优势。</p>
+  </section>
+
+</div>
+</body>
+</html>
