@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="AH8NhAZdfE15EZiHQd74hB">
+<head data-page-node-id="3pEVIQBUBsaaD9JK9pRx9X">
+<meta charset="UTF-8" data-page-node-id="aQ4k6cHHV8JDmOHhV7NaVp">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="JVAyaS3AXGx61uRKaeR3D0">
+<title>智能控制概论 · 第八讲 模糊神经网络控制实验（讲义）</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  chtml: { scale: 1.02 },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+  :root{
+    /* 东南大学 VI 标准色：绿 #4C7D2C / 黄 #FDD000 */
+    --green:#4C7D2C;
+    --green-dark:#3A6122;
+    --green-deep:#2C4A1A;
+    --green-mid:#8FB469;
+    --green-light:#F0F5E9;
+    --green-line:#D9E5C8;
+    --yellow:#FDD000;
+    --yellow-light:#FFF9DC;
+    --yellow-ink:#574500;
+    --ink:#26231B;
+    --ink-2:#5B5648;
+    --ink-3:#8E887A;
+    --paper:#ffffff;
+    --bg:#FAFBF7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+    font-size:16.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  nav.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--green-line);
+  }
+  .topbar-inner{
+    max-width:920px;margin:0 auto;padding:10px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .topbar .brand{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:600;font-size:15px;color:var(--green);
+    letter-spacing:.5px;
+  }
+  .topbar .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;}
+  .topbar a{
+    color:var(--ink-2);text-decoration:none;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    white-space:nowrap;
+  }
+  .topbar a:hover{color:var(--green);}
+  .page{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+  section.slide{position:relative;padding-top:34px;}
+  .slide-tag{
+    float:right;
+    font-size:12px;color:var(--ink-3);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    border:1px solid var(--green-line);border-radius:999px;
+    padding:2px 10px;background:var(--paper);
+    margin-left:12px;
+  }
+  h2.sec-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:24px;font-weight:700;color:var(--green-dark);
+    display:flex;align-items:center;gap:12px;
+    margin:8px 0 22px;
+  }
+  h2.sec-title::before{
+    content:"";width:6px;height:26px;border-radius:3px;
+    background:linear-gradient(180deg,var(--green) 0%,var(--green) 55%,var(--yellow) 55%,var(--yellow) 100%);
+    flex:none;
+  }
+  h3.sub-title{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:18.5px;font-weight:600;color:var(--green-dark);
+    margin:30px 0 12px;padding-left:12px;
+    border-left:4px solid var(--yellow);
+  }
+  h4.minor{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16.5px;font-weight:600;color:var(--ink);
+    margin:20px 0 8px;
+  }
+  p{margin:10px 0;}
+  strong{color:var(--green-dark);}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--green-line);
+    border-radius:14px;
+    padding:22px 26px;
+    box-shadow:0 1px 4px rgba(76,125,44,.06);
+    margin:12px 0;
+  }
+  .defbox{
+    background:var(--green-light);
+    border-left:5px solid var(--green);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:14px 0;
+  }
+  .defbox .dt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green-deep);font-size:15.5px;
+  }
+  .example{
+    background:#FFFDF0;
+    border:1px solid #F0E3A0;
+    border-left:5px solid var(--yellow);
+    border-radius:0 12px 12px 0;
+    padding:16px 22px;margin:16px 0;
+  }
+  .example .et{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--yellow-ink);font-size:15.5px;
+    margin-bottom:6px;
+  }
+  .note{
+    border:1.5px dashed var(--green-mid);
+    border-radius:12px;padding:12px 20px;margin:12px 0;
+    font-size:15px;color:var(--ink-2);
+    background:#FDFEF9;
+  }
+  .note .nt{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-weight:700;color:var(--green);font-size:13px;
+    background:var(--green-light);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  .kw{
+    background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 96%, transparent 96%);
+    font-weight:600;padding:0 2px;
+  }
+  .math-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 0;}
+  mjx-container[display="true"]{margin:14px 0 !important;}
+  .fig{text-align:center;margin:20px 0;}
+  .fig svg{max-width:100%;height:auto;}
+  .fig img{max-width:100%;border:1px solid var(--green-line);border-radius:10px;background:#fff;}
+  .fig figcaption{
+    font-size:13.5px;color:var(--ink-3);margin-top:8px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  .chapter{
+    margin-top:44px;padding:46px 40px;
+    background:linear-gradient(120deg,var(--green-light) 0%,#FDFEFB 70%);
+    border:1px solid var(--green-line);border-radius:20px;
+    position:relative;overflow:hidden;
+  }
+  .chapter::before{
+    content:attr(data-num);position:absolute;right:26px;top:-38px;
+    font-family:Georgia,serif;font-size:190px;font-weight:700;
+    color:var(--yellow);opacity:.28;line-height:1;
+  }
+  .chapter .ch-kicker{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--green);font-weight:600;letter-spacing:3px;font-size:14px;
+  }
+  .chapter h1{
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:34px;font-weight:800;color:var(--ink);margin-top:6px;
+  }
+  .chapter .ch-sub{
+    margin-top:10px;font-size:16px;color:var(--ink-2);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  ol.toc{list-style:none;counter-reset:item;margin-top:8px;}
+  ol.toc li{
+    counter-increment:item;
+    display:flex;align-items:center;gap:18px;
+    background:var(--paper);border:1px solid var(--green-line);
+    border-radius:12px;padding:16px 22px;margin:12px 0;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:17.5px;font-weight:600;
+  }
+  ol.toc li::before{
+    content:counter(item);
+    flex:none;width:38px;height:38px;border-radius:50%;
+    background:var(--yellow);color:var(--green-deep);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:800;
+    box-shadow:inset 0 0 0 1.5px rgba(87,69,0,.18);
+  }
+  table.data{
+    width:100%;border-collapse:collapse;margin:14px 0 4px;
+    font-size:14.5px;background:var(--paper);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  table.data caption{
+    text-align:left;font-weight:600;color:var(--ink-2);
+    font-size:14.5px;padding:6px 2px;
+  }
+  table.data th{
+    background:var(--green);color:#fff;font-weight:600;
+    padding:7px 8px;border:1px solid var(--green);
+  }
+  table.data td{
+    padding:8px;border:1px solid var(--green-line);
+    text-align:center;color:var(--ink);
+  }
+  table.data td.lft{text-align:left;}
+  table.data tr:nth-child(even) td{background:#F7FAF2;}
+  ul.clean{list-style:none;}
+  ul.clean li{
+    padding:9px 0 9px 24px;position:relative;
+    border-bottom:1px dashed var(--green-line);
+  }
+  ul.clean li:last-child{border-bottom:none;}
+  ul.clean li::before{
+    content:"";position:absolute;left:4px;top:20px;
+    width:7px;height:7px;border-radius:2px;background:var(--green);
+  }
+  ul.clean li .tag{
+    font-size:12.5px;color:var(--yellow-ink);font-weight:700;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--yellow);border-radius:6px;padding:1px 8px;margin-right:8px;
+  }
+  ol.num{counter-reset:n;list-style:none;}
+  ol.num li{counter-increment:n;padding:5px 0 5px 34px;position:relative;}
+  ol.num li::before{
+    content:counter(n);position:absolute;left:0;top:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"PingFang SC",sans-serif;
+  }
+  footer.foot{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--green-line);
+    font-size:13px;color:var(--ink-3);text-align:center;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  @media print{
+    nav.topbar{display:none;}
+    body{background:#fff;}
+    .card,.chapter,.mini{box-shadow:none;}
+    section.slide{page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .chapter h1{font-size:26px;}
+  }
+  pre.code{
+    background:#16294D;color:#E8EEF8;border-radius:10px;padding:14px 20px;
+    font-family:Consolas,'Courier New',monospace;font-size:14.5px;line-height:1.75;
+    overflow-x:auto;margin:10px 0 14px;
+  }
+  code{
+    font-family:Consolas,'Courier New',monospace;font-size:0.92em;
+    background:#EEF3FA;color:#1E3A6E;border-radius:4px;padding:1px 6px;
+  }
+  pre.code code{background:none;color:inherit;padding:0;}
+</style></head>
+<body data-page-node-id="u6D7RLRMKx9iHE8xNMm6By">
+
+<nav class="topbar" data-page-node-id="7yAHIEKhJ1xfEh5987CaIH">
+  <div class="topbar-inner" data-page-node-id="fw2IarqTglS4TtFfh3yYMN">
+    <span class="brand" data-page-node-id="FSSYVbkdkd2oBmUJ5gRHtp">智能控制概论 · 第八讲（实验课）</span>
+    <div class="links" data-page-node-id="FyPmRFHsBK2jxqESMAF0QM">
+      <a href="#cover" data-page-node-id="BFgrHZn1EA71FVTPzrhjIB">封面</a>
+      <a href="#goal" data-page-node-id="mt3OtmRrz5BKWcf5DFJqzD">实验目的</a>
+      <a href="#principle" data-page-node-id="gBFkWL4b6b3W5kJN4bqLXv">实验原理</a>
+      <a href="#plant" data-page-node-id="9DSNdh0KaWdy6xFXLggWRF">对象与任务</a>
+      <a href="#steps" data-page-node-id="rpABXnYiQaVLSTEjIG82Vt">实验步骤</a>
+      <a href="#report" data-page-node-id="edq7RLed5hV2j9u2i5Pfmo">报告与思考</a>
+      <a href="#trouble" data-page-node-id="EcyXPWNYJhDHUO5j0OIWfz">故障排查</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page" data-page-node-id="AcObqeFfY3c444odyDD8Jb">
+
+  <!-- ========== 封面 ========== -->
+  <section class="slide" id="cover" data-page-node-id="gbkzwK2eITCmkObFvYgIxi">
+    <div class="chapter" data-num="8" data-page-node-id="xGCPwzHbRzD1pADx49Q0er">
+      <div class="ch-kicker" data-page-node-id="qZ4CJ0BYprAg5BQlZaB8u7">LECTURE 8 · EXPERIMENT</div>
+      <h1 data-page-node-id="2HkoO5yfJeCiLb9bmm6YqR">第八讲&nbsp;&nbsp;模糊神经网络控制实验</h1>
+      <div class="ch-sub" data-page-node-id="whmKlI5XRloBxs0ufSW9BK">实验八　模糊神经网络控制仿真实验——基于 ANFIS 的二阶对象控制器设计</div>
+      <p style="margin-top:18px;font-size:15px;color:var(--ink-3)" data-page-node-id="OFeVHWJtnw80cHAxwwH4Rv">
+        实验环境：MATLAB R2020b 及以上（Fuzzy Logic Toolbox）<br data-page-node-id="8oTHTmVkcgKRm5ocjPOtW6">
+        实验载体：<code data-page-node-id="HfNUsKdMDXsRCrLCuK3Mww">anfis_demo_S2.m</code>主线：PID 数据生成 → <code data-page-node-id="jBYTghGHGAflLGLACXA2aA">genfis</code> 搭骨架 → <code data-page-node-id="TBwpIdPWtxgjnStNJqg87E">anfis</code> 训练 → 闭环部署 → 性能对比
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== 实验导览 ========== -->
+  <section class="slide" data-page-node-id="YoVwvQ1sO9A3JRst7ZZDWX">
+    <span class="slide-tag" data-page-node-id="mqB42pfegPLfyrOYDWf9fe">讲义导航</span>
+    <h2 class="sec-title" data-page-node-id="rGDHiC5t8utVUOHxZ4unuh">实验导览</h2>
+    <ol class="toc" data-page-node-id="HuUYJRoBBzsWrZtwlGucYg">
+      <li data-page-node-id="NJzlOvuR6h2POGxrg5tt1w">实验目的——可解释性＋学习能力 · ANFIS 全流程 · 数据驱动边界</li>
+      <li data-page-node-id="YVqDGEmRQ8QDDBvKn6TYyT">实验原理（课前必读）——为什么需要模糊神经网络 · 五层结构 · 混合学习 · 控制回路</li>
+      <li data-page-node-id="c3trVPo6IPz93NM72NF6e0">实验对象与任务——二阶振荡＋纯滞后对象 · 状态空间实现 · 仿真参数</li>
+      <li data-page-node-id="FaAawnp2n8qZb9GDYnkVwx">实验步骤（模块零～七）——建模 → PID 采数据 → 划分 → 训练 → 闭环 → 指标 → 绘图</li>
+      <li data-page-node-id="KwvQjd8dergbJJYY6nkcux">实验报告要求——原理简答 · 隶属函数对比 · 性能对比表 · 一致性分析</li>
+      <li data-page-node-id="qiwhtTAU3QCHVX9WQkwHAW">思考题与故障排查——6 道思考（含 1 道选做）· 7 条故障排查</li>
+    </ol>
+  </section>
+
+  <!-- ========== 一、实验目的 ========== -->
+  <section class="slide" id="goal" data-page-node-id="DMbYQAJmFuq27Tw7whhT1N">
+    <span class="slide-tag" data-page-node-id="I9t25v6gWqgHoBWrMLDUeV">课前预习</span>
+    <h2 class="sec-title" data-page-node-id="2WGl432MOquAS4qfYW3kfF">一、实验目的</h2>
+    <ol class="num" data-page-node-id="SBOITzuH83uwrati3qG6wi">
+      <li data-page-node-id="Ud2sytZbsfHgz9ntuAsGtl">理解模糊神经网络的核心思想：将模糊推理的可解释性与神经网络的学习能力相结合，使模糊规则的前件与后件参数能够从数据中自适应调整。</li>
+      <li data-page-node-id="tJwK8hx34wbDef6bsv6C9p">掌握 ANFIS 的五层网络结构与混合学习算法：前向用最小二乘法估计后件线性参数，反向用梯度下降调整前件非线性参数。</li>
+      <li data-page-node-id="UvDB3ci7QtzSVzITqr9ExD">以二阶振荡加纯滞后对象 $G(s)=\dfrac{20}{8s^{2}+4s+1}e^{-0.2s}$ 为载体，完成"PID 数据生成 → <code data-page-node-id="VkVXPRZ4fGuU2sgGjCgHI3">genfis</code> 搭骨架 → <code data-page-node-id="5fCwcZt0yU6BKumzaKf9NF">anfis</code> 训练 → 闭环部署 → 性能对比"的完整流程。</li>
+      <li data-page-node-id="vFjkJPCkJNmu0FNV5AQzkm">通过 ANFIS 与 PID 的对比，理解数据驱动控制器的能力边界：<span class="kw" data-page-node-id="og0012zmAl5sAfSqI81dTE">训练数据的覆盖范围决定了控制性能的上限</span>。</li>
+    </ol>
+  </section>
+
+  <!-- ========== 二、实验原理 ========== -->
+  <section class="slide" id="principle" data-page-node-id="bK8ZpsQ7oJwTd420OuMd2E">
+    <span class="slide-tag" data-page-node-id="Qlmlyqy8q3L9ClretGAkt8">课前必读</span>
+    <h2 class="sec-title" data-page-node-id="UzBChsT3ZOiQzQZTwlrjFF">二、实验原理（课前必读）</h2>
+
+    <h3 class="sub-title" data-page-node-id="CicKQ2S0QhDc2kscvJUV7t">2.1 为什么需要模糊神经网络</h3>
+    <p data-page-node-id="W877rzYiX1BxdaxhNcYCUv">常规模糊控制器的规则和隶属函数依赖专家经验人工设定，对象工况变化时性能可能显著下降；纯神经网络控制器虽能从数据学习，但内部权值缺乏物理可解释性。ANFIS 把 Takagi–Sugeno 模糊推理系统嵌入一个前馈网络拓扑，使模糊系统获得"可训练性"——<strong data-page-node-id="SvKpZiFv1BFB9Ht3a6qOhO">模糊规则不再完全由人写定，而是由数据驱动地优化</strong>。</p>
+
+    <h3 class="sub-title" data-page-node-id="HLLPGycwxFoQ0NHuOg9LEI">2.2 ANFIS 的五层结构</h3>
+    <p data-page-node-id="5s169ug3kbWyFXqeJcE6fS">以二输入单输出为例。输入 $x$ 和 $y$，每个输入 2 个模糊集，共 4 条一阶 Sugeno 规则：</p>
+    <div class="math-scroll" data-page-node-id="NWv0MtJGsPwqd5EkXBLWkl">$$\text{Rule } i:\ \text{If } x \text{ is } A_i \text{ and } y \text{ is } B_i,\ \text{then } f_i = p_i x + q_i y + r_i$$</div>
+
+    <figure class="fig" data-page-node-id="or3svuorFaiwvPRgxjSB54">
+      <svg viewBox="0 0 920 384" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="nFCAEFYdAkm51MofkLW086">
+        <!-- 层标题 -->
+        <text x="70" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="ZFCAB69OPr1jFu4LAwsvud">输入</text>
+        <text x="210" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="xwiE86nAKsc0E9BPf3eEM7">第 1 层 模糊化（自适应）</text>
+        <text x="370" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="i4u3mfNb8MAJDOCt1NzIGt">第 2 层 规则（固定）</text>
+        <text x="510" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="45LJuZBvRgXPoCT8F5vfZ1">第 3 层 归一化（固定）</text>
+        <text x="660" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="wYdM5LK6BCiu3wRoquH0n9">第 4 层 后件（自适应）</text>
+        <text x="810" y="26" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3A6122" data-page-node-id="s09KETVkqcnhL8NFmrJeiL">第 5 层 输出（固定）</text>
+
+        <!-- 连线：输入 → 第1层 -->
+        <g stroke="#8E887A" stroke-width="1.2" fill="none" data-page-node-id="7TDztwJuED2gVDGpndZwZE">
+          <path d="M 86 130 L 192 90" data-page-node-id="expyycYEyjiOoAVvv2YiS7"/>
+          <path d="M 86 130 L 192 140" data-page-node-id="2hc93RlOMuKWCThK3Z07V0"/>
+          <path d="M 86 250 L 192 230" data-page-node-id="HcI48ldSLAmddadtxQ2qUB"/>
+          <path d="M 86 250 L 192 290" data-page-node-id="X8GeSRblPGl8iTRnS9oEUB"/>
+          <!-- 第1层 → 第2层（规则配对） -->
+          <path d="M 228 90  L 353 100" data-page-node-id="FRLG5a84xy9LXBUtDv12ly"/>
+          <path d="M 228 230 L 353 100" data-page-node-id="e4EkwxQk0roRiOAIBBawDf"/>
+          <path d="M 228 90  L 353 160" data-page-node-id="ybg6v1LCyxuHaYyJljqI2O"/>
+          <path d="M 228 290 L 353 160" data-page-node-id="5GviS7opwmwmrEvQ7oj6hc"/>
+          <path d="M 228 140 L 353 220" data-page-node-id="h1hdJ2yzU4oA565Sq3cPrh"/>
+          <path d="M 228 230 L 353 220" data-page-node-id="B5HbwuWEsypuXjQDfWshAp"/>
+          <path d="M 228 140 L 353 280" data-page-node-id="vDXcl75PbXVmlanhW7bVuK"/>
+          <path d="M 228 290 L 353 280" data-page-node-id="LAPck9fQajq6MKzHRd4KDC"/>
+          <!-- 第2层 → 第3层 -->
+          <path d="M 387 100 L 493 100" data-page-node-id="fZsBGidf6z4tw8wsNtDxqb"/>
+          <path d="M 387 160 L 493 160" data-page-node-id="BSFciS3maItrFjijOJkfDQ"/>
+          <path d="M 387 220 L 493 220" data-page-node-id="1EnZ008dImWrgc2e9l9G2B"/>
+          <path d="M 387 280 L 493 280" data-page-node-id="Dkj1xAWieE4uWVicR9Eblg"/>
+          <!-- 第3层 → 第4层 -->
+          <path d="M 527 100 L 642 100" data-page-node-id="0EQDm7oAa22dwX58Baomhk"/>
+          <path d="M 527 160 L 642 160" data-page-node-id="QX0IKk81nQgV11dXlDafsm"/>
+          <path d="M 527 220 L 642 220" data-page-node-id="7To4QOui1syDns2i0hHNcS"/>
+          <path d="M 527 280 L 642 280" data-page-node-id="EBaW23GgRPgZUbETBLP1gD"/>
+          <!-- 第4层 → 第5层 -->
+          <path d="M 678 100 L 793 190" data-page-node-id="2MojvmRRDMRmyYCMP6fJEs"/>
+          <path d="M 678 160 L 793 190" data-page-node-id="IlJlBWO51RFWEO8yBsh3Yl"/>
+          <path d="M 678 220 L 793 190" data-page-node-id="f3CMx9NamUkkqYLppa1DkZ"/>
+          <path d="M 678 280 L 793 190" data-page-node-id="MUlH2sA4kQXzlcqbpyyzyg"/>
+          <!-- 输出 -->
+          <path d="M 828 190 L 878 190" data-page-node-id="a9ym13gvGzFUElZJB59DzN"/>
+        </g>
+        <polygon points="878,186 890,190 878,194" fill="#8E887A" data-page-node-id="CAHAcJedAeifw2hIom2GYv"/>
+
+        <!-- 输入节点 -->
+        <circle cx="70" cy="130" r="16" fill="#FFFFFF" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="euLQiz9M0K4YPOx6RxEcb1"/>
+        <text x="70" y="135" text-anchor="middle" font-size="14" font-style="italic" fill="#26231B" data-page-node-id="l15NHfZ69FzwOxgDmKQ3lK">x</text>
+        <circle cx="70" cy="250" r="16" fill="#FFFFFF" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="s3T89BDlI4E2y11hbTRtq4"/>
+        <text x="70" y="255" text-anchor="middle" font-size="14" font-style="italic" fill="#26231B" data-page-node-id="CcEh3zF0n4vgONuB5EYtPX">y</text>
+
+        <!-- 第1层：自适应方形节点 -->
+        <g fill="#FDD000" stroke="#C7A900" stroke-width="1.4" data-page-node-id="IRquur9sjzJJDJoNn2EHqv">
+          <rect x="192" y="72"  width="36" height="36" rx="8" data-page-node-id="TV5u2xZPTUj2WVVNucz8bK"/>
+          <rect x="192" y="122" width="36" height="36" rx="8" data-page-node-id="qeCk0naO83R6CEpIwH9woU"/>
+          <rect x="192" y="212" width="36" height="36" rx="8" data-page-node-id="6zTj8EHfCkaRSIP2w1xsIs"/>
+          <rect x="192" y="272" width="36" height="36" rx="8" data-page-node-id="YVdhYUYYEDEKyFgx60n6ts"/>
+        </g>
+        <g font-size="13" font-weight="700" fill="#26231B" text-anchor="middle" data-page-node-id="Iyq5Ao1MWCr2aKoAPqenEm">
+          <text x="210" y="95" data-page-node-id="5bMLbKG4DH6QMPAiDu1xoS">A&#x2081;</text>
+          <text x="210" y="145" data-page-node-id="kOkGqpQGM5Zts1m84JYNmF">A&#x2082;</text>
+          <text x="210" y="235" data-page-node-id="DWGlQHmG61yV7dclI7r7ks">B&#x2081;</text>
+          <text x="210" y="295" data-page-node-id="8KfxSHweHc1vGDnnAWPOKG">B&#x2082;</text>
+        </g>
+
+        <!-- 第2层：固定圆形节点 Π -->
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="QaX3x587X8hZmonzgOw22T">
+          <circle cx="370" cy="100" r="17" data-page-node-id="yKewzuJPu0MjwrG93eKD7a"/>
+          <circle cx="370" cy="160" r="17" data-page-node-id="taJNu1HDSQOCi5hF3Q4A5P"/>
+          <circle cx="370" cy="220" r="17" data-page-node-id="jbc8hnumKHo3bGzsqxiu0w"/>
+          <circle cx="370" cy="280" r="17" data-page-node-id="97bJKrf4Y98uUAweOuvggG"/>
+        </g>
+        <g font-size="14" fill="#26231B" text-anchor="middle" data-page-node-id="zUVO8kJL6187zMd06FPvo3">
+          <text x="370" y="105" data-page-node-id="ADvkQkfflAPzRrhKhquEKG">&#x3A0;</text>
+          <text x="370" y="165" data-page-node-id="PFJpdQywGgmwZOWs4tfmyg">&#x3A0;</text>
+          <text x="370" y="225" data-page-node-id="6Tj91jOA5xChHFps6ZJMQb">&#x3A0;</text>
+          <text x="370" y="285" data-page-node-id="GhpheyJQm2cHHz6Mgq5irs">&#x3A0;</text>
+        </g>
+
+        <!-- 第3层：固定圆形节点 N -->
+        <g fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="FluWF8GFdTsgJxxCsfH9Fz">
+          <circle cx="510" cy="100" r="17" data-page-node-id="o4L9R7AhtEy5sUR6r3RWAu"/>
+          <circle cx="510" cy="160" r="17" data-page-node-id="ewxyGXgNDiwTPhRFDMwPRU"/>
+          <circle cx="510" cy="220" r="17" data-page-node-id="0nQU62U5xCwxXXbXAa0Ayz"/>
+          <circle cx="510" cy="280" r="17" data-page-node-id="QvX8zUhBQdv7KfZ8v8eCjl"/>
+        </g>
+        <g font-size="13.5" font-style="italic" fill="#26231B" text-anchor="middle" data-page-node-id="fJSo2FTlPwlngK4lBpKvm8">
+          <text x="510" y="105" data-page-node-id="DCNx4GLXhndUePgCL3rNIK">N</text>
+          <text x="510" y="165" data-page-node-id="KOWYS95kbUssHRJq91hXey">N</text>
+          <text x="510" y="225" data-page-node-id="ZoLMait4ZQ0q25wnOnZgJe">N</text>
+          <text x="510" y="285" data-page-node-id="eQOSowAsg7lyKaTKGX9UA2">N</text>
+        </g>
+
+        <!-- 第4层：自适应方形节点 -->
+        <g fill="#FDD000" stroke="#C7A900" stroke-width="1.4" data-page-node-id="pcnAs6vSqba8B6RcQG0O6o">
+          <rect x="642" y="82"  width="36" height="36" rx="8" data-page-node-id="1ieyiXfXkOXSDXFHaBq97p"/>
+          <rect x="642" y="142" width="36" height="36" rx="8" data-page-node-id="mrAr1y1hjAtVKb4ob3Lmou"/>
+          <rect x="642" y="202" width="36" height="36" rx="8" data-page-node-id="nA4HGSJlKCi6rFsLfrJk96"/>
+          <rect x="642" y="262" width="36" height="36" rx="8" data-page-node-id="yQHYx5IDztfDp7RAVVgopD"/>
+        </g>
+        <g font-size="12" font-weight="700" fill="#26231B" text-anchor="middle" data-page-node-id="7MNeCygSzyWcR9gApSiXFR">
+          <text x="660" y="105" data-page-node-id="Mo5G0hbUIvCudAEjuWZIhs">O&#x2081;</text>
+          <text x="660" y="165" data-page-node-id="kIAkFLqG6ZXIhu3ueDUGjH">O&#x2082;</text>
+          <text x="660" y="225" data-page-node-id="iCqRjoXFzfqSDkDdJaVl9r">O&#x2083;</text>
+          <text x="660" y="285" data-page-node-id="BB4WMvbT3AjFZf0nJdmpVo">O&#x2084;</text>
+        </g>
+
+        <!-- 第5层：求和 -->
+        <circle cx="810" cy="190" r="18" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.6" data-page-node-id="0H8Mkj5pwnSre3cwu8FA2W"/>
+        <text x="810" y="196" text-anchor="middle" font-size="15" fill="#26231B" data-page-node-id="RrerELuoISmXbCcODsV1sW">&#x3A3;</text>
+        <text x="898" y="195" text-anchor="start" font-size="14" font-style="italic" fill="#26231B" data-page-node-id="9q7JeFn4HkWiqwG5epJQJM">F</text>
+
+        <!-- 层下注释 -->
+        <g font-size="11.5" fill="#5B5648" text-anchor="middle" data-page-node-id="dSRhpWYNfk1q9HWTah2svD">
+          <text x="210" y="336" data-page-node-id="3JXyDyFuMvI6MjlcUeFys3">&#x3BC;(x)=exp[&#x2212;&#xBD;((x&#x2212;c&#x1D62;)/&#x3C3;&#x1D62;)&#xB2;]</text>
+          <text x="370" y="336" data-page-node-id="RK4RrmbZ9ewSpp7YjsoDqi">w&#x1D62; = &#x3BC;A&#x1D62; &#xB7; &#x3BC;B&#x1D62;</text>
+          <text x="510" y="336" data-page-node-id="kFnC2ofiDd9QM1GAsjVUbW">w&#x304;&#x1D62; = w&#x1D62; / &#x3A3;&#x2C6; w&#x2C6;</text>
+          <text x="660" y="336" data-page-node-id="XHKREyRKQQcvAcfkWMHEyE">O&#x1D62; = w&#x304;&#x1D62;(p&#x1D62;x+q&#x1D62;y+r&#x1D62;)</text>
+          <text x="810" y="336" data-page-node-id="HJeQg7DEVrN5ooVTpolsat">F = &#x3A3;&#x1D62; O&#x1D62;</text>
+        </g>
+
+        <!-- 图例 -->
+        <rect x="392" y="352" width="13" height="13" rx="3" fill="#FDD000" stroke="#C7A900" stroke-width="1.2" data-page-node-id="eP7lnlTCvEhIQLTcHaHtP4"/>
+        <text x="411" y="363" font-size="11.5" fill="#5B5648" data-page-node-id="Eq0NaMy8NatFLb5bKBQWPj">自适应节点（前件 / 后件参数，可训练）</text>
+        <circle cx="664" cy="358" r="7" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.4" data-page-node-id="A3SlfE5oAnv1Nhs7KAHoDn"/>
+        <text x="677" y="363" font-size="11.5" fill="#5B5648" data-page-node-id="TpwvO9ivfBaonZPtAzVySk">固定节点</text>
+      </svg>
+      <figcaption data-page-node-id="CeFXmwMHHVbyN1YGECuTMR">ANFIS 五层结构（二输入 × 各 2 个模糊集，共 4 条一阶 Sugeno 规则）：黄色方形为自适应节点，绿色圆形为固定节点</figcaption>
+    </figure>
+
+    <ul class="clean" data-page-node-id="l60R0trj9iHx2A3pFpSs8l">
+      <li data-page-node-id="SLPx0d3t67do427iLE3y4u"><strong data-page-node-id="cZjMZ1ccAxwrrrftRc1OGs">第 1 层（模糊化层，自适应节点）</strong>：计算隶属度。高斯隶属函数：
+        <div class="math-scroll" data-page-node-id="VF0iWojswU89V6SAEyCBiJ">$$\mu_{A_i}(x)=\exp\left[-\frac{1}{2}\left(\frac{x-c_i}{\sigma_i}\right)^{2}\right]$$</div>
+        $c_i,\sigma_i$ 是<strong data-page-node-id="b8vj8rZ1iqKT6LBvKuhhW9">前件非线性参数</strong>。</li>
+      <li data-page-node-id="EVeQgtAIpshyi5WmitcQFA"><strong data-page-node-id="iJz03mEZPAj7ebATQ3yRqB">第 2 层（规则层，固定节点）</strong>：触发强度 $w_i=\mu_{A_i}(x)\cdot\mu_{B_i}(y)$。</li>
+      <li data-page-node-id="TnU4lC0ZgJAHBufuPh1DTW"><strong data-page-node-id="fDByhZQgsxoqYwJIHvPGBQ">第 3 层（归一化层，固定节点）</strong>：$\bar{w}_i=w_i/\sum_j w_j$。</li>
+      <li data-page-node-id="fchtAAZsCc51lRnm7ePP1u"><strong data-page-node-id="4mSRrraa1vPxuUKLghcH3C">第 4 层（后件层，自适应节点）</strong>：$O_{4,i}=\bar{w}_i f_i=\bar{w}_i(p_i x+q_i y+r_i)$，$p_i,q_i,r_i$ 是<strong data-page-node-id="vpo12cTWAXzbQeTomr7O21">后件线性参数</strong>。</li>
+      <li data-page-node-id="OwYcKFDzFo93L9AeD5FeTf"><strong data-page-node-id="5bFC1bgC8Z2I46FNQQIixp">第 5 层（输出层，固定节点）</strong>：$F=\sum_i O_{4,i}$。</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="wrCw7MSukUZHhl7vhDY0Kn">2.3 混合学习算法：本实验的核心</h3>
+    <p data-page-node-id="PqpTc5g0aVTymybAzIMFFW">ANFIS 训练不是对整个网络统一做梯度下降，而是利用结构特点将参数分两组交替优化：</p>
+    <ul class="clean" data-page-node-id="9KnxcAI9GAAa0ufTbLMX2C">
+      <li data-page-node-id="89eL4ZRYgpW9i5Jm08wCvV"><strong data-page-node-id="BV22fwF64dmW5lYx743mXx">前向阶段</strong>：固定前件参数（$c_i,\sigma_i$），第 5 层输出是后件参数（$p_i,q_i,r_i$）的线性函数。给定 $N$ 组训练样本，写出线性方程组，用<strong data-page-node-id="HZMgsF0kz3flnfjjeHMR3C">最小二乘法一步求出</strong>后件参数，不需迭代。</li>
+      <li data-page-node-id="bm3uDlPG3127gg3nTGPr98"><strong data-page-node-id="CJGsw6khWP6N5LO6xlYKfY">反向阶段</strong>：后件更新后，计算输出误差，从第 5 层反传至第 1 层，用<strong data-page-node-id="CDWJ47BDusVvUa3A1Bz01t">梯度下降</strong>调整前件参数，改变隶属函数的形状和位置。</li>
+    </ul>
+    <p data-page-node-id="IWiDG7DDq1GlFGGzViXMnv">一次"前向最小二乘 + 反向梯度下降"称为一个 epoch。混合策略比纯 BP 收敛更快，因为<span class="kw" data-page-node-id="M4lDjBgPSLZsoJsJXlfMgu">后件线性子问题被解析地一步求解，梯度下降只需处理非线性的前件参数</span>。</p>
+
+    <h3 class="sub-title" data-page-node-id="wEeMfWLllNPTEl3vGEyNbu">2.4 控制回路中的 ANFIS</h3>
+    <p data-page-node-id="LM7XPiT41IaNdsA16brSpE">本实验中 ANFIS 直接充当控制器。控制回路信号关系：</p>
+    <div class="math-scroll" data-page-node-id="rFjP5ItMGLNr2eIOfbHybo">$$e(k)=r(k)-y(k),\qquad \Delta e(k)=\frac{e(k)-e(k-1)}{T_s}$$</div>
+
+    <figure class="fig" data-page-node-id="RuaxOdZX0AU0nKORbg1zWk">
+      <svg viewBox="0 0 920 262" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="ZxFaFGeE1Avfh3DjNQQ9vt">
+        <defs data-page-node-id="ZvX2zsu3gLvQc9LZ9vDEge">
+          <marker id="arr8" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" data-page-node-id="PbRrxgzFMAw8yw79ycxyPY">
+            <path d="M0,0 L8,4.5 L0,9 Z" fill="#4C7D2C" data-page-node-id="msLkSErJOOQdHNVrH2F91U"/>
+          </marker>
+        </defs>
+
+        <!-- 训练数据注释 -->
+        <text x="301" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#3A6122" data-page-node-id="Yp12suvW4qrzVfPvQgbDSl">训练数据来自 PID 闭环：学习映射 (e, &#x394;e) &#x21A6; u</text>
+        <line x1="301" y1="36" x2="301" y2="70" stroke="#4C7D2C" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arr8)" data-page-node-id="vBAw87ARFRHUu83lxNXSWF"/>
+
+        <!-- 主通路 -->
+        <text x="22" y="105" text-anchor="middle" font-size="13.5" font-style="italic" fill="#26231B" data-page-node-id="8RSLc7Hd0dQ5l3X7OHtDfY">r(k)</text>
+        <line x1="36" y1="100" x2="72" y2="100" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="EPR2mkDYnCm8RHnjmjg6Mn"/>
+        <circle cx="90" cy="100" r="14" fill="#FFFFFF" stroke="#26231B" stroke-width="1.5" data-page-node-id="LF5Jvatf0QUBnFDzwlJBDM"/>
+        <text x="90" y="105" text-anchor="middle" font-size="13" fill="#26231B" data-page-node-id="csjfLMavT0hzdA4KcQCmZI">&#x3A3;</text>
+        <text x="74" y="136" font-size="14" font-weight="700" fill="#26231B" data-page-node-id="Ig9rgNWZq2iGjea7CI4KxV">&#x2212;</text>
+
+        <text x="150" y="88" text-anchor="middle" font-size="12.5" font-style="italic" fill="#26231B" data-page-node-id="pGzAuZdPX5MyzJxHANM44X">e(k)</text>
+        <line x1="104" y1="100" x2="214" y2="100" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="GnQp9caGl0szWeSrF43K6O"/>
+
+        <!-- ANFIS 控制器 -->
+        <rect x="216" y="72" width="170" height="56" rx="10" fill="#FDD000" stroke="#C7A900" stroke-width="1.5" data-page-node-id="Jr9gooSVnnxzyTplKJMBDS"/>
+        <text x="301" y="97" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="8Cmgwjpb2knjqdoTgdOsSI">ANFIS 控制器</text>
+        <text x="301" y="115" text-anchor="middle" font-size="10.5" fill="#574500" data-page-node-id="tkKN3mDcdBLHvOPpylVSLy">evalfis(fisTrained, [e, de])</text>
+
+        <!-- e 支路 → 差分 -->
+        <path d="M 160 100 L 160 190 L 214 190" stroke="#4C7D2C" stroke-width="1.5" fill="none" marker-end="url(#arr8)" data-page-node-id="xQPKEDCAr7YKcWrHjK3AJg"/>
+        <rect x="216" y="170" width="150" height="40" rx="8" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.4" data-page-node-id="emIRdEbPM5betjD4S3SfWI"/>
+        <text x="291" y="187" text-anchor="middle" font-size="11.5" font-weight="700" fill="#26231B" data-page-node-id="AhXF3Yi04PygmHywFSyeRG">差分环节</text>
+        <text x="291" y="203" text-anchor="middle" font-size="10.5" fill="#5B5648" data-page-node-id="vGLVkw4WiYF64N5I21VeZW">&#x394;e = (e&#x2096; &#x2212; e&#x2096;&#x208B;&#x2081;)/T&#x209B;</text>
+        <line x1="291" y1="170" x2="291" y2="130" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="IVG6QLBcqB0XBU2ymHdWKJ"/>
+        <text x="330" y="152" font-size="11.5" font-style="italic" fill="#26231B" data-page-node-id="dPEtEidJsyNLY4dBhQcwlP">&#x394;e(k)</text>
+
+        <!-- u(k) -->
+        <text x="414" y="88" text-anchor="middle" font-size="12.5" font-style="italic" fill="#26231B" data-page-node-id="HPPjzAbFKbI38VKwx1IwN9">u(k)</text>
+        <line x1="386" y1="100" x2="444" y2="100" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="mbVQ5k3wTlO11HXC6ogCDg"/>
+
+        <!-- 纯滞后 -->
+        <rect x="446" y="76" width="120" height="48" rx="8" fill="#FFFFFF" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="7rXZjBcRPJVBkX6RS8ThSI"/>
+        <text x="506" y="98" text-anchor="middle" font-size="12.5" font-weight="700" fill="#26231B" data-page-node-id="ELF3V8WSGndIzbxGlY7Y3H">纯滞后</text>
+        <text x="506" y="115" text-anchor="middle" font-size="11.5" fill="#5B5648" data-page-node-id="ww8XFPgSfNZjhLeOHLPyzg">exp(&#x2212;0.2s)</text>
+
+        <text x="586" y="88" text-anchor="middle" font-size="11.5" font-style="italic" fill="#26231B" data-page-node-id="7XY3NoE4B8HVonoE8vE7we">u(k&#x2212;d)</text>
+        <line x1="566" y1="100" x2="604" y2="100" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="ALVtBB91PHpKCaN81aE2vx"/>
+
+        <!-- 对象 -->
+        <rect x="606" y="70" width="190" height="60" rx="8" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="HzRDEwvxFULBKEsWgsfcod"/>
+        <text x="701" y="95" text-anchor="middle" font-size="12.5" font-weight="700" fill="#26231B" data-page-node-id="hyB8H51C9bsD8W6UwpOizu">二阶振荡对象</text>
+        <text x="701" y="115" text-anchor="middle" font-size="11.5" fill="#5B5648" data-page-node-id="iIg6cVUlgvlWy0V9DntU7I">G(s) = 20 / (8s&#xB2; + 4s + 1)</text>
+
+        <text x="828" y="88" text-anchor="middle" font-size="12.5" font-style="italic" fill="#26231B" data-page-node-id="Hfb1hbtk41lo3LFeRzE8sQ">y(k)</text>
+        <line x1="796" y1="100" x2="868" y2="100" stroke="#4C7D2C" stroke-width="1.5" marker-end="url(#arr8)" data-page-node-id="CCxhlMhr9bFGlhgQRA7QBx"/>
+        <text x="884" y="105" text-anchor="middle" font-size="13.5" font-style="italic" fill="#26231B" data-page-node-id="M5E8N57Yq6zC5EiHOyLChe">y(k)</text>
+
+        <!-- 反馈通路 -->
+        <path d="M 852 100 L 852 226 L 90 226 L 90 116" stroke="#4C7D2C" stroke-width="1.5" fill="none" marker-end="url(#arr8)" data-page-node-id="I9AFZJPVpEojF1WGKVoRi8"/>
+        <text x="471" y="220" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="1qBuOc4aRI1dNeax9PrKZc">输出反馈</text>
+      </svg>
+      <figcaption data-page-node-id="TCrrrJUImLEZ75nbJA57UZ">ANFIS 直接充当控制器的闭环结构：以 $e$ 和 $\Delta e$ 为输入、输出控制量 $u$，训练数据来自 PID 闭环示范</figcaption>
+    </figure>
+
+    <p data-page-node-id="SCLWL2LcemIZyWYDI4DgFz">ANFIS 以 $e$ 和 $\Delta e$ 为输入，输出控制量 $u(k)$。训练数据来自 PID 闭环：<span class="kw" data-page-node-id="91mkcFMrGcAJdyTfdLX4uk">ANFIS 学习的是"在类似误差状态下，PID 是怎么动作的"</span>。</p>
+  </section>
+
+  <!-- ========== 三、实验对象与任务 ========== -->
+  <section class="slide" id="plant" data-page-node-id="jF6iZ6bebTNFElj898HQyR">
+    <span class="slide-tag" data-page-node-id="3IX9y8EO9ApBqFa01WtlOb">脚本模块一</span>
+    <h2 class="sec-title" data-page-node-id="dlst9cE9Tyckgqw00LcrEt">三、实验对象与任务</h2>
+
+    <h3 class="sub-title" data-page-node-id="dZe5DfpOKFEjHGI96YzMTt">3.1 被控对象</h3>
+    <p data-page-node-id="sqz152EhKThhM7pMq327D5">二阶振荡加纯滞后模型：</p>
+    <div class="math-scroll" data-page-node-id="NRVR2AP5UCjgQGJmiUKTjr">$$G(s)=\frac{20}{8s^{2}+4s+1}\,e^{-0.2s}$$</div>
+    <table class="data" data-page-node-id="DzeBaFYZgi3hHDGFjCHooG">
+      <tr data-page-node-id="dwvLtpwuEun9Ld0TMBvGNA"><th data-page-node-id="1dgoXOZPOLFtNIvVUqel3L">系统类型</th><th data-page-node-id="jKsKDv6bNa7VoVoDQhUx5t">直流增益</th><th data-page-node-id="7ui3TM7BEyu8Ab4imItLQA">自然频率</th><th data-page-node-id="jP58ku2c9s7mfEHtvCX08a">阻尼比</th><th data-page-node-id="vIvjCYEp4RFByzjv04Sm1m">纯滞后</th></tr>
+      <tr data-page-node-id="oRbc2awKT9q1ysXVqkY9Pv"><td data-page-node-id="tYHXK35dAU5AUi1Ti6Rw3u">欠阻尼二阶</td><td data-page-node-id="vTRjZMqj6ztbVm5B9611vy">$K=20$</td><td data-page-node-id="YMrOm2KU1Td9A35iCIPVHy">$\omega_n\approx0.354$ rad/s</td><td data-page-node-id="MGsSDxnD9N1zAk6mou0oGF">$\zeta\approx0.707$</td><td data-page-node-id="Xr4wlb9Iblke8EZ6e4CC0Z">$0.2$ s（$=2$ 拍，$T_s=0.1$ s）</td></tr>
+    </table>
+    <p class="note" data-page-node-id="H2Yv6JRmppY2VACfhQNF91">相比一阶温度对象，该对象是<strong data-page-node-id="6YT0O0iEEvYbj0nlCWvuv0">欠阻尼二阶系统</strong>，阶跃响应本身就有振荡倾向，对控制器设计更具挑战性。</p>
+
+    <div class="defbox" data-page-node-id="zvXyHRFftgPCelMEUmGoGO">
+      <div class="dt" data-page-node-id="nPfKw0h7WVEzI2E1qRYJyQ">状态空间实现（脚本采用）</div>
+      <div class="math-scroll" data-page-node-id="Fk1pgOBIgCbC90PZt3BFm8">$$A=\begin{bmatrix}0 &amp; 1\\ -0.125 &amp; -0.5\end{bmatrix},\quad B=\begin{bmatrix}0\\ 2.5\end{bmatrix},\quad C=\begin{bmatrix}1 &amp; 0\end{bmatrix},\quad D=0$$</div>
+      <p style="margin:8px 0 0" data-page-node-id="abQl40quDPAQ8woznthXwT">推导要点：由 $G(s)$ 交叉相乘得 $(8s^{2}+4s+1)Y=20U$，归一化后 $y''=-0.125\,y-0.5\,y'+2.5\,u$，取 $x_1=y,\ x_2=y'$ 即得上述矩阵。可自行用 <code data-page-node-id="v4xRFZr7ydB9AW5IN91Qni">tf2ss(20,[8 4 1])</code> 对比——<strong data-page-node-id="1lUW6L6BH2YJRiJHC1XXoT">状态空间实现不唯一</strong>。</p>
+    </div>
+
+    <h3 class="sub-title" data-page-node-id="pnjlmrDOAB32ogDvcG35kg">3.2 仿真参数</h3>
+    <ul class="clean" data-page-node-id="m7jAmD9sB2ZWBBdBJ3Cywe">
+      <li data-page-node-id="JQ70VZbxnrMqw6gqZ1PE9V"><strong data-page-node-id="H1UI0QljFqhbpgkK14Rsq8">采样周期</strong> $T_s=0.1$ s：对象周期约 17.8 s，每周期约 178 点，足够精细；滞后 0.2 s 恰好对应 2 步延迟。</li>
+      <li data-page-node-id="jxsoVhBGkHvqDBZVBxXpUO"><strong data-page-node-id="Oe97zSYaFC4qLgQaFTZBPv">仿真时长</strong> $T_{\text{end}}=100$ s：阶跃响应在 20~30 s 进入稳态，100 s 留足观察余量。</li>
+      <li data-page-node-id="g9qrOtiyhuWFsLIFe0LEl3"><strong data-page-node-id="YG6vSt4Axh6A7urkT0amih">执行器</strong>：脚本中 PID 与 ANFIS 输出限幅均被注释，允许负控制量。注意：数据生成器不限幅能覆盖更大范围，但<strong data-page-node-id="YX8YG3hRHdMwv3qEHTG5zf">真实执行器必有限幅</strong>，分析时应意识到这一点。</li>
+    </ul>
+
+    <h3 class="sub-title" data-page-node-id="9PGfd87RvPyT9ldldBu0CZ">3.3 实验任务</h3>
+    <p data-page-node-id="AD3W5onqyEV4udwEmsnm9F">以 <code data-page-node-id="q0XHHBODJpjOM1YA43EUy8">anfis_dome_S2.m</code> 为基准，按脚本执行顺序完成七个模块的操作、观察与分析。<strong data-page-node-id="H1xmPxx3GDSzBdtxuDQB8O">每人须独立运行代码、记录数据、填写性能对比表，并完成思考题。</strong>推荐以阶跃参考为基准工况（模块五需按下文说明修正），正弦跟踪作为扩展讨论。</p>
+  </section>
+
+  <!-- ========== 四、实验步骤 ========== -->
+  <section class="slide" id="steps" data-page-node-id="yVLNCBpAEvc99t2mBoF3k2">
+    <span class="slide-tag" data-page-node-id="GEZZrf2xqLWB52OHrR2VC4">对应脚本模块零～七</span>
+    <h2 class="sec-title" data-page-node-id="AYbJ86trXVxJTyNeHkAMH4">四、实验步骤（按代码模块组织）</h2>
+    <p class="note" data-page-node-id="S5LDBN2y7UgU5nhjUz2Da9">脚本共七个模块，与以下步骤一一对应。建议课前通读脚本，课上按模块推进，每个模块都留出观察与记录时间。</p>
+
+    <h3 class="sub-title" data-page-node-id="UY8GJu8UBNByjR4RUZH1lV">模块零：整体流水线认知</h3>
+    <figure class="fig" data-page-node-id="gIIz8gdo85Vr9ycSs0IOov">
+      <svg viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="nz4AP8grYBaABMGqe1t4uP">
+        <defs data-page-node-id="d7qzAnetUKU7OgNxfu7stY">
+          <marker id="arrp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" data-page-node-id="f6HFNdmqDyAUoPlIegg8SG">
+            <path d="M0,0 L8,4.5 L0,9 Z" fill="#4C7D2C" data-page-node-id="TXfLzIQLc6vkldHpchcscS"/>
+          </marker>
+        </defs>
+
+        <!-- 第一行 ①→②→③→④ -->
+        <line x1="220" y1="58" x2="236" y2="58" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="K2aFYchuHIzSiFBSsXih6Q"/>
+        <line x1="450" y1="58" x2="466" y2="58" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="6Mr0Q3LwXETwdlh5YO8OOp"/>
+        <line x1="680" y1="58" x2="696" y2="58" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="SdsEzZJFBSdX7FQI3NOyKL"/>
+        <!-- ④ 下行到 ⑤ -->
+        <line x1="804" y1="90" x2="804" y2="146" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="sIdZtpmwJdOa87rVxfUUhy"/>
+        <!-- 第二行 ⑤→⑥→⑦（右向左） -->
+        <line x1="698" y1="182" x2="682" y2="182" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="PEa55sH1IU1AEGoT8iOCK4"/>
+        <line x1="468" y1="182" x2="452" y2="182" stroke="#4C7D2C" stroke-width="1.6" marker-end="url(#arrp)" data-page-node-id="Ap9bwbIGfBIIdACNTHhuUn"/>
+
+        <!-- ① -->
+        <rect x="8" y="26" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="Ldjn0XwxgXzaTyOLCbiP49"/>
+        <circle cx="34" cy="26" r="13" fill="#4C7D2C" data-page-node-id="iFP1hw1H5woYWqucCZpRQR"/>
+        <text x="34" y="31" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="lrzxhdKF7H3AKo7IrsxSC9">1</text>
+        <text x="114" y="56" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="DGbsj1i5YB4KKuoIEY7VZ6">对象建模与离散化</text>
+        <text x="114" y="76" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="Ypci6rKbudcoiUUz9By5a9">c2d 零阶保持＋延迟缓冲</text>
+
+        <!-- ② -->
+        <rect x="238" y="26" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="giRfUgho0jXZcTFPDDTIpD"/>
+        <circle cx="264" cy="26" r="13" fill="#4C7D2C" data-page-node-id="whXQBDRxI5HrJAiqknP5r8"/>
+        <text x="264" y="31" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="RdLJ4HMxvbAVXWWTbbbvWV">2</text>
+        <text x="344" y="56" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="Ys8DZob5yXPy0OerSDE05S">PID 闭环采数据</text>
+        <text x="344" y="76" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="fFWJgokOEXonCfca5Svhy8">记录 (e, de, u) 示范</text>
+
+        <!-- ③ -->
+        <rect x="468" y="26" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="BlamGBf534WcfHS9ALjpTQ"/>
+        <circle cx="494" cy="26" r="13" fill="#4C7D2C" data-page-node-id="1OHJVcQJQ0B05orHmcGYeQ"/>
+        <text x="494" y="31" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="EiDNr8fSeFKi2MluE78Blp">3</text>
+        <text x="574" y="56" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="JImi4dJHqpT6hPf4495H1D">训练/验证数据划分</text>
+        <text x="574" y="76" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="WLSuCTCu1QcNc0gtntyIEs">80% 训练 &#xB7; 20% 验证</text>
+
+        <!-- ④ 核心模块高亮 -->
+        <rect x="698" y="26" width="212" height="64" rx="10" fill="#FDD000" stroke="#C7A900" stroke-width="1.6" data-page-node-id="aFlO2sFeff1HRQzPDmH6Ci"/>
+        <circle cx="724" cy="26" r="13" fill="#4C7D2C" data-page-node-id="8YzhsDfHwjW2T5iOgjHBDC"/>
+        <text x="724" y="31" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="XwsGp58BrwMMyklMH63oo4">4</text>
+        <text x="804" y="56" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="1Q8gBDWQNZCgg3UCLOXeEs">genfis + anfis 训练</text>
+        <text x="804" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="#574500" data-page-node-id="DD8g8b6nGnhZhiWnPqLQIq">混合学习 &#xB7; 核心模块</text>
+
+        <!-- ⑤ -->
+        <rect x="698" y="150" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="2Tkt08B74XbzLCtyIo5DBV"/>
+        <circle cx="724" cy="150" r="13" fill="#4C7D2C" data-page-node-id="vqMqO97iTmevDnyFES2BnO"/>
+        <text x="724" y="155" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="HIw3y169CtziBYE3jYLcUH">5</text>
+        <text x="804" y="180" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="S0bW9xFTuYOglj6M46xMz8">ANFIS 闭环仿真</text>
+        <text x="804" y="200" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="uzGH6AC6ZGSbMCkbyKtSCK">evalfis 替换 PID 控制律</text>
+
+        <!-- ⑥ -->
+        <rect x="468" y="150" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="dBMzQrUtHqIRE3swhfnhE1"/>
+        <circle cx="494" cy="150" r="13" fill="#4C7D2C" data-page-node-id="xxMqIwDsnGybuoluytt0uC"/>
+        <text x="494" y="155" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="lDPxyMjpcY5w9CkoowBvl2">6</text>
+        <text x="574" y="180" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="ZLREBeRwQiwXgboRA95ESK">性能指标计算</text>
+        <text x="574" y="200" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="pWsAao77WyumudiNOKviW1">超调 &#xB7; 调节时间 &#xB7; 稳态误差</text>
+
+        <!-- ⑦ -->
+        <rect x="238" y="150" width="212" height="64" rx="10" fill="#F0F5E9" stroke="#4C7D2C" stroke-width="1.5" data-page-node-id="nLyXy5cWZ3BjDENEu6Eatv"/>
+        <circle cx="264" cy="150" r="13" fill="#4C7D2C" data-page-node-id="M7sFy6ewxDpKKjWfSCOKhR"/>
+        <text x="264" y="155" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" data-page-node-id="7z3FzEVqzrzAbxAu8AhQJ3">7</text>
+        <text x="344" y="180" text-anchor="middle" font-size="13.5" font-weight="700" fill="#26231B" data-page-node-id="DPVbVvNuO2HjEg7vcqw7FR">绘图与隶属函数观察</text>
+        <text x="344" y="200" text-anchor="middle" font-size="11" fill="#5B5648" data-page-node-id="GzvkizH7sGOc5T421RcWsI">plotmf 训练前后对比</text>
+      </svg>
+      <figcaption data-page-node-id="AxNOoJT09bpkzuib3nW9Dg">脚本七段式流水线：② 产生"老师怎么开"的示范数据，④ 让 ANFIS 从数据中学习映射，⑤ 把学到的映射放回闭环检验</figcaption>
+    </figure>
+    <p data-page-node-id="R8KAcdSZGMCmKxVR96JxCI"><strong data-page-node-id="pNmPA1HLaFBsarIxNJtSTL">核心逻辑</strong>：② 产生"老师怎么开"的示范数据，④ 让 ANFIS 从数据中学习这个映射，⑤ 把学到的映射放回闭环检验。整条主线的关键是——<span class="kw" data-page-node-id="4NCz3W7uxghJZzxs3zHAiG">数据驱动控制器性能的上限，由训练数据的覆盖范围决定</span>。</p>
+
+    <h3 class="sub-title" data-page-node-id="TBbP0ByKwIRZj4PBUSG5nz">步骤 1：对象建模与离散化（对应模块一）</h3>
+    <pre class="code" data-page-node-id="M67nCMyFOdAaT3x3c8JUXA">A = [0 1; -0.125 -0.5];  B = [0; 2.5];  C = [1 0];  D = 0;
+sys = ss(A, B, C, D);
+Ts = 0.1;
+sysd = c2d(sys, Ts, 'zoh');
+Ad = sysd.A; Bd = sysd.B; Cd = sysd.C;
+
+tau = 0.2;
+delay_steps = round(tau / Ts);
+u_buf = zeros(1, delay_steps + 1);</pre>
+    <div class="defbox" data-page-node-id="QBPa2UrQVz0hYkjTXhFzhK"><div class="dt" data-page-node-id="yuCK6wGiAkwQDa2aZOEdcW">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="TlqiC3JDjdiI7A3OuiHbK3">把连续二阶对象拆成"无延迟部分用状态空间离散化" + "纯滞后用 FIFO 缓冲区模拟"。</p>
+    </div>
+    <p data-page-node-id="nQEVpjnuoCY11YEMyggtNB"><strong data-page-node-id="ywBGQg1uzXkmeu6SNV7TnG">关键原理</strong>：<code data-page-node-id="OzIuDMghIXQ9IVWMwoO3hX">c2d(...,'zoh')</code> 选零阶保持器，因为控制量在采样周期内由执行器保持，与实际物理过程一致。<code data-page-node-id="CwPgzBbyDEUbH3a4hvNka8">delay_steps=round(0.2/0.1)=2</code>，<code data-page-node-id="C69VtzZwpw4GAsGmGRITwf">u_buf</code> 长度 3；若改 $T_s=0.05$，<code data-page-node-id="UM3taKnDsXxdPsAKFdfCUM">delay_steps</code> 自动变 4，缓冲区自动适配。</p>
+    <div class="note" data-page-node-id="9AVwvl5wRhUDjKwv8TBoHv"><span class="nt" data-page-node-id="f5EcrcgPLloYTBz8SU0nSY">常见错误</span>
+      ① <code data-page-node-id="1ZAuUr0DqMuYvakyU9VcfQ">u_buf</code> 更新顺序写反（先推入再取 <code data-page-node-id="cqaFBbtSVID22npP8zYqa3">u_buf(end)</code>），导致延迟多一步。验证方法：给对象单位阶跃输入，看输出是否在 0.2 s 后才开始变化。<br data-page-node-id="O11ILqE7ocaOCH7HjKOHEC">
+      ② 忘记 <code data-page-node-id="vY5H6brXjsSYCqSjiyzYMl">c2d</code> 直接用连续矩阵做离散迭代，导致发散。
+    </div>
+    <div class="note" data-page-node-id="JIgfiiqBHxCXIJtE10FyOT"><span class="nt" data-page-node-id="cWND8RAsFAOJDzcwDWtS92">想一想</span>如果把纯滞后从 0.2 s 改成 2 s，<code data-page-node-id="3sTksBJLhq0hvTLbVh9Dwt">delay_steps</code> 变 20，这对 PID 整定和 ANFIS 训练数据有什么影响？</div>
+
+    <h3 class="sub-title" data-page-node-id="zzDuDwnMNnF2rnCXCnZbcO">步骤 2：PID 基准控制器与训练数据生成（对应模块二）</h3>
+    <pre class="code" data-page-node-id="rO7COXgLGzS5BgttCneheR">Kp = 0.8; Ki = 0.05; Kd = 0.5;
+e_int = 0; e_prev = 0;
+r = ones(1, N);   % 阶跃参考
+
+for k = 1:N
+    e = r(k) - y;
+    de = (e - e_prev) / Ts;
+    e_int = e_int + e * Ts;
+    e_int = max(min(e_int, 5), -5);
+    u_pid = Kp * e + Ki * e_int + Kd * de;
+    % u_pid = max(min(u_pid, 1), -1);
+    train_e(k) = e;  train_de(k) = de;  train_u(k) = u_pid;
+    u_delayed = u_buf(end);
+    u_buf = [u_pid, u_buf(1:end-1)];
+    x = Ad * x + Bd * u_delayed;
+    y = Cd * x;
+    y_pid(k) = y;
+    e_prev = e;
+end</pre>
+    <div class="defbox" data-page-node-id="upzzXJzh8Z7WRwgCORVbOR"><div class="dt" data-page-node-id="oA1X0T6gkoE8NlUIL1Fsbe">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="MccpiHWBF2ijqc3qvfEVBO">这是<strong data-page-node-id="uBrEAZF8WRjGIdgkwef67i">监督学习的数据采集环节</strong>。PID 在闭环中运行，脚本把每个采样时刻的 $(e,de)$ 与 PID 输出 $u$ 配对记录。这三列数据就是 ANFIS 要学习的"示范"。</p>
+    </div>
+    <h4 class="minor" data-page-node-id="9jseZTHjZANS0iVFBjEI8Y">关键参数与设计选择</h4>
+    <ul class="clean" data-page-node-id="2bb7oC7tDOpX507eQZo8Ai">
+      <li data-page-node-id="CprGK3R3cYnPETU20Ctn0V"><code data-page-node-id="PmlF2ZgzI4xhHZpE8ZHgjy">Kp=0.8, Ki=0.05, Kd=0.5</code>：对象直流增益 20，稳态控制量仅需 0.05；<code data-page-node-id="K0VtKlD4wxgPsUlCTEpK2L">Kp=0.8</code> 使初始误差 1 时比例项给出 0.8，<code data-page-node-id="qAijuQHD4IePGJR78jLHR7">Kd=0.5</code> 在误差快速下降时产生强负向微分。这组参数<strong data-page-node-id="GiBRqQSTU8RJibwHHtlGYn">响应偏保守、超调很小</strong>。好处是训练数据范围集中、数值稳定；代价是<strong data-page-node-id="D0ae9pGU7BiVCPZqypeAEC">负误差样本很少</strong>——若系统几乎不超调，$e$ 很少变负，ANFIS 学不到"误差为负时减小控制量"的规则。</li>
+      <li data-page-node-id="OwfQMmD2JJ86t4Wcd99FkG">执行器限幅被注释：PID 输出不受物理约束，能覆盖更大的 $u$ 范围，但<strong data-page-node-id="JY6GlFCq1qQedJaBx8UMPp">真实执行器必有限幅</strong>。</li>
+      <li data-page-node-id="S1k6DG2tBKaKWBJD8JQrQJ"><code data-page-node-id="7uBtgAakAYww9t1Y2U0QAZ">e_int</code> 限幅 ±5：防止积分饱和。</li>
+    </ul>
+    <div class="note" data-page-node-id="ZIcDPP6WmN2WjPkPO3O2Wy"><span class="nt" data-page-node-id="xlxL8xNd7RJofPXk4Wz4da">常见错误</span>
+      ① 数据记录与对象更新顺序混淆：<code data-page-node-id="xBMsC5GCGq2CKNSD38nYaw">train_u(k)</code> 记录的是<strong data-page-node-id="5j7rjYtZHq82uo7AU1FTmV">当前时刻</strong> PID 输出，这个输出经 <code data-page-node-id="uKZcdHjtuVhdBuW7tOEFLH">u_buf</code> 延迟后才影响对象。若记录写在对象更新之后，数据错位一步。<br data-page-node-id="1JqCpEAr8Fjulr10IzqaKF">
+      ② <code data-page-node-id="OG4UGgmdIGsdmvZ5DgoL8z">de</code> 用错差分方向：<code data-page-node-id="ffbjv1P19GYE63KpvbVWjG">(e-e_prev)/Ts</code> 是后向差分，当前时刻可算。
+    </div>
+    <div class="note" data-page-node-id="GplcpJTsrZdwaOFDhJreQ6"><span class="nt" data-page-node-id="m1wKYb8E9QT9K3vKaEx0fa">试一试</span>把 <code data-page-node-id="LAXzX3rL7ApBzaNlXL0QuK">Kp</code> 从 0.8 调到 1.8，观察（a）PID 是否出现超调、<code data-page-node-id="8qfv5a0G20VJqLcCBeOIzv">train_e</code> 最小值是否变负；（b）ANFIS 闭环性能是否改善。由此体会：<span class="kw" data-page-node-id="fv2Zv55p2EgLDDCVA47pOM">训练数据中是否包含负误差样本，决定了 ANFIS 能否学会"刹车"</span>。</div>
+
+    <h3 class="sub-title" data-page-node-id="VNvtRea7SWUAtVv4JmDuxj">步骤 3：训练/验证数据划分（对应模块三）</h3>
+    <pre class="code" data-page-node-id="TuyFwxGoE7xuC7IHOMOHqf">split_idx = floor(0.8 * N);
+trnData = [train_e(1:split_idx), train_de(1:split_idx), train_u(1:split_idx)];
+valData = [train_e(split_idx+1:end), train_de(split_idx+1:end), train_u(split_idx+1:end)];</pre>
+    <div class="defbox" data-page-node-id="Zmc7tm52HDmEpCFX78GaLJ"><div class="dt" data-page-node-id="FuT0eWY6ITkskr5MLjQtVd">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="jhNsVx4NSSmCrY4JS5LV7I">前 80% 时间（0~80 s）做训练，后 20%（80~100 s）做验证。<code data-page-node-id="Rox92gnu0mEN0GBdBIBT7i">anfis</code> 用 <code data-page-node-id="J3zX3DS0E3iDLw8ivYCERJ">valData</code> 监控过拟合。</p>
+    </div>
+    <div class="example" data-page-node-id="Jy01nS4U8rzeiPTfiAk4om">
+      <div class="et" data-page-node-id="bnLxympGo9M0fvbXwY1G7Y">这份划分的局限（重要）</div>
+      <p style="margin:6px 0 0" data-page-node-id="ESaOH90M5jeFFIGko6DuJ4">阶跃响应在 20~30 s 后基本进入稳态，所以<strong data-page-node-id="TMQPP2Ukp14c7CxpAYa179">后 20% 验证数据中 $e\approx0$、$de\approx0$、$u\approx u_{ss}$，几乎是常数</strong>。验证 RMSE 会非常低，但<strong data-page-node-id="52gNysEkisnBIjlNrDCXzC">不能反映 ANFIS 在动态工况下的泛化能力</strong>。</p>
+    </div>
+    <div class="note" data-page-node-id="JISyhGIkxS0rddjGbIdpQd"><span class="nt" data-page-node-id="oGOd51fGdsRXViqO6CQry3">想一想</span>验证误差这么低，为什么 ANFIS 闭环性能不一定完美？</div>
+
+    <h3 class="sub-title" data-page-node-id="ja49FSKNlQUFd2QIjxcWFR">步骤 4：<code data-page-node-id="f1sfQnVR4gO5E4IynxwRZf">genfis</code> 初始化与 <code data-page-node-id="QSyCJMvkLb7N9BTBxCsw5E">anfis</code> 训练（对应模块四）</h3>
+    <pre class="code" data-page-node-id="i2gjo6D8qTlC86sanXOdS8">genOpt = genfisOptions('GridPartition');
+genOpt.NumMembershipFunctions = [3 3];
+genOpt.InputMembershipFunctionType = 'gaussmf';
+genOpt.OutputMembershipFunctionType = 'linear';
+fis0 = genfis(trnData(:,1:2), trnData(:,3), genOpt);
+
+anfisOpt = anfisOptions('InitialFIS', fis0, 'EpochNumber', 50, ...
+                        'ValidationData', valData, 'DisplayANFISInformation', 1);
+[fisTrained, trainError, stepSize, chkFIS, chkError] = anfis(trnData, anfisOpt);</pre>
+    <div class="defbox" data-page-node-id="rnNHFlqep41n8EI1FgitVo"><div class="dt" data-page-node-id="TxPmOZYVSvXapY1VmBl8B9">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="1ECzee0CKNrOCxMG8HOztk">整个实验的<strong data-page-node-id="D5A676EXbseI69gBkhZs2B">核心模块</strong>，对应模糊神经网络两步。</p>
+    </div>
+    <h4 class="minor" data-page-node-id="giOVwaxfJAFUTCS6az4zbT">第一步 <code data-page-node-id="3zP9PjCcfFlshBMg733fcv">genfis</code>——搭骨架</h4>
+    <p data-page-node-id="m0rvegWelrssnoWfbM9Edy">用网格分割为两个输入各放 3 个高斯隶属函数，生成 $3\times3=9$ 条 Sugeno 规则。此时 <code data-page-node-id="QjDF3eJevjEszcHmSOStwT">fis0</code> 的结构已确定，等价于五层前馈网络的拓扑；初始隶属函数中心和宽度由数据 min/max 均匀决定，后件线性系数由最小二乘初始化。<strong data-page-node-id="nBzQc2JYeD52P0UsQuGCx7"><code data-page-node-id="nURD8ne1bScoHvT8rhLdlk">genfis</code> 不训练，它只决定"被训练的网络长什么样"。</strong></p>
+    <h4 class="minor" data-page-node-id="V2Eg8NC1K0EjbP0bh3vAVD">第二步 <code data-page-node-id="Xb5vg7uZdnuGWk6lIq3BsF">anfis</code>——训练</h4>
+    <p data-page-node-id="QPO06qshBe9PQsUSA4Iqvn">把 FIS 展开成五层网络，用混合学习算法——每个 epoch 先固定前件、用最小二乘一步求后件线性参数，再反向传播调整前件非线性参数。</p>
+    <h4 class="minor" data-page-node-id="cqhyrVpLE1eqk7jihXbV1I">关键参数</h4>
+    <ul class="clean" data-page-node-id="nAfc08QZ9O3WJeRWCWngp5">
+      <li data-page-node-id="rI8hK33zWcWsVRnmuDz6Cg"><code data-page-node-id="16gjd9HOd0MEDXTAwijqAM">[3 3]</code>：每输入 3 个隶属函数，9 条规则。规则数随输入数指数增长，是网格分割的固有代价。</li>
+      <li data-page-node-id="oyF9SdwyqMUZ3hv2FXxJ9V"><code data-page-node-id="fNTN27Lrf9JBtevvek3hrk">'gaussmf'</code>：高斯型，两参数（中心、宽度），平滑可微，适合梯度下降。也可换 <code data-page-node-id="w0fUFpsJnYsqJP60D4jgNX">'gbellmf'</code>，更灵活但更易过拟合。</li>
+      <li data-page-node-id="nWDyT1L1iJ8XqtFqa4C55t"><code data-page-node-id="PtkwOzlIAiKuHpcopH3f38">'linear'</code>：Sugeno 一阶后件，每条规则结论是 $pe+q\,de+r$。</li>
+      <li data-page-node-id="awSPWoc3EZA9I4qhzYF507"><code data-page-node-id="yD7QVsMHwBeJSrdYIY4PLI">EpochNumber=50</code>：9 条规则的小网络通常 20~30 个 epoch 收敛，50 留有余量。</li>
+      <li data-page-node-id="lHWVotCxVBlMZ3H9FZuYy7"><code data-page-node-id="WGjG4cQtm17eJmmIGtzFi2">chkFIS</code>：验证误差最小处的 FIS 快照。若验证误差先降后升，<code data-page-node-id="Ec9JT6sUSimz25DD7nH9mU">chkFIS</code> 比 <code data-page-node-id="pXMx0wwAEpylNId9y3rZKA">fisTrained</code> 更不易过拟合，<strong data-page-node-id="0ZiL6jGjgEd9htt2mEv9u9">建议对比两者的闭环性能</strong>。</li>
+    </ul>
+    <div class="note" data-page-node-id="HUHa9bFRqpj2vVsGqF6Ccd"><span class="nt" data-page-node-id="bvVuzkEAXBjzDFXOGALCnw">常见错误</span>
+      ① <code data-page-node-id="OA3BpsNZbkydV0MySCT1fb">genfis</code> 属性名写错：<code data-page-node-id="x6IkQ7Qg5obixNyvicm47U">InputMFType</code> 是错的，正确是 <code data-page-node-id="ohJyDe1a7TYxPAklzUJYoB">InputMembershipFunctionType</code>。<br data-page-node-id="ysT4Ykgl2AxKuA3UPhX7C9">
+      ② <code data-page-node-id="zTAVE98POirhX5lXEvD0l0">trnData</code> 列顺序搞反：输入是前两列，输出是第三列。<br data-page-node-id="Nq6UVH8aiO2FCVDefhMadK">
+      ③ 只看训练 RMSE 不看验证 RMSE。
+    </div>
+    <div class="note" data-page-node-id="NlNNlgRoL9adwQrldnpLE8"><span class="nt" data-page-node-id="lo6CcH0LWQAfcsRv7pMnn6">试一试</span>把 <code data-page-node-id="saF8LExrqqEcJs4jgvyDqv">[3 3]</code> 改成 <code data-page-node-id="6v0oeAz3fqGpiiTSevD7wm">[5 5]</code>（25 条规则），观察训练 RMSE 和验证 RMSE 变化。训练误差通常更低，但验证误差可能抬头——这就是过拟合。由此体会：<span class="kw" data-page-node-id="QbMK8BrmniGAk4JGF6MRWY">规则数不是越多越好，是在"表达能力"和"泛化能力"之间做权衡</span>。</div>
+
+    <h3 class="sub-title" data-page-node-id="1g6xvZN1MxeqWZXp2f809V">步骤 5：ANFIS 闭环仿真（对应模块五）——本实验最关键的模块</h3>
+    <pre class="code" data-page-node-id="nrWYAxIPDGNwG5T8F3CAUg">y_anfis = zeros(1, N);
+x = [0; 0];  y = 0;
+u_buf = zeros(1, delay_steps + 1);
+e_prev = 0;
+
+% 正弦参考信号
+f_ref = 0.02;
+r = sin(2*pi*f_ref*t);
+
+for k = 1:N
+    e = r(k) - y;
+    de = (e - e_prev) / Ts;
+    u_anfis = evalfis(fisTrained, [e, de]);
+    % u_anfis = max(min(u_anfis, 1), -1);
+    u_delayed = u_buf(end);
+    u_buf = [u_anfis, u_buf(1:end-1)];
+    x = Ad * x + Bd * u_delayed;
+    y = Cd * x;
+    y_anfis(k) = y;
+    e_prev = e;
+end</pre>
+    <div class="defbox" data-page-node-id="wHcjT5mfoUDrJL8fvEPEQr"><div class="dt" data-page-node-id="PCTTtWAoRjLJa6K9njxOsg">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="pdpEJ1rBMeoTNJii5WNKYB">结构与 PID 循环完全对称，唯一区别是控制律从 PID 公式换成 <code data-page-node-id="M02T2qMLdDhp9GGpBqBrEL">evalfis</code>。这种对称性是刻意设计的：逐行对比两个循环，可以清楚看到"控制器替换"发生在哪一行。</p>
+    </div>
+    <h4 class="minor" data-page-node-id="o8HGQEJdGdVAf7MFki4sFZ">三个必须注意的细节</h4>
+    <ol class="num" data-page-node-id="6y7msbteIoG2uPfkkFPTi2">
+      <li data-page-node-id="7UGcbfamwxOQ8aXR8nSdZq"><strong data-page-node-id="Gyz6KVbR5HmwL2LFRXxLST">状态全部重置</strong>：<code data-page-node-id="NSIICDfXdyo98hUPlY6yN4">x=[0;0]</code>、<code data-page-node-id="YnofZtyROMOdogG4fi6ha1">y=0</code>、<code data-page-node-id="pUqPkQiwCCilG43XLRv2Yh">u_buf</code> 重新初始化、<code data-page-node-id="MUJVKnSaDSP9va3kohPU7s">e_prev=0</code>。若忘记重置，ANFIS 仿真会从 PID 仿真的终点状态开始，结果完全错误。</li>
+      <li data-page-node-id="ve0atFzdrtOkrJQgidAiSd"><strong data-page-node-id="k2P6KaxTgOFcWXHmdqHAA7"><code data-page-node-id="A26cFQByFWd95Hlb5pEkVW">evalfis</code> 输入顺序</strong>：新语法 <code data-page-node-id="aQnnpjCPw1zAo5fitGkLui">evalfis(fis,[e,de])</code>；R2018b 之前是 <code data-page-node-id="BZcbjlruMuj7ieDj0ArYE2">evalfis([e,de],fis)</code>。报"参数过多"就是版本问题。</li>
+      <li data-page-node-id="eBaprw0O86Dhq6K11SGGzd"><strong data-page-node-id="hPLYz8VHIQWVQjS9aJcWxa">限幅被注释</strong>：ANFIS 输出不受约束，若某处输出很大值，对象会被"打飞"。</li>
+    </ol>
+
+    <div class="example" data-page-node-id="sr6DSfHLVCCGyS9iDOFMJ4">
+      <div class="et" data-page-node-id="DGciWgDWdkjMlAyBge2HgV">⚠️ 如果：训练用阶跃，测试用正弦</div>
+      <p data-page-node-id="ZNDkliq4qDUvXBALKO9QNR">代码中 <code data-page-node-id="azyveAV7786iBWFqdR3rjj">r=ones(1,N)</code> 是阶跃，PID 数据生成（模块二）用阶跃参考；但模块五重新赋值 <code data-page-node-id="UKNuFy3eZlPHY7KL13JkJr">r=sin(2*pi*f_ref*t)</code>，ANFIS 闭环仿真用正弦参考。</p>
+      <p data-page-node-id="gIdh0SrlNZJVe0jzvfWPxo"><strong data-page-node-id="n26tlrU4bG6Dzb9TkLoEg2">后果</strong>：<strong data-page-node-id="nwV6Ld1LPzOplvzywJpQts">ANFIS 学的是"阶跃跟踪时的 PID 行为"，却要去跟踪正弦</strong>。正弦跟踪的误差分布与阶跃完全不同（阶跃误差从 1 单调降到 0；正弦误差是围绕 0 的小幅振荡），ANFIS 很可能遇到输入超出训练范围，触发类似 <code data-page-node-id="3wo27jUoziiaohCsptvL5T">Input 1 expects a value in range [...]</code> 的警告，甚至闭环发散。</p>
+      <p data-page-node-id="zHcaeEzKmungjQCangJ5Cy"><strong data-page-node-id="hX0PG3DsDVxJyKGV5bD2vg">处理方式</strong>：</p>
+      <ol class="num" data-page-node-id="a0moUt5CXM8qK8IQcaOOHW">
+        <li data-page-node-id="lYFA3CRLowV7wKzMJt0ClE">先按原代码运行，观察 ANFIS 正弦跟踪效果差、可能出现的警告。</li>
+        <li data-page-node-id="nhqqvNS6VoCECpkeFj3HrH">自查："训练数据是什么工况？测试是什么工况？匹配吗？"</li>
+        <li data-page-node-id="0sQOQFrWD4EOFNrvrEPJHr">两条路径：<br data-page-node-id="UoN4aG1BuHrR5L7LUgWPdZ">
+          <strong data-page-node-id="5rNVW0SmcWele9duDjDVPE">路径 A（推荐，最简单）</strong>：模块五恢复 <code data-page-node-id="TZxIBRAk8DjN3Hnck1ieYK">r=ones(1,N)</code>，测试与训练同为阶跃。此时对比 PID vs ANFIS 的阶跃响应，结果干净可比。<br data-page-node-id="IrpcNuMS5lwTc0eshuVdUr">
+          <strong data-page-node-id="TBYI07OKkViVKdR6Pqu88G">路径 B（进阶）</strong>：训练和测试都用正弦。把模块二的 <code data-page-node-id="drCkmM7mtNFMtyiQ48IheU">r</code> 也改成正弦（建议多幅值分段，扩大误差覆盖），重新生成数据再训练。</li>
+        <li data-page-node-id="UN3EajoBIs5vRHhEibBSJa">由此理解核心原则：<span class="kw" data-page-node-id="9HS0E4BkP3BNLJifzeR1Ca">训练工况必须覆盖测试工况</span>。这是数据驱动控制与经典控制最本质的区别之一——PID 不需要"训练"，所以不怕工况变化；ANFIS 的性能上限由训练数据决定。</li>
+      </ol>
+    </div>
+    <div class="note" data-page-node-id="rLFzowwLSup3inXG1JnbBg"><span class="nt" data-page-node-id="yTnglpUko9zYJY3CGFZ7om">附带问题</span>绘图时 <code data-page-node-id="V3IvBbw3pC18wLPDkzmZFG">plot(t,r,'k--')</code> 用的是被覆盖后的正弦 <code data-page-node-id="KAPYD773DOu1WDGoKDarzJ">r</code>，而 <code data-page-node-id="LgZ0x65hYJofqYDAkrVUxs">y_pid</code> 是阶跃响应，图中 PID 曲线与参考线对不上。这也是上述不一致的视觉表现，修复路径 A 后自动消失。</div>
+
+    <h3 class="sub-title" data-page-node-id="L6QoiDmIDY5TQWKECE7jms">步骤 6：性能指标（对应模块六）</h3>
+    <pre class="code" data-page-node-id="t2WF6fW4rnYzNHmpPi62ql">overshoot_pid = max(0, (max(y_pid) - 1) * 100);
+settle_idx_pid = find(abs(y_pid - 1) &gt; 0.02, 1, 'last') + 1;
+ts_pid = t(min(settle_idx_pid, N));
+ss_pid = mean(abs(y_pid(end-floor(0.1*N):end) - 1));</pre>
+    <div class="defbox" data-page-node-id="YCoC6IvVS7bVs4WnsiRmQi"><div class="dt" data-page-node-id="bA5A6BTEy5ri4eG2xIeUSe">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="oRB5NEk52ZlHV2eXXXqX46">三个经典阶跃指标。</p>
+    </div>
+    <ul class="clean" data-page-node-id="QyP2PYMnfh7vgEo6ddgFgG">
+      <li data-page-node-id="mFgLGsk7vDCqOvUBHC6IUz"><strong data-page-node-id="GqEBW4xgGvp8Nq3TommLCk">超调量</strong>：<code data-page-node-id="VLxn4TlI0VYvnOx1WJceDg">max(0,...)</code> 保证无超调时返回 0。</li>
+      <li data-page-node-id="52A02GA7TfeRCNTeC9xP0w"><strong data-page-node-id="sNsl2LaC4ZJj84r4eKhCku">调节时间</strong>：<code data-page-node-id="0TbWyl8grRxCtKbmubjRtw">find(...,1,'last')</code> 找最后一次超出 2% 误差带的时刻，加 1 得首次进入并保持的时刻。<code data-page-node-id="jseHGwTFYEiBJCJFvLV0Wa">min(...,N)</code> 防止索引越界。</li>
+      <li data-page-node-id="pJoAmXaugEIeTkJgFIaBks"><strong data-page-node-id="DXufoO4Pnr0EJxVwgbXdQu">稳态误差</strong>：取最后 10% 时间的平均绝对偏差。</li>
+    </ul>
+    <div class="note" data-page-node-id="Hfkz78P8Wk271lTMinStUH"><span class="nt" data-page-node-id="J7IttG5cIibKDfREEos6PZ">局限与讨论点</span>这套指标<strong data-page-node-id="Ur9xHeKJt7JcPtTK5nFMmF">只对阶跃参考有意义</strong>。如果模块五用正弦测试，超调量和调节时间失去物理含义（正弦没有"稳态值 1"）——这正是建议模块五恢复阶跃测试的原因。另一个值得注意的点：ANFIS 没有积分记忆，稳态误差通常比 PID 大——这个差异本身就是"ANFIS 与 PID 结构性差异"的实证。</div>
+
+    <h3 class="sub-title" data-page-node-id="jPBzsNBDVeOzGk2f0pmrYK">步骤 7：绘图与隶属函数观察（对应模块七）</h3>
+    <pre class="code" data-page-node-id="4P7E20CsQzyMY8emJDFRI7">subplot(1,2,1);
+plot(t, y_pid, 'b-'); hold on;
+plot(t, y_anfis, 'r-');
+plot(t, r, 'k--');
+...
+subplot(1,2,1); plotmf(fis0, 'input', 1);
+subplot(1,2,2); plotmf(fisTrained, 'input', 1);</pre>
+    <div class="defbox" data-page-node-id="MW2PSokYJ3IJxBRz3zVtWz"><div class="dt" data-page-node-id="SoksxARiqkzMlzt6MLVQgF">这段代码在做什么</div>
+      <p style="margin:6px 0 0" data-page-node-id="RvL7jCOAC7G6p6kaL8dAIL">两幅图——阶跃响应对比、训练/验证误差曲线。第三幅 <code data-page-node-id="hhMljpYrDtJcSVjD2ohRoA">plotmf</code> 对比训练前后的隶属函数，是<strong data-page-node-id="ZZs0PpmyAcayTfbvoGxBaf">最直观展示"神经网络在学习"的图</strong>：训练前隶属函数在数据范围均匀铺开，训练后中心向数据密集区移动、宽度收窄。先看这张图，再看代码，可以建立"参数在动"的直觉。</p>
+    </div>
+    <div class="note" data-page-node-id="Yxh16By2E9QrCg3xV8PqKW"><span class="nt" data-page-node-id="KucHGmmzt78GiiR2FqQZnA">这份代码的小缺陷</span><code data-page-node-id="XIc0btJUIbvOfoAbxjA2Ux">plotmf</code> 只画了输入 1（$e$）的隶属函数，没有画输入 2（$de$）的。建议补上：</div>
+    <pre class="code" data-page-node-id="RwZJRlsx48sVsBp70RzJ2T">figure('Color','w','Position',[150 150 900 400]);
+subplot(1,2,1); plotmf(fis0, 'input', 2); title('训练前: 输入 de');
+subplot(1,2,2); plotmf(fisTrained, 'input', 2); title('训练后: 输入 de');</pre>
+    <p data-page-node-id="I6fykeD5jOczIm9uSMiYTp">同时观察两个输入的隶属函数变化，理解"哪些输入被数据驱动地调整得更多"。</p>
+  </section>
+
+  <!-- ========== 五、实验报告要求 ========== -->
+  <section class="slide" id="report" data-page-node-id="6IBM3IzA6JwdhfEMBTjMZE">
+    <span class="slide-tag" data-page-node-id="JkwYNxxpA895f9QqCYGy6P">课后提交</span>
+    <h2 class="sec-title" data-page-node-id="woNpKRxo8HxlaOfHKoSyqx">五、实验报告要求</h2>
+    <ol class="num" data-page-node-id="7ihibNhnLzhyfWCrJtuunf">
+      <li data-page-node-id="IFLFsv3EWiOw9BFe6SGW0g"><strong data-page-node-id="tW8xTZM9Jq5cI4Z3AnT8UO">原理简答</strong>：说明 ANFIS 的混合学习算法的原理。</li>
+      <li data-page-node-id="D1OHUeLA1vVChtneTVYZDl"><strong data-page-node-id="39dRxevWQZpE0wUPu3ucl8">训练过程记录</strong>：给出初始隶属函数与训练后隶属函数的对比图（至少覆盖输入 $e$ 和 $de$ 两个输入），说明训练使隶属函数发生了怎样的变化。</li>
+      <li data-page-node-id="s8jR2AiFvRwlG6fKclGhDa"><strong data-page-node-id="FWzz5GfOubF5EezvN7J7fP">性能对比表</strong>与阶跃响应曲线叠加图（PID 与 ANFIS 同一张图，图例清晰）：
+        <table class="data" data-page-node-id="KDXmU8gsQzQQKBeiM1g1wG">
+          <tr data-page-node-id="neRoRvm8id99aLbfdy7QKc"><th data-page-node-id="fYoC09jbwBQtlJ3Qbpj7sr">指标</th><th data-page-node-id="OzDkHgW9mRAniSFJClnmhM">PID</th><th data-page-node-id="ZvQ9i1cCGmx4VQUotW0Dyd">ANFIS</th></tr>
+          <tr data-page-node-id="bg53kaO3Yjj6wZyxyjxaMz"><td data-page-node-id="yNoeCIJnACutFBkn1uMeLB">超调量 $\sigma\%$</td><td data-page-node-id="8PoCQRt0pMabwQBJ1kDCaK"></td><td data-page-node-id="Qqz9N10KgXYaFIn4BSoS6B"></td></tr>
+          <tr data-page-node-id="XDXGPMdLFHABvyXHS4rk9k"><td data-page-node-id="jMB3Wd5GALh55fxwur9YMf">调节时间 $t_s$ / s</td><td data-page-node-id="FcJVrSWoh9nBNhrG54oj9j"></td><td data-page-node-id="BMhxaV1RzUHOevO3zDu8rA"></td></tr>
+          <tr data-page-node-id="QU1BWED97aDuE9uOKSKDFq"><td data-page-node-id="TVHvAA6IdGKw2ni1fg6Dor">稳态误差</td><td data-page-node-id="PEJZwim7Q5bRBnTWdk2GxC"></td><td data-page-node-id="7IyhHilkeADfk9EBTi1zTN"></td></tr>
+        </table>
+      </li>
+      <li data-page-node-id="n3n3HBrzI3goCVPMPfuFU7"><strong data-page-node-id="UTYNZMtDfkWhO3k1Gbr4K1">训练/测试一致性分析</strong>：说明不同测试工况（阶跃/正弦）下的跟踪差异。</li>
+      <li data-page-node-id="rxfCQCBHXf8CYaRi7hoWGI"><strong data-page-node-id="AW1Wv9K4Bam9LjNVS0wxlK">分析讨论</strong>：结合数据回答——ANFIS 的改善主要来自哪一方面？是否存在某一指标上 ANFIS 反而不如 PID？如果存在，尝试给出解释（训练数据未覆盖、隶属函数饱和、规则数不足等）。</li>
+      <li data-page-node-id="rCMgLF6GjbqmZ95OBCLsdt"><strong data-page-node-id="UCWLKxvRCR4Bog3JFJUw5h">思考题</strong>（见下节）。</li>
+    </ol>
+  </section>
+
+  <!-- ========== 六、思考题 ========== -->
+  <section class="slide" id="qa" data-page-node-id="isaFJIbLsAgGEs0HUSViiz">
+    <span class="slide-tag" data-page-node-id="RPieV0B1NuNXM8Ei1qBVmy">课内讨论</span>
+    <h2 class="sec-title" data-page-node-id="fUfxagXCxjLMr3L8FxGP2F">六、思考题</h2>
+    <ol class="clean" data-page-node-id="tHWDysclfZU2Y211VaPCuU">
+      <li data-page-node-id="wh0tDWUjuddMrki6jrPvMT"><span class="tag" data-page-node-id="GBkjxqYy9w5PzajMjVMJbU">Q1</span><strong data-page-node-id="hBhzZ7eF2LrjWkowTaYQ7s">前件参数与后件参数的角色不对称性。</strong>在 ANFIS 中，为什么后件参数可以用最小二乘"一步"求出，而前件参数必须用梯度下降迭代？如果强行把全部参数都交给梯度下降，预计会出现什么实际问题？（提示：从参数出现的方式——线性/非线性——来考虑。）</li>
+      <li data-page-node-id="aL0XaGx9IEc7WhzT1m882I"><span class="tag" data-page-node-id="PJdloXKWg4BDYrdqGf75Cr">Q2</span><strong data-page-node-id="RB5h8TQJ1ZWSUJwAYLoj02">训练数据的覆盖性。</strong>若本代码用阶跃数据训练、正弦数据测试（模块五）。ANFIS 在正弦跟踪中误差超出训练范围，对应到隶属函数层面，原因是什么？提出至少一种改进方案。</li>
+      <li data-page-node-id="hCGqAdgEAx4XuZ1ELg2i7j"><span class="tag" data-page-node-id="tH3oUw0CJpxaGeRWONytTV">Q3</span><strong data-page-node-id="isbBWTrKH16246Hl8CsmUE">规则数目的权衡。</strong>将 <code data-page-node-id="UzpPMZVlnCWIcYViaRDcqa">NumMembershipFunctions</code> 从 <code data-page-node-id="vdNCDnu2Lajhn56wZUL2aF">[3 3]</code> 增加到 <code data-page-node-id="IS72DDLD2Dyt7ykCJWM0kA">[5 5]</code>，规则数从 9 变为 25。训练误差通常会下降，但验证误差可能上升。请解释这一现象，并说明在控制实验中你依据什么标准最终选定规则数目。</li>
+      <li data-page-node-id="Qvw32QsYvbTX8AoGzWXnW8"><span class="tag" data-page-node-id="i4sGyqLejexEeWdcGa6pfi">Q4</span><strong data-page-node-id="u1jFsDCkLA3cll8w8Wsblh">ANFIS 与"纯模糊"和"纯神经网络"的比较。</strong>从可解释性、数据需求、训练难度三个维度，将 ANFIS 与（a）人工设计规则的 Mamdani 模糊控制器、（b）相同输入输出结构的 BP 神经网络控制器进行定性比较。ANFIS 在哪个维度上结合了两者的优势？在哪个维度上仍继承了某一方的局限？</li>
+      <li data-page-node-id="bvHuzbODQuptKAigNxLqMR"><span class="tag" data-page-node-id="wq3WAJlCfH38OtPc4k1CsL">Q5</span><strong data-page-node-id="BFzCiRBQ9u7VoB5TmBzECy">无积分记忆的代价。</strong>本实验的 ANFIS 输入只有 $(e,de)$，没有 $\int e$。请解释：为什么这会导致 ANFIS 的稳态误差通常大于 PID？如果要在 ANFIS 中引入积分作用，有哪两种结构方案（提示：三维输入 vs 增量式输出）？各自代价是什么？</li>
+      <li data-page-node-id="6Pa6v4WlXN17nwVQL16map"><span class="tag" data-page-node-id="BJNUtOYNOFCDk1LXZMXoT4">Q6 </span>如果把 <code data-page-node-id="ex61KMk0Gh8FuJ51t7SjUS">Kp</code> 从 0.8 调到 1.8，PID 产生超调、训练数据覆盖负误差工况，ANFIS 闭环性能会如何变化？请先预测，再运行验证，并解释结果。</li>
+    </ol>
+  </section>
+
+  <!-- ========== 七、常见故障排查 ========== -->
+  <section class="slide" id="trouble" data-page-node-id="ZKZuzG1jbE6kxwodVlmsK3">
+    <span class="slide-tag" data-page-node-id="TefbNDS4crksHwnFxBUsLD">调试参考</span>
+    <h2 class="sec-title" data-page-node-id="7yCqTF5jHQVRlUAVVXzdLy">七、常见故障排查</h2>
+    <table class="data" data-page-node-id="jdhlhAJ5hlKu4Eq1e0pry5">
+      <tr data-page-node-id="jb7uEjUjQVI6lGzETmq2FH"><th data-page-node-id="CZgKdzLTJOIqP4aRmKO0ul">现象</th><th data-page-node-id="UhZKP4RTdcasixEPUFlEwz">原因</th><th data-page-node-id="KWgv4k4rFraUl3OhXFKiZv">修复</th></tr>
+      <tr data-page-node-id="Bb4Z0vFOh5mpO8Gg9npzHb"><td class="lft" data-page-node-id="tvWeCL6uIKbsvCeiHGB5pT"><code data-page-node-id="SgimC3rkO9bhhfhFuXyvO4">Input 1 expects a value in range [...]</code> 警告</td><td class="lft" data-page-node-id="LkdpcPVFlx50SUt4s9PQtH">仿真中 $e$ 超出训练范围（本代码因阶跃训练/正弦测试而极易触发）</td><td class="lft" data-page-node-id="Migff2pXyrhxPJb9U2OpRv">统一训练与测试工况（路径 A）；或对 <code data-page-node-id="QyIvBA1agKirgJk5Hqsl21">evalfis</code> 输入限幅</td></tr>
+      <tr data-page-node-id="HKmShFJDw1vK0AtUpPncS1"><td class="lft" data-page-node-id="y6p5pGPFv8C6fQk4TRqG8o"><code data-page-node-id="HTwFvnpNBeBF4v85iwMBHc">evalfis</code> 报"参数过多"</td><td class="lft" data-page-node-id="kg2AlQ32SHLKUtynVDtllE">MATLAB 版本低于 R2018b</td><td class="lft" data-page-node-id="cXfEaujLCcCpBYCvHzeXJe">改成 <code data-page-node-id="ATDYzlaZXO8zlZgKgrSQ17">evalfis([e,de], fisTrained)</code></td></tr>
+      <tr data-page-node-id="OoKG1irqrxQi0ZYfAH6duk"><td class="lft" data-page-node-id="D8qJj47UZIOakyTvuMkWD8"><code data-page-node-id="XP4WECVDmH2YxLmYhCO7hM">genfis</code> 报属性无法识别</td><td class="lft" data-page-node-id="PQOJj1QPdEUEV5DkLIBaXL">用了 <code data-page-node-id="ND4CWJVUZ5jJBrAEcvUbHX">InputMFType</code></td><td class="lft" data-page-node-id="UUmhE1coxCJ5mCIUHc0YUJ">改 <code data-page-node-id="Ft4XODLrN8lP76OrJHICx8">InputMembershipFunctionType</code></td></tr>
+      <tr data-page-node-id="jbTEJydpz6wv9vvEQTr2e6"><td class="lft" data-page-node-id="1vmC6ADuDoB1P4cE65Yt2u">ANFIS 闭环发散</td><td class="lft" data-page-node-id="XTLfzS1gAJLoJeJ3LehQLN">训练数据未覆盖负误差，或无限幅保护</td><td class="lft" data-page-node-id="8idqaDWcqtmBOy5U8ZU7Sx">调大 <code data-page-node-id="IoQ8ATCOEpRmpOmF1ddjcm">Kp</code> 让 PID 产生超调；或恢复限幅</td></tr>
+      <tr data-page-node-id="cadKdDqRC3DU3lYrQ7fs6H"><td class="lft" data-page-node-id="q9fOWso4mZbjYa6USiC3NY">验证 RMSE 曲线不下降</td><td class="lft" data-page-node-id="UU3kSW61BCgOFtXYN1Tg5K">验证集与训练集分布差异过大</td><td class="lft" data-page-node-id="JBMT2aMuBu8zzRLfr5U8di">检查 <code data-page-node-id="x0HEwmipz7675meVkWhisU">split_idx</code>，考虑打乱划分</td></tr>
+      <tr data-page-node-id="zmt5nnWtEJFCuD7kmn79Ct"><td class="lft" data-page-node-id="fdL7km6KdXuEgiyaFUpOLP">隶属函数图看不出变化</td><td class="lft" data-page-node-id="agkU8TMHkFDXZ6sHZPrjox">epoch 太少或步长太小</td><td class="lft" data-page-node-id="mpeNspHYlPwjrrJR747WkH">增加 <code data-page-node-id="bVjt9xLT1EkIEiELudOxG7">EpochNumber</code>，调 <code data-page-node-id="M0ulF1fPKLdrBCskhkOWVV">anfisOpt.InitialStepSize</code></td></tr>
+      <tr data-page-node-id="FcFLR2uibmfI7moQjHmotF"><td class="lft" data-page-node-id="UwHjymUvdNe24wqZOb6PDL">阶跃响应图中 PID 曲线与参考线对不上</td><td class="lft" data-page-node-id="0mzLudzCH3FLjxFw4dlI69">模块五的 <code data-page-node-id="s20JUyrfjOL2EN4DtcUlB9">r</code> 被覆盖为正弦，绘图用了正弦参考</td><td class="lft" data-page-node-id="oH2ggzLnKfzcYQUUdcA0Ve">按路径 A / B恢复 <code data-page-node-id="qiBGCwDuLMFAh0vUATgKyC">r=ones(1,N)</code></td></tr>
+    </table>
+  </section>
+
+  <footer class="foot" data-page-node-id="ALA9okSg5j4CLHOiBrAFPA">《智能控制概论》实验课讲义（学生版）· 第八讲 模糊神经网络控制实验｜实验载体 anfis_dome_S2.m｜东南大学自动化学院</footer>
+
+</div>
+</body>
+</html>
