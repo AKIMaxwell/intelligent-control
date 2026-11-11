@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多臂赌博机｜强化学习交互演示</title>
+  <style>
+    :root {
+      --primary: #4c7d2c;
+      --primary-dark: #365c1f;
+      --primary-soft: #edf5e7;
+      --accent: #fdd000;
+      --ink: #17211b;
+      --muted: #66736a;
+      --line: #dfe6df;
+      --surface: #ffffff;
+      --canvas: #f4f7f3;
+      --danger: #c74646;
+      --blue: #3478c8;
+      --purple: #8256c8;
+      --orange: #d97732;
+      --shadow: 0 8px 28px rgba(35, 60, 38, 0.07);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.45; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(76, 125, 44, 0.25);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 13px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--primary);
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+    }
+    .brand-mark svg { width: 27px; height: 27px; }
+    .brand-title { font-weight: 800; font-size: 18px; letter-spacing: 0.02em; }
+    .brand-subtitle { color: var(--muted); font-size: 12px; margin-top: -3px; }
+    .top-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .container { max-width: 1540px; margin: 0 auto; padding: 24px; }
+    .intro {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    h1 { font-size: clamp(25px, 3vw, 36px); line-height: 1.25; margin: 0 0 7px; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: var(--muted); max-width: 830px; }
+    .question-chip {
+      flex: 0 0 auto;
+      background: #fff9d8;
+      border: 1px solid #f0df72;
+      border-radius: 12px;
+      padding: 9px 14px;
+      font-weight: 700;
+      color: #695600;
+    }
+
+    .mode-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 6px;
+      border-radius: 14px;
+      background: #e7ede5;
+      margin-bottom: 18px;
+    }
+    .mode-btn {
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      padding: 11px 14px;
+      font-weight: 800;
+      transition: 0.18s ease;
+    }
+    .mode-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.55); }
+    .mode-btn.active { color: var(--primary-dark); background: white; box-shadow: 0 2px 8px rgba(40, 65, 40, 0.08); }
+    .mode-btn span { display: block; font-size: 12px; font-weight: 500; margin-top: 1px; }
+
+    .layout { display: grid; grid-template-columns: 292px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .sidebar { display: grid; gap: 14px; position: sticky; top: 87px; }
+    .content { min-width: 0; display: grid; gap: 16px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .panel-pad { padding: 17px; }
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 17px 19px 12px;
+    }
+    .panel-title { margin: 0; font-size: 17px; line-height: 1.4; }
+    .panel-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .section-kicker { color: var(--primary); font-size: 11px; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+    .control-section + .control-section { border-top: 1px solid var(--line); }
+    .control-title { margin: 0 0 11px; font-size: 14px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label, .field-label { font-size: 12px; color: var(--muted); font-weight: 700; }
+    .field-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .value-tag { color: var(--primary-dark); font-weight: 900; font-variant-numeric: tabular-nums; }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      border: 1px solid #cfd9ce;
+      border-radius: 9px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: white;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--primary); }
+    input[type="checkbox"] { accent-color: var(--primary); width: 17px; height: 17px; }
+    .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .param-block + .param-block { margin-top: 13px; }
+    .mode-desc { color: var(--muted); font-size: 12px; margin: 9px 0 0; }
+
+    .btn {
+      border: 1px solid #ccd7ca;
+      border-radius: 9px;
+      background: white;
+      color: var(--ink);
+      padding: 8px 11px;
+      font-weight: 750;
+      transition: 0.15s ease;
+    }
+    .btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-soft); }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); color: white; }
+    .btn-accent { background: var(--accent); border-color: #e7c200; color: #3d3400; }
+    .btn-accent:hover:not(:disabled) { background: #ffe142; border-color: #d4b500; color: #3d3400; }
+    .btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+    .btn-small { padding: 5px 9px; font-size: 12px; }
+    .btn-block { width: 100%; }
+    .run-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .run-grid .wide { grid-column: 1 / -1; }
+    .speed-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .hint {
+      padding: 9px 11px;
+      border-radius: 9px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 12px;
+      margin-top: 11px;
+    }
+
+    details.env-panel { overflow: hidden; }
+    details.env-panel summary {
+      list-style: none;
+      padding: 14px 17px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    details.env-panel summary::-webkit-details-marker { display: none; }
+    details.env-panel summary::after { content: "+"; color: var(--primary); font-size: 20px; font-weight: 500; }
+    details.env-panel[open] summary::after { content: "−"; }
+    .env-body { border-top: 1px solid var(--line); padding: 15px 17px 17px; }
+    .prob-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0 12px; }
+    .prob-item { display: grid; grid-template-columns: 23px 1fr; align-items: center; gap: 5px; }
+    .prob-item label { font-weight: 900; font-size: 12px; text-align: center; }
+    .prob-item input { padding: 6px 7px; font-size: 12px; }
+    .env-note { font-size: 11px; color: var(--muted); margin: 8px 0 12px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .stat-card { padding: 13px 15px; min-width: 0; }
+    .stat-label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .stat-value { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; font-weight: 850; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .stat-foot { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+    .action-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 17px;
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      min-height: 52px;
+    }
+    .action-pulse { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 5px rgba(76, 125, 44, 0.12); }
+    .action-text { font-weight: 750; }
+    .action-context { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    .arms-grid { display: grid; grid-template-columns: repeat(5, minmax(135px, 1fr)); gap: 10px; padding: 0 17px 17px; }
+    .arm-card {
+      --arm-color: var(--primary);
+      position: relative;
+      border: 2px solid transparent;
+      border-radius: 13px;
+      background: #fafcfa;
+      padding: 12px;
+      cursor: pointer;
+      transition: 0.16s ease;
+      min-width: 0;
+    }
+    .arm-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 50, 32, 0.08); }
+    .arm-card.selected { border-color: var(--arm-color); background: white; box-shadow: 0 5px 16px rgba(30, 50, 32, 0.08); }
+    .arm-card.last::after {
+      content: "本次";
+      position: absolute;
+      top: -9px;
+      right: 8px;
+      background: var(--accent);
+      color: #493d00;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .arm-head { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+    .arm-name { display: flex; align-items: center; gap: 7px; font-weight: 900; }
+    .arm-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--arm-color); }
+    .truth-mini { color: var(--muted); font-size: 10px; }
+    .arm-frequency { font-size: 27px; line-height: 1.3; font-weight: 900; margin-top: 8px; font-variant-numeric: tabular-nums; }
+    .arm-count { color: var(--muted); font-size: 11px; min-height: 35px; }
+    .sparkline { display: block; width: 100%; height: 42px; margin: 4px 0 8px; }
+    .pull-btn { width: 100%; padding: 6px; border: 0; border-radius: 8px; color: white; background: var(--arm-color); font-weight: 800; font-size: 12px; }
+    .inspect-label { text-align: center; color: var(--muted); font-size: 10px; padding: 5px 0 1px; }
+
+    .charts-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr); gap: 16px; }
+    .metric-tabs { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+    .metric-btn { border: 0; border-radius: 7px; padding: 5px 8px; color: var(--muted); background: #f0f3ef; font-size: 11px; font-weight: 750; }
+    .metric-btn.active { background: var(--primary); color: white; }
+    .chart-wrap { padding: 0 12px 10px; }
+    .chart { display: block; width: 100%; height: auto; min-height: 245px; }
+    .chart text { font-family: inherit; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 0 18px 14px; font-size: 11px; color: var(--muted); }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-line { width: 17px; height: 3px; border-radius: 2px; }
+    .empty-chart { fill: #8a958d; font-size: 13px; text-anchor: middle; }
+
+    .detail-summary { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px; padding: 0 19px; }
+    .detail-frequency { font-size: 37px; line-height: 1.2; font-weight: 900; color: var(--primary-dark); font-variant-numeric: tabular-nums; }
+    .detail-count { color: var(--muted); font-size: 12px; }
+    .detail-truth { text-align: right; font-size: 12px; color: var(--muted); }
+    .detail-truth strong { display: block; font-size: 21px; color: var(--ink); }
+    .reward-history { padding: 0 19px 15px; }
+    .reward-history-title { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    .reward-dots { display: flex; gap: 5px; flex-wrap: wrap; min-height: 23px; }
+    .reward-dot { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; font-size: 10px; font-weight: 900; }
+    .reward-dot.win { background: #e5f2dc; color: var(--primary-dark); border: 1px solid #b7d3a2; }
+    .reward-dot.lose { background: #f1f2f1; color: #788079; border: 1px solid #d9ddda; }
+    .no-data { color: var(--muted); font-size: 12px; }
+
+    .table-wrap { overflow-x: auto; padding: 0 17px 17px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 9px; text-align: right; border-bottom: 1px solid #e8ede7; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    th { color: var(--muted); font-size: 11px; background: #f7f9f6; }
+    th:first-child, td:first-child { text-align: left; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: #f7faf5; }
+    tbody tr.focused { background: var(--primary-soft); }
+    .algo-name { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
+    .algo-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+    .teaching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .formula-box { padding: 3px 19px 18px; }
+    .formula {
+      display: block;
+      padding: 12px 14px;
+      margin: 8px 0;
+      border-radius: 10px;
+      background: #f5f8f3;
+      color: #253d28;
+      font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+      font-size: 18px;
+      overflow-x: auto;
+    }
+    .formula-box p { margin: 7px 0; color: var(--muted); font-size: 13px; }
+    .experiment-list { margin: 0; padding: 0 21px 17px 37px; }
+    .experiment-list li { padding: 5px 0 5px 2px; }
+    .experiment-list strong { color: var(--primary-dark); }
+    .footer { text-align: center; color: var(--muted); font-size: 11px; padding: 8px 0 2px; }
+
+    dialog {
+      width: min(680px, calc(100vw - 30px));
+      max-height: 86vh;
+      overflow-y: auto;
+      border: 0;
+      border-radius: 18px;
+      padding: 0;
+      box-shadow: 0 25px 80px rgba(20, 35, 24, 0.28);
+    }
+    dialog::backdrop { background: rgba(18, 30, 21, 0.48); }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-size: 20px; }
+    .dialog-body { padding: 18px 22px 23px; }
+    .dialog-body h3 { margin: 18px 0 6px; font-size: 15px; color: var(--primary-dark); }
+    .dialog-body h3:first-child { margin-top: 0; }
+    .dialog-body p, .dialog-body li { color: #536057; font-size: 13px; }
+    .dialog-body ol, .dialog-body ul { padding-left: 21px; }
+    .close-btn { border: 0; background: #eef2ed; border-radius: 50%; width: 31px; height: 31px; font-size: 20px; line-height: 1; color: var(--muted); }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 25px;
+      z-index: 50;
+      transform: translate(-50%, 20px);
+      background: #233026;
+      color: white;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.2s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 260px minmax(0, 1fr); }
+      .arms-grid { grid-template-columns: repeat(3, minmax(135px, 1fr)); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 820px) {
+      .container { padding: 15px; }
+      .topbar-inner { padding: 10px 15px; }
+      .top-badges .badge { display: none; }
+      .intro { display: block; }
+      .question-chip { display: inline-block; margin-top: 12px; }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .arms-grid { grid-template-columns: repeat(2, minmax(125px, 1fr)); }
+      .teaching-grid { grid-template-columns: 1fr; }
+      .mode-btn { padding: 9px 5px; font-size: 13px; }
+      .mode-btn span { display: none; }
+      .brand-subtitle { display: none; }
+      .action-context { display: none; }
+    }
+    @media print {
+      .topbar, .sidebar, .mode-bar, .pull-btn, .metric-tabs, .footer { display: none !important; }
+      .layout { display: block; }
+      .container { max-width: none; padding: 0; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="7" width="20" height="21" rx="3"></rect>
+            <rect x="8" y="11" width="14" height="7" rx="1.5"></rect>
+            <path d="M25 11h3v9h-3M11 23h10M10 4h10"></path>
+            <circle cx="12" cy="14.5" r="1" fill="currentColor"></circle>
+            <circle cx="16" cy="14.5" r="1" fill="currentColor"></circle>
+            <circle cx="20" cy="14.5" r="1" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">强化学习交互实验室</div>
+          <div class="brand-subtitle">Multi-Armed Bandit · Exploration vs. Exploitation</div>
+        </div>
+      </div>
+      <div class="top-badges">
+        <span class="badge">单文件离线运行</span>
+        <span class="badge">固定随机种子</span>
+        <button class="btn btn-small" id="helpBtn">使用说明</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <div>
+        <h1>多臂赌博机：如何平衡探索与利用？</h1>
+        <p>每次选择一个臂并获得 Bernoulli 奖励。真实胜率未知，智能体只能根据历史观测估计各臂价值，并尽量减少累计遗憾。</p>
+      </div>
+      <div class="question-chip">多试几次，还是选当前最好？</div>
+    </section>
+
+    <nav class="mode-bar" aria-label="演示模式">
+      <button class="mode-btn active" data-mode="manual" aria-pressed="true">手动体验<span>亲自拉杆，感受信息不完整</span></button>
+      <button class="mode-btn" data-mode="single" aria-pressed="false">单算法运行<span>观察一种策略的完整学习过程</span></button>
+      <button class="mode-btn" data-mode="compare" aria-pressed="false">多算法对比<span>相同环境、相同奖励序列</span></button>
+    </nav>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <section class="panel control-section">
+          <div class="panel-pad">
+            <h2 class="control-title">策略与观察对象</h2>
+            <div class="field" id="algorithmGroup" hidden>
+              <label for="algorithmSelect">运行算法</label>
+              <select id="algorithmSelect">
+                <option value="random">随机策略</option>
+                <option value="greedy">纯贪心策略</option>
+                <option value="epsilon" selected>ε-Greedy</option>
+                <option value="ucb">UCB</option>
+                <option value="thompson">Thompson Sampling</option>
+              </select>
+            </div>
+            <div class="field" id="focusGroup" hidden>
+              <label for="focusAlgorithm">臂统计与详情的观察对象</label>
+              <select id="focusAlgorithm">
+                <option value="random">随机策略</option>
+                <option value="greedy">纯贪心策略</option>
+                <option value="epsilon" selected>ε-Greedy</option>
+                <option value="ucb">UCB</option>
+                <option value="thompson">Thompson Sampling</option>
+              </select>
+            </div>
+            <p class="mode-desc" id="modeDesc">点击任意臂的“拉下此臂”，根据结果判断哪个臂最好。</p>
+          </div>
+        </section>
+
+        <section class="panel control-section" id="paramPanel" hidden>
+          <div class="panel-pad">
+            <h2 class="control-title">算法参数</h2>
+            <div class="param-block" id="epsilonParam">
+              <div class="field">
+                <div class="field-head"><label for="epsilonInput">探索率 ε</label><span class="value-tag" id="epsilonValue">0.10</span></div>
+                <input type="range" id="epsilonInput" min="0" max="0.5" step="0.01" value="0.1">
+              </div>
+              <label class="check-row" id="decayParam"><input type="checkbox" id="decayInput"> ε 随时间衰减</label>
+            </div>
+            <div class="param-block" id="ucbParam">
+              <div class="field">
+                <div class="field-head"><label for="cInput">UCB 探索系数 c</label><span class="value-tag" id="cValue">1.00</span></div>
+                <input type="range" id="cInput" min="0.1" max="3" step="0.05" value="1">
+              </div>
+            </div>
+            <div class="param-block" id="thompsonParam">
+              <div class="field-label">Beta 先验参数</div>
+              <div class="two-col">
+                <div class="field"><label for="alphaInput">α</label><input type="number" id="alphaInput" min="0.1" max="20" step="0.1" value="1"></div>
+                <div class="field"><label for="betaInput">β</label><input type="number" id="betaInput" min="0.1" max="20" step="0.1" value="1"></div>
+              </div>
+            </div>
+            <div class="hint">修改算法或参数会重置实验，随机种子保持不变。</div>
+          </div>
+        </section>
+
+        <section class="panel control-section">
+          <div class="panel-pad">
+            <h2 class="control-title">实验控制</h2>
+            <div class="run-grid">
+              <button class="btn btn-primary wide" id="stepBtn" disabled>单步执行</button>
+              <button class="btn" id="run10Btn" disabled>运行 10 步</button>
+              <button class="btn" id="run100Btn" disabled>运行 100 步</button>
+              <button class="btn btn-accent wide" id="autoBtn" disabled>开始自动运行</button>
+              <button class="btn wide" id="resetBtn">重置实验</button>
+            </div>
+            <div class="speed-row">
+              <label for="speedInput">速度</label>
+              <input type="range" id="speedInput" min="1" max="6" step="1" value="3">
+              <span class="value-tag" id="speedValue">5 步/秒</span>
+            </div>
+            <div class="hint" id="manualHint">手动模式下，通过各臂卡片上的按钮执行动作；点击卡片可切换当前观察臂。</div>
+          </div>
+        </section>
+
+        <details class="panel env-panel">
+          <summary>教师环境设置</summary>
+          <div class="env-body">
+            <div class="two-col">
+              <div class="field"><label for="armCountInput">臂数量</label><select id="armCountInput"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option></select></div>
+              <div class="field"><label for="seedInput">随机种子</label><input type="text" id="seedInput" value="RL-2026" maxlength="40"></div>
+            </div>
+            <div class="field-label">各臂真实胜率</div>
+            <div class="prob-grid" id="probGrid"></div>
+            <button class="btn btn-small btn-block" id="randomProbsBtn">按当前种子随机生成</button>
+            <p class="env-note">应用环境会清空所有模式的数据。学生演示时可保持本区域折叠，并隐藏真实胜率。</p>
+            <label class="check-row"><input type="checkbox" id="showTruthInput"> 在图表中显示真实胜率</label>
+            <div style="height:10px"></div>
+            <button class="btn btn-primary btn-block" id="applyEnvBtn">应用环境并重置</button>
+          </div>
+        </details>
+      </aside>
+
+      <div class="content">
+        <section class="stats-grid" aria-label="核心指标">
+          <div class="panel stat-card"><div class="stat-label">总步数 T</div><div class="stat-value" id="statSteps">0</div><div class="stat-foot">当前观察对象</div></div>
+          <div class="panel stat-card"><div class="stat-label">累计奖励</div><div class="stat-value" id="statReward">0</div><div class="stat-foot">所有奖励之和</div></div>
+          <div class="panel stat-card"><div class="stat-label">平均奖励</div><div class="stat-value" id="statAverage">—</div><div class="stat-foot">累计奖励 / T</div></div>
+          <div class="panel stat-card"><div class="stat-label">累计遗憾</div><div class="stat-value" id="statRegret">0.00</div><div class="stat-foot">相对最优臂的期望损失</div></div>
+          <div class="panel stat-card"><div class="stat-label">最优臂选择率</div><div class="stat-value" id="statOptimal">—</div><div class="stat-foot">最优臂次数 / T</div></div>
+        </section>
+
+        <section class="action-banner" aria-live="polite">
+          <span class="action-pulse" aria-hidden="true"></span>
+          <span class="action-text" id="actionText">准备开始：请拉下任意一个臂。</span>
+          <span class="action-context" id="actionContext">手动体验</span>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div><div class="section-kicker">Observed reward frequency</div><h2 class="panel-title" id="armsTitle">各臂历史奖励频率</h2><p class="panel-subtitle" id="armsSubtitle">点击卡片查看详情；频率 = 获得奖励次数 ÷ 拉动次数。</p></div>
+            <span class="badge" id="viewBadge">手动操作</span>
+          </div>
+          <div class="arms-grid" id="armsGrid"></div>
+        </section>
+
+        <section class="charts-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div><h2 class="panel-title">学习过程</h2><p class="panel-subtitle">对比模式展示全部算法，其余模式展示当前观察对象。</p></div>
+              <div class="metric-tabs" aria-label="学习曲线指标">
+                <button class="metric-btn" data-metric="cumulative">累计奖励</button>
+                <button class="metric-btn active" data-metric="average">平均奖励</button>
+                <button class="metric-btn" data-metric="regret">累计遗憾</button>
+                <button class="metric-btn" data-metric="optimal">最优臂比例</button>
+              </div>
+            </div>
+            <div class="chart-wrap"><svg class="chart" id="mainChart" viewBox="0 0 720 300" role="img" aria-label="算法学习曲线"></svg></div>
+            <div class="chart-legend" id="chartLegend"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div><div class="section-kicker">Current arm</div><h2 class="panel-title" id="detailArmName">臂 A：历史奖励频率</h2><p class="panel-subtitle">每拉动一次更新一次，观察样本频率的收敛过程。</p></div>
+            </div>
+            <div class="detail-summary">
+              <div><div class="detail-frequency" id="detailFreq">暂无数据</div><div class="detail-count" id="detailCounts">0 次奖励 / 0 次拉动</div></div>
+              <div class="detail-truth" id="detailTruth" hidden>真实胜率<strong>—</strong></div>
+            </div>
+            <div class="chart-wrap"><svg class="chart" id="frequencyChart" viewBox="0 0 520 280" role="img" aria-label="当前臂历史奖励频率变化图"></svg></div>
+            <div class="reward-history">
+              <div class="reward-history-title">该臂最近奖励记录（1 = 获奖，0 = 未获奖）</div>
+              <div class="reward-dots" id="rewardDots"><span class="no-data">尚未拉动此臂</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="compareSection" hidden>
+          <div class="panel-header">
+            <div><h2 class="panel-title">算法对比总表</h2><p class="panel-subtitle">点击一行切换上方臂统计的观察对象；所有算法使用相同的各臂奖励序列。</p></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>算法</th><th>步数</th><th>累计奖励</th><th>平均奖励</th><th>累计遗憾</th><th>最优臂选择率</th></tr></thead>
+              <tbody id="compareTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="teaching-grid">
+          <div class="panel">
+            <div class="panel-header"><div><div class="section-kicker">Algorithm notes</div><h2 class="panel-title" id="formulaTitle">核心概念</h2></div></div>
+            <div class="formula-box" id="formulaContent"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><div class="section-kicker">Classroom experiments</div><h2 class="panel-title">课堂实验建议</h2></div></div>
+            <ol class="experiment-list">
+              <li><strong>贪心陷阱：</strong>运行纯贪心策略，观察它何时长期停留在次优臂。</li>
+              <li><strong>探索率：</strong>分别设置 ε = 0、0.1、0.3，对比平均奖励与累计遗憾。</li>
+              <li><strong>置信上界：</strong>调整 UCB 的 c，观察“不确定的臂”如何获得尝试机会。</li>
+              <li><strong>后验采样：</strong>改变 Thompson Sampling 的 Beta 先验，观察早期探索差异。</li>
+              <li><strong>任务难度：</strong>缩小各臂真实胜率差距，比较频率收敛与最优臂选择率。</li>
+            </ol>
+          </div>
+        </section>
+
+        <footer class="footer">奖励为 0/1 Bernoulli 随机变量 · 累计遗憾按期望奖励计算 · 最多运行 10,000 步</footer>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="helpDialog">
+    <div class="dialog-head"><h2>使用说明</h2><button class="close-btn" id="closeHelpBtn" aria-label="关闭">×</button></div>
+    <div class="dialog-body">
+      <h3>1. 手动体验</h3>
+      <p>点击臂卡片上的“拉下此臂”。每次获得奖励 1 或 0。卡片和右侧详情会显示该臂的历史奖励频率、奖励次数、拉动次数及频率变化轨迹。</p>
+      <h3>2. 单算法运行</h3>
+      <p>选择算法后，可单步、批量或自动运行。点击臂卡片只切换观察对象，不会改变算法动作。</p>
+      <h3>3. 多算法对比</h3>
+      <p>每一步会让五种算法各行动一次。通过“观察对象”或对比表选择某个算法，查看其各臂统计；学习曲线始终显示全部算法。</p>
+      <h3>4. 可复现与公平比较</h3>
+      <p>随机种子固定时，重置实验会得到相同结果。第 i 个臂的第 n 次奖励由环境预先确定，因此不同算法拉动同一臂相同次数时会看到相同奖励，减少比较中的环境随机性。</p>
+      <h3>5. 指标定义</h3>
+      <ul>
+        <li>历史奖励频率：该臂获得奖励次数 ÷ 该臂拉动次数；未拉动时显示“暂无数据”。</li>
+        <li>累计遗憾：T 步都选最优臂的期望奖励减去实际所选臂的期望奖励之和。</li>
+        <li>最优臂选择率：选择真实期望胜率最高的臂的次数 ÷ 总步数。</li>
+      </ul>
+      <h3>课堂建议</h3>
+      <p>先隐藏真实胜率进行手动体验，再开启自动算法，最后显示真实胜率并分析频率收敛、探索行为与累计遗憾。</p>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    "use strict";
+
+    const ALGOS = {
+      random: { name: "随机策略", short: "随机", color: "#707b73" },
+      greedy: { name: "纯贪心策略", short: "贪心", color: "#d97732" },
+      epsilon: { name: "ε-Greedy", short: "ε-Greedy", color: "#4c7d2c" },
+      ucb: { name: "UCB", short: "UCB", color: "#3478c8" },
+      thompson: { name: "Thompson Sampling", short: "Thompson", color: "#8256c8" }
+    };
+    const ARM_NAMES = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const ARM_COLORS = ["#4c7d2c", "#3478c8", "#8256c8", "#d97732", "#c45757", "#2d8b83", "#b15c91", "#69756d"];
+    const SPEEDS = [1, 2, 5, 10, 20, 50];
+    const MAX_STEPS = 10000;
+    const METRICS = {
+      cumulative: { title: "累计奖励", key: "cumReward", percent: false },
+      average: { title: "平均奖励", key: "avgReward", percent: false },
+      regret: { title: "累计遗憾", key: "cumRegret", percent: false },
+      optimal: { title: "最优臂选择率", key: "optimalRate", percent: true }
+    };
+
+    let config = { probabilities: [0.2, 0.35, 0.5, 0.65, 0.8], seed: "RL-2026", showTruth: false };
+    let params = { epsilon: 0.1, decay: false, c: 1, alpha: 1, beta: 1 };
+    let mode = "manual";
+    let selectedAlgorithm = "epsilon";
+    let focusAlgorithm = "epsilon";
+    let selectedArm = 0;
+    let metric = "average";
+    let environment;
+    let states = {};
+    let autoTimer = null;
+    let toastTimer = null;
+
+    const $ = id => document.getElementById(id);
+
+    function hashString(str) {
+      let h = 1779033703 ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
+      }
+      return function () {
+        h = Math.imul(h ^ (h >>> 16), 2246822507);
+        h = Math.imul(h ^ (h >>> 13), 3266489909);
+        return (h ^= h >>> 16) >>> 0;
+      };
+    }
+
+    function mulberry32(seed) {
+      return function () {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function createRng(label) {
+      return mulberry32(hashString(label)());
+    }
+
+    function createEnvironment() {
+      const sequences = config.probabilities.map(() => []);
+      const rngs = config.probabilities.map((_, i) => createRng(config.seed + "|reward|" + i));
+      return {
+        reward(arm, pullIndex) {
+          while (sequences[arm].length <= pullIndex) {
+            sequences[arm].push(rngs[arm]() < config.probabilities[arm] ? 1 : 0);
+          }
+          return sequences[arm][pullIndex];
+        }
+      };
+    }
+
+    function initialHistory() {
+      return [{ t: 0, arm: null, reward: null, cumReward: 0, avgReward: 0, cumRegret: 0, optimalRate: 0 }];
+    }
+
+    function createState(algo) {
+      const k = config.probabilities.length;
+      return {
+        algo,
+        rng: createRng(config.seed + "|choice|" + algo),
+        t: 0,
+        counts: Array(k).fill(0),
+        successes: Array(k).fill(0),
+        totalReward: 0,
+        cumulativeRegret: 0,
+        optimalPulls: 0,
+        history: initialHistory(),
+        armHistory: Array.from({ length: k }, () => []),
+        lastArm: null,
+        lastReward: null
+      };
+    }
+
+    function resetExperiment(showMessage = false) {
+      stopAuto();
+      environment = createEnvironment();
+      states = {
+        manual: createState("manual"),
+        single: createState(selectedAlgorithm),
+        compare: {}
+      };
+      Object.keys(ALGOS).forEach(algo => { states.compare[algo] = createState(algo); });
+      selectedArm = Math.min(selectedArm, config.probabilities.length - 1);
+      renderAll();
+      if (showMessage) showToast("实验已重置，随机种子保持不变");
+    }
+
+    function getViewState() {
+      if (mode === "manual") return states.manual;
+      if (mode === "single") return states.single;
+      return states.compare[focusAlgorithm];
+    }
+
+    function getActiveStates() {
+      if (mode === "single") return [states.single];
+      if (mode === "compare") return Object.values(states.compare);
+      return [states.manual];
+    }
+
+    function argmaxRandom(values, rng) {
+      const max = Math.max(...values);
+      const candidates = [];
+      values.forEach((v, i) => { if (Math.abs(v - max) < 1e-12) candidates.push(i); });
+      return candidates[Math.floor(rng() * candidates.length)];
+    }
+
+    function normalSample(rng) {
+      let u = 0;
+      let v = 0;
+      while (u <= Number.EPSILON) u = rng();
+      while (v <= Number.EPSILON) v = rng();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function gammaSample(shape, rng) {
+      if (shape < 1) {
+        return gammaSample(shape + 1, rng) * Math.pow(Math.max(rng(), 1e-12), 1 / shape);
+      }
+      const d = shape - 1 / 3;
+      const c = 1 / Math.sqrt(9 * d);
+      while (true) {
+        const x = normalSample(rng);
+        let v = 1 + c * x;
+        if (v <= 0) continue;
+        v = v * v * v;
+        const u = Math.max(rng(), 1e-12);
+        if (u < 1 - 0.0331 * Math.pow(x, 4) || Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) {
+          return d * v;
+        }
+      }
+    }
+
+    function betaSample(alpha, beta, rng) {
+      const a = gammaSample(alpha, rng);
+      const b = gammaSample(beta, rng);
+      return a / (a + b);
+    }
+
+    function currentEpsilon(state) {
+      return params.decay ? Math.max(0.01, params.epsilon / Math.sqrt(state.t + 1)) : params.epsilon;
+    }
+
+    function chooseArm(state) {
+      const k = config.probabilities.length;
+      const estimates = state.counts.map((n, i) => n ? state.successes[i] / n : 0);
+      if (state.algo === "random") return Math.floor(state.rng() * k);
+      if (state.algo === "greedy") return argmaxRandom(estimates, state.rng);
+      if (state.algo === "epsilon") {
+        if (state.rng() < currentEpsilon(state)) return Math.floor(state.rng() * k);
+        return argmaxRandom(estimates, state.rng);
+      }
+      if (state.algo === "ucb") {
+        const untried = state.counts.map((n, i) => n === 0 ? i : -1).filter(i => i >= 0);
+        if (untried.length) return untried[Math.floor(state.rng() * untried.length)];
+        const time = Math.max(2, state.t + 1);
+        const values = estimates.map((q, i) => q + params.c * Math.sqrt(Math.log(time) / state.counts[i]));
+        return argmaxRandom(values, state.rng);
+      }
+      if (state.algo === "thompson") {
+        const samples = state.counts.map((n, i) => {
+          const wins = state.successes[i];
+          const losses = n - wins;
+          return betaSample(params.alpha + wins, params.beta + losses, state.rng);
+        });
+        return argmaxRandom(samples, state.rng);
+      }
+      return 0;
+    }
+
+    function updateState(state, arm) {
+      if (state.t >= MAX_STEPS) return false;
+      const reward = environment.reward(arm, state.counts[arm]);
+      state.counts[arm]++;
+      state.successes[arm] += reward;
+      state.t++;
+      state.totalReward += reward;
+      state.lastArm = arm;
+      state.lastReward = reward;
+      const best = Math.max(...config.probabilities);
+      state.cumulativeRegret += best - config.probabilities[arm];
+      if (Math.abs(config.probabilities[arm] - best) < 1e-12) state.optimalPulls++;
+      const frequency = state.successes[arm] / state.counts[arm];
+      state.armHistory[arm].push({ pull: state.counts[arm], reward, frequency });
+      state.history.push({
+        t: state.t,
+        arm,
+        reward,
+        cumReward: state.totalReward,
+        avgReward: state.totalReward / state.t,
+        cumRegret: state.cumulativeRegret,
+        optimalRate: state.optimalPulls / state.t
+      });
+      return true;
+    }
+
+    function manualPull(arm) {
+      if (mode !== "manual") return;
+      selectedArm = arm;
+      updateState(states.manual, arm);
+      renderAll();
+    }
+
+    function stepOnce() {
+      if (mode === "manual") {
+        showToast("手动模式请点击某个臂的拉杆按钮");
+        return;
+      }
+      let changed = false;
+      getActiveStates().forEach(state => {
+        if (state.t < MAX_STEPS) {
+          updateState(state, chooseArm(state));
+          changed = true;
+        }
+      });
+      if (!changed) {
+        stopAuto();
+        showToast("已达到 10,000 步上限");
+      }
+      renderAll();
+    }
+
+    function runBatch(n) {
+      if (mode === "manual") return;
+      stopAuto();
+      let changed = false;
+      for (let i = 0; i < n; i++) {
+        getActiveStates().forEach(state => {
+          if (state.t < MAX_STEPS) {
+            updateState(state, chooseArm(state));
+            changed = true;
+          }
+        });
+      }
+      renderAll();
+      if (!changed) showToast("已达到 10,000 步上限");
+    }
+
+    function startAuto() {
+      if (mode === "manual" || autoTimer) return;
+      if (getViewState().t >= MAX_STEPS) {
+        showToast("已达到 10,000 步上限，请重置后再运行");
+        return;
+      }
+      const delay = 1000 / SPEEDS[Number($("speedInput").value) - 1];
+      autoTimer = setInterval(stepOnce, delay);
+      renderRunControls();
+    }
+
+    function stopAuto() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = null;
+      if ($("autoBtn")) renderRunControls();
+    }
+
+    function toggleAuto() {
+      if (autoTimer) stopAuto(); else startAuto();
+    }
+
+    function showToast(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function fmt(value, digits = 2) {
+      return Number(value).toFixed(digits);
+    }
+
+    function percent(value, digits = 1) {
+      return (value * 100).toFixed(digits) + "%";
+    }
+
+    function stateName(state) {
+      return state.algo === "manual" ? "手动操作" : ALGOS[state.algo].name;
+    }
+
+    function stateColor(state) {
+      return state.algo === "manual" ? "#4c7d2c" : ALGOS[state.algo].color;
+    }
+
+    function sparklineSVG(history, color) {
+      const w = 140;
+      const h = 42;
+      const points = history.map((d, i) => {
+        const x = history.length === 1 ? w / 2 : 3 + i * (w - 6) / (history.length - 1);
+        const y = 4 + (1 - d.frequency) * (h - 8);
+        return [x, y];
+      });
+      const path = points.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+      return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="2" y1="${h - 4}" x2="${w - 2}" y2="${h - 4}" stroke="#e1e6e0" stroke-width="1"/>
+        ${path ? `<path d="${path}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ""}
+        ${points.length === 1 ? `<circle cx="${points[0][0]}" cy="${points[0][1]}" r="3" fill="${color}"/>` : ""}
+      </svg>`;
+    }
+
+    function renderStats(state) {
+      $("statSteps").textContent = state.t.toLocaleString();
+      $("statReward").textContent = state.totalReward.toLocaleString();
+      $("statAverage").textContent = state.t ? fmt(state.totalReward / state.t, 3) : "—";
+      $("statRegret").textContent = fmt(state.cumulativeRegret, 2);
+      $("statOptimal").textContent = state.t ? percent(state.optimalPulls / state.t) : "—";
+    }
+
+    function renderAction(state) {
+      const modeNames = { manual: "手动体验", single: "单算法运行", compare: "多算法对比" };
+      $("actionContext").textContent = modeNames[mode] + (mode === "compare" ? " · 观察 " + ALGOS[focusAlgorithm].short : "");
+      if (state.lastArm === null) {
+        $("actionText").textContent = mode === "manual" ? "准备开始：请拉下任意一个臂。" : "准备开始：选择单步、批量或自动运行。";
+        return;
+      }
+      const arm = state.lastArm;
+      const freq = state.successes[arm] / state.counts[arm];
+      $("actionText").textContent = `第 ${state.t} 步：选择臂 ${ARM_NAMES[arm]} → 奖励 ${state.lastReward}；该臂历史奖励频率 ${percent(freq)}（${state.successes[arm]}/${state.counts[arm]}）`;
+    }
+
+    function renderArms(state) {
+      $("viewBadge").textContent = stateName(state);
+      $("armsGrid").innerHTML = config.probabilities.map((p, i) => {
+        const n = state.counts[i];
+        const wins = state.successes[i];
+        const freq = n ? wins / n : null;
+        const classes = ["arm-card", selectedArm === i ? "selected" : "", state.lastArm === i ? "last" : ""].join(" ");
+        return `<article class="${classes}" data-arm="${i}" style="--arm-color:${ARM_COLORS[i]}" tabindex="0" aria-label="查看臂 ${ARM_NAMES[i]} 的统计">
+          <div class="arm-head"><div class="arm-name"><span class="arm-dot"></span>臂 ${ARM_NAMES[i]}</div><span class="truth-mini">${config.showTruth ? "真实 p = " + fmt(p, 2) : "真实 p 未知"}</span></div>
+          <div class="arm-frequency">${freq === null ? "—" : percent(freq)}</div>
+          <div class="arm-count">${freq === null ? "暂无数据 · 尚未拉动" : `${wins} 次奖励 / ${n} 次拉动`}</div>
+          ${sparklineSVG(state.armHistory[i], ARM_COLORS[i])}
+          ${mode === "manual" ? `<button class="pull-btn" data-pull="${i}">拉下此臂</button>` : `<div class="inspect-label">点击查看频率轨迹</div>`}
+        </article>`;
+      }).join("");
+    }
+
+    function niceMax(value) {
+      if (value <= 1) return 1;
+      const rough = value * 1.08;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+      const normalized = rough / magnitude;
+      const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+      return nice * magnitude;
+    }
+
+    function renderMainChart() {
+      const svg = $("mainChart");
+      const plotStates = mode === "compare" ? Object.values(states.compare) : [getViewState()];
+      const W = 720, H = 300, left = 58, right = 20, top = 19, bottom = 42;
+      const pw = W - left - right, ph = H - top - bottom;
+      const maxT = Math.max(10, ...plotStates.map(s => s.t));
+      const xMax = niceMax(maxT);
+      const def = METRICS[metric];
+      let yMax = 1;
+      if (metric === "cumulative" || metric === "regret") {
+        yMax = niceMax(Math.max(1, ...plotStates.flatMap(s => s.history.map(h => h[def.key]))));
+      }
+      const x = t => left + t / xMax * pw;
+      const y = v => top + (1 - v / yMax) * ph;
+      let out = `<rect x="${left}" y="${top}" width="${pw}" height="${ph}" fill="#fbfcfb" rx="6"/>`;
+      for (let i = 0; i <= 5; i++) {
+        const value = yMax * i / 5;
+        const yy = y(value);
+        const label = def.percent ? Math.round(value * 100) + "%" : (yMax <= 2 ? fmt(value, 1) : fmt(value, value < 10 ? 1 : 0));
+        out += `<line x1="${left}" y1="${yy}" x2="${W - right}" y2="${yy}" stroke="#e3e9e2" stroke-width="1"/><text x="${left - 9}" y="${yy + 4}" text-anchor="end" font-size="10" fill="#758078">${label}</text>`;
+      }
+      for (let i = 0; i <= 5; i++) {
+        const t = xMax * i / 5;
+        const xx = x(t);
+        out += `<line x1="${xx}" y1="${top}" x2="${xx}" y2="${H - bottom}" stroke="#edf0ec" stroke-width="1"/><text x="${xx}" y="${H - 19}" text-anchor="middle" font-size="10" fill="#758078">${Math.round(t)}</text>`;
+      }
+      out += `<text x="${left + pw / 2}" y="${H - 3}" text-anchor="middle" font-size="11" fill="#66736a">步数 T</text>`;
+      plotStates.forEach(state => {
+        const color = stateColor(state);
+        const points = state.history.map(h => [x(h.t), y(h[def.key])]);
+        const path = points.map((p, i) => (i ? "L" : "M") + p[0].toFixed(2) + "," + p[1].toFixed(2)).join(" ");
+        out += `<path d="${path}" fill="none" stroke="${color}" stroke-width="${mode === "compare" && state.algo === focusAlgorithm ? 3.2 : 2.2}" stroke-linejoin="round" stroke-linecap="round" opacity="${mode === "compare" && state.algo !== focusAlgorithm ? 0.72 : 1}"/>`;
+        const last = points[points.length - 1];
+        const lastValue = state.history[state.history.length - 1][def.key];
+        out += `<circle cx="${last[0]}" cy="${last[1]}" r="3.8" fill="${color}"><title>${stateName(state)}：${def.title} ${fmt(lastValue, 3)}</title></circle>`;
+      });
+      svg.innerHTML = out;
+      $("chartLegend").innerHTML = plotStates.map(s => `<span class="legend-item"><span class="legend-line" style="background:${stateColor(s)}"></span>${stateName(s)}</span>`).join("");
+    }
+
+    function renderArmDetail(state) {
+      const i = selectedArm;
+      const n = state.counts[i];
+      const wins = state.successes[i];
+      const history = state.armHistory[i];
+      $("detailArmName").textContent = `臂 ${ARM_NAMES[i]}：历史奖励频率`;
+      $("detailFreq").textContent = n ? percent(wins / n) : "暂无数据";
+      $("detailCounts").textContent = `${wins} 次奖励 / ${n} 次拉动`;
+      $("detailTruth").hidden = !config.showTruth;
+      $("detailTruth").innerHTML = `真实胜率<strong>${fmt(config.probabilities[i], 2)}</strong>`;
+      const recent = history.slice(-16).reverse();
+      $("rewardDots").innerHTML = recent.length ? recent.map(d => `<span class="reward-dot ${d.reward ? "win" : "lose"}" title="第 ${d.pull} 次拉动">${d.reward}</span>`).join("") : `<span class="no-data">尚未拉动此臂</span>`;
+
+      const svg = $("frequencyChart");
+      const W = 520, H = 280, left = 43, right = 15, top = 18, bottom = 39;
+      const pw = W - left - right, ph = H - top - bottom;
+      const xMax = Math.max(5, n);
+      const x = pull => left + pull / xMax * pw;
+      const y = value => top + (1 - value) * ph;
+      let out = `<rect x="${left}" y="${top}" width="${pw}" height="${ph}" fill="#fbfcfb" rx="6"/>`;
+      for (let j = 0; j <= 4; j++) {
+        const v = j / 4;
+        const yy = y(v);
+        out += `<line x1="${left}" y1="${yy}" x2="${W - right}" y2="${yy}" stroke="#e3e9e2"/><text x="${left - 8}" y="${yy + 4}" text-anchor="end" font-size="10" fill="#758078">${v * 100}%</text>`;
+      }
+      for (let j = 0; j <= 5; j++) {
+        const pull = Math.round(xMax * j / 5);
+        const xx = x(pull);
+        out += `<text x="${xx}" y="${H - 16}" text-anchor="middle" font-size="10" fill="#758078">${pull}</text>`;
+      }
+      out += `<text x="${left + pw / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="#66736a">该臂拉动次数</text>`;
+      if (config.showTruth) {
+        const yy = y(config.probabilities[i]);
+        out += `<line x1="${left}" y1="${yy}" x2="${W - right}" y2="${yy}" stroke="#d97732" stroke-width="1.6" stroke-dasharray="6 5"/><text x="${W - right - 3}" y="${yy - 6}" text-anchor="end" font-size="10" fill="#b45d20">真实 p = ${fmt(config.probabilities[i], 2)}</text>`;
+      }
+      if (!history.length) {
+        out += `<text x="${left + pw / 2}" y="${top + ph / 2}" class="empty-chart">拉动此臂后显示频率变化</text>`;
+      } else {
+        const points = history.map(d => [x(d.pull), y(d.frequency)]);
+        const path = points.map((p, j) => (j ? "L" : "M") + p[0].toFixed(2) + "," + p[1].toFixed(2)).join(" ");
+        out += `<path d="${path}" fill="none" stroke="${ARM_COLORS[i]}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+        const last = points[points.length - 1];
+        out += `<circle cx="${last[0]}" cy="${last[1]}" r="4.5" fill="${ARM_COLORS[i]}" stroke="white" stroke-width="2"/>`;
+      }
+      svg.innerHTML = out;
+    }
+
+    function renderCompareTable() {
+      $("compareSection").hidden = mode !== "compare";
+      if (mode !== "compare") return;
+      $("compareTableBody").innerHTML = Object.values(states.compare).map(s => `<tr data-focus="${s.algo}" class="${s.algo === focusAlgorithm ? "focused" : ""}">
+        <td><span class="algo-name"><span class="algo-dot" style="background:${ALGOS[s.algo].color}"></span>${ALGOS[s.algo].name}</span></td>
+        <td>${s.t.toLocaleString()}</td><td>${s.totalReward.toLocaleString()}</td><td>${s.t ? fmt(s.totalReward / s.t, 3) : "—"}</td><td>${fmt(s.cumulativeRegret, 2)}</td><td>${s.t ? percent(s.optimalPulls / s.t) : "—"}</td>
+      </tr>`).join("");
+    }
+
+    function renderFormula() {
+      let title = "核心概念";
+      let html = "";
+      if (mode === "manual") {
+        html = `<p>每个臂的奖励服从未知参数的 Bernoulli 分布。真实期望胜率记为 μ<sub>i</sub>，观测到的样本频率记为 Q<sub>t</sub>(i)。</p><span class="formula">Q<sub>t</sub>(i) = 获得奖励次数 ÷ 拉动次数</span><p>若始终只凭少量样本选择当前最好的臂，可能错过真正最优的臂；若持续随机探索，又会浪费已知机会。</p><span class="formula">R<sub>T</sub> = T·μ<sup>*</sup> − Σ<sub>t=1…T</sub> μ<sub>aₜ</sub></span>`;
+      } else {
+        const algo = mode === "single" ? selectedAlgorithm : focusAlgorithm;
+        title = ALGOS[algo].name + "：选择规则";
+        if (algo === "random") html = `<p>每一步等概率选择任意臂，不利用历史信息，可作为其他策略的基线。</p><span class="formula">P(a<sub>t</sub> = i) = 1 / K</span>`;
+        if (algo === "greedy") html = `<p>始终利用当前样本均值最高的臂；并列时随机选择。它可能因早期偶然奖励而陷入次优臂。</p><span class="formula">a<sub>t</sub> = arg max<sub>i</sub> Q<sub>t</sub>(i)</span>`;
+        if (algo === "epsilon") html = `<p>以 ε 的概率随机探索，以 1−ε 的概率利用当前最优估计。当前 ε = <strong>${fmt(currentEpsilon(getViewState()), 3)}</strong>${params.decay ? "，按 ε/√(t+1) 衰减，下限为 0.01" : ""}。</p><span class="formula">a<sub>t</sub> = 随机臂（概率 ε）；arg max<sub>i</sub> Q<sub>t</sub>(i)（概率 1−ε）</span>`;
+        if (algo === "ucb") html = `<p>将“估计值 + 不确定性奖励”作为选择依据。某臂被尝试越少，置信区间越宽，越值得探索。</p><span class="formula">a<sub>t</sub> = arg max<sub>i</sub> [ Q<sub>t</sub>(i) + c·√(ln t / N<sub>t</sub>(i)) ]</span><p>当前探索系数 c = <strong>${fmt(params.c, 2)}</strong>。未尝试过的臂优先尝试。</p>`;
+        if (algo === "thompson") html = `<p>为每个臂维护胜率的 Beta 后验，从各后验分布采样，并选择样本值最大的臂。</p><span class="formula">θ̃<sub>i</sub> ~ Beta(α + 奖励次数, β + 未获奖次数)</span><p>当前先验为 Beta(${fmt(params.alpha, 1)}, ${fmt(params.beta, 1)})。不确定性越大，采样值的波动越大，从而自然探索。</p>`;
+      }
+      $("formulaTitle").textContent = title;
+      $("formulaContent").innerHTML = html;
+    }
+
+    function renderParamVisibility() {
+      $("algorithmGroup").hidden = mode !== "single";
+      $("focusGroup").hidden = mode !== "compare";
+      $("paramPanel").hidden = mode === "manual";
+      const algo = mode === "single" ? selectedAlgorithm : focusAlgorithm;
+      const compare = mode === "compare";
+      $("epsilonParam").hidden = mode !== "manual" && !compare && algo !== "epsilon";
+      $("ucbParam").hidden = mode !== "manual" && !compare && algo !== "ucb";
+      $("thompsonParam").hidden = mode !== "manual" && !compare && algo !== "thompson";
+      if (mode === "single" && (algo === "random" || algo === "greedy")) $("paramPanel").hidden = true;
+      $("manualHint").hidden = mode !== "manual";
+      const descriptions = {
+        manual: "点击任意臂的“拉下此臂”，根据结果判断哪个臂最好。",
+        single: "算法自动选择动作；点击臂卡片仅切换观察对象。",
+        compare: "五种算法同步各执行一步；选择观察对象可查看其各臂统计。"
+      };
+      $("modeDesc").textContent = descriptions[mode];
+    }
+
+    function renderRunControls() {
+      const disabled = mode === "manual" || Boolean(autoTimer);
+      $("stepBtn").disabled = disabled;
+      $("run10Btn").disabled = disabled;
+      $("run100Btn").disabled = disabled;
+      $("autoBtn").disabled = mode === "manual";
+      $("autoBtn").textContent = autoTimer ? "暂停自动运行" : "开始自动运行";
+      $("autoBtn").classList.toggle("btn-accent", !autoTimer);
+      $("autoBtn").classList.toggle("btn-primary", Boolean(autoTimer));
+    }
+
+    function renderAll() {
+      if (!states.manual) return;
+      renderParamVisibility();
+      renderRunControls();
+      const state = getViewState();
+      renderStats(state);
+      renderAction(state);
+      renderArms(state);
+      renderMainChart();
+      renderArmDetail(state);
+      renderCompareTable();
+      renderFormula();
+    }
+
+    function setMode(nextMode) {
+      stopAuto();
+      mode = nextMode;
+      document.querySelectorAll(".mode-btn").forEach(btn => {
+        const active = btn.dataset.mode === mode;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      });
+      renderAll();
+    }
+
+    function buildProbInputs(useDefaults = false) {
+      const count = Number($("armCountInput").value);
+      const defaults = [0.2, 0.35, 0.5, 0.65, 0.8, 0.3, 0.55, 0.75];
+      $("probGrid").innerHTML = Array.from({ length: count }, (_, i) => {
+        const value = useDefaults || !config.probabilities[i] ? defaults[i] : config.probabilities[i];
+        return `<div class="prob-item"><label for="prob${i}" style="color:${ARM_COLORS[i]}">${ARM_NAMES[i]}</label><input id="prob${i}" type="number" min="0.01" max="0.99" step="0.01" value="${value}"></div>`;
+      }).join("");
+    }
+
+    function randomizeProbabilities() {
+      const count = Number($("armCountInput").value);
+      const rng = createRng(($("seedInput").value.trim() || "RL-2026") + "|probabilities|" + count);
+      for (let i = 0; i < count; i++) {
+        $("prob" + i).value = (0.08 + rng() * 0.84).toFixed(2);
+      }
+      showToast("已生成胜率，点击“应用环境并重置”后生效");
+    }
+
+    function applyEnvironment() {
+      const count = Number($("armCountInput").value);
+      const probabilities = [];
+      for (let i = 0; i < count; i++) {
+        const value = Number($("prob" + i).value);
+        if (!Number.isFinite(value) || value <= 0 || value >= 1) {
+          showToast("真实胜率必须位于 0 与 1 之间");
+          return;
+        }
+        probabilities.push(value);
+      }
+      config.probabilities = probabilities;
+      config.seed = $("seedInput").value.trim() || "RL-2026";
+      $("seedInput").value = config.seed;
+      selectedArm = 0;
+      resetExperiment();
+      showToast("新环境已应用，所有实验数据已清空");
+    }
+
+    function resetAfterParamChange() {
+      resetExperiment();
+      showToast("参数已生效，实验已重置");
+    }
+
+    document.querySelectorAll(".mode-btn").forEach(btn => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
+    document.querySelectorAll(".metric-btn").forEach(btn => btn.addEventListener("click", () => {
+      metric = btn.dataset.metric;
+      document.querySelectorAll(".metric-btn").forEach(b => b.classList.toggle("active", b === btn));
+      renderMainChart();
+    }));
+
+    $("algorithmSelect").addEventListener("change", event => {
+      selectedAlgorithm = event.target.value;
+      resetAfterParamChange();
+    });
+    $("focusAlgorithm").addEventListener("change", event => {
+      focusAlgorithm = event.target.value;
+      renderAll();
+    });
+    $("armsGrid").addEventListener("click", event => {
+      const pull = event.target.closest("[data-pull]");
+      if (pull) {
+        event.stopPropagation();
+        manualPull(Number(pull.dataset.pull));
+        return;
+      }
+      const card = event.target.closest("[data-arm]");
+      if (card) {
+        selectedArm = Number(card.dataset.arm);
+        renderArms(getViewState());
+        renderArmDetail(getViewState());
+      }
+    });
+    $("armsGrid").addEventListener("keydown", event => {
+      const card = event.target.closest("[data-arm]");
+      if (card && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        selectedArm = Number(card.dataset.arm);
+        renderArms(getViewState());
+        renderArmDetail(getViewState());
+      }
+    });
+    $("compareTableBody").addEventListener("click", event => {
+      const row = event.target.closest("[data-focus]");
+      if (row) {
+        focusAlgorithm = row.dataset.focus;
+        $("focusAlgorithm").value = focusAlgorithm;
+        renderAll();
+      }
+    });
+
+    $("stepBtn").addEventListener("click", stepOnce);
+    $("run10Btn").addEventListener("click", () => runBatch(10));
+    $("run100Btn").addEventListener("click", () => runBatch(100));
+    $("autoBtn").addEventListener("click", toggleAuto);
+    $("resetBtn").addEventListener("click", () => resetExperiment(true));
+    $("speedInput").addEventListener("input", () => {
+      $("speedValue").textContent = SPEEDS[Number($("speedInput").value) - 1] + " 步/秒";
+      if (autoTimer) {
+        stopAuto();
+        startAuto();
+      }
+    });
+
+    $("epsilonInput").addEventListener("input", event => { $("epsilonValue").textContent = Number(event.target.value).toFixed(2); });
+    $("epsilonInput").addEventListener("change", event => { params.epsilon = Number(event.target.value); resetAfterParamChange(); });
+    $("decayInput").addEventListener("change", event => { params.decay = event.target.checked; resetAfterParamChange(); });
+    $("cInput").addEventListener("input", event => { $("cValue").textContent = Number(event.target.value).toFixed(2); });
+    $("cInput").addEventListener("change", event => { params.c = Number(event.target.value); resetAfterParamChange(); });
+    $("alphaInput").addEventListener("change", event => {
+      params.alpha = Math.max(0.1, Number(event.target.value) || 1);
+      event.target.value = params.alpha;
+      resetAfterParamChange();
+    });
+    $("betaInput").addEventListener("change", event => {
+      params.beta = Math.max(0.1, Number(event.target.value) || 1);
+      event.target.value = params.beta;
+      resetAfterParamChange();
+    });
+
+    $("armCountInput").addEventListener("change", () => buildProbInputs(true));
+    $("randomProbsBtn").addEventListener("click", randomizeProbabilities);
+    $("applyEnvBtn").addEventListener("click", applyEnvironment);
+    $("showTruthInput").addEventListener("change", event => { config.showTruth = event.target.checked; renderAll(); });
+    $("helpBtn").addEventListener("click", () => $("helpDialog").showModal());
+    $("closeHelpBtn").addEventListener("click", () => $("helpDialog").close());
+    $("helpDialog").addEventListener("click", event => {
+      if (event.target === $("helpDialog")) $("helpDialog").close();
+    });
+
+    buildProbInputs(true);
+    resetExperiment();
+  </script>
+</body>
+</html>

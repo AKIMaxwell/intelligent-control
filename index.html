@@ -78,6 +78,16 @@
     transition:background .18s ease,color .18s ease; white-space:nowrap;
   }
   a.card:hover .go{background:var(--green); color:#fff;}
+  a.resource-card{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    margin:-6px 12px 0 112px; padding:12px 18px;
+    border:1px dashed var(--green); border-radius:12px; background:#fff;
+    color:var(--ink-2); text-decoration:none; font-size:13.5px;
+    transition:background .18s ease,box-shadow .18s ease;
+  }
+  a.resource-card b{color:var(--green-dark);}
+  .resource-go{flex:none;color:var(--green-dark);font-weight:600;white-space:nowrap;}
+  a.resource-card:hover{background:var(--paper);box-shadow:0 6px 18px rgba(76,125,44,.12);}
   /* ===== 页脚 ===== */
   footer{
     text-align:center; color:var(--ink-3); font-size:13px; padding:26px 16px 36px;
@@ -90,6 +100,8 @@
     .num{width:50px;height:50px;font-size:20px;}
     .info h2{font-size:18px;}
     .go{display:none;}
+    a.resource-card{margin:-4px 0 0;padding:12px 16px;font-size:12.5px;}
+    .resource-go{display:none;}
   }
 </style>
 </head>
@@ -184,6 +196,20 @@
         <p>ANFIS 五层结构与混合学习 · genfis/anfis 训练 · 二阶对象闭环控制与 PID 对比</p>
       </div>
       <span class="go">进入讲义 →</span>
+    </a>
+
+    <a class="card" href="lecture-09.html">
+      <div class="num">玖</div>
+      <div class="info">
+        <div class="k">LECTURE 09</div>
+        <h2>强化学习</h2>
+        <p>马尔可夫决策过程 · 价值函数与策略梯度 · DQN 与 DDPG · 智能电网无功优化 · 四足机器人行走</p>
+      </div>
+      <span class="go">进入讲义 →</span>
+    </a>
+    <a class="resource-card" href="多臂赌博机-交互演示.html" target="_blank" rel="noopener">
+      <span><b>第九讲配套</b> · 多臂赌博机：探索与利用交互演示</span>
+      <span class="resource-go">打开演示 →</span>
     </a>
 
   </div>
